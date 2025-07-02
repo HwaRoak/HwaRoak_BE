@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class HwarokApplication {
+public class HwaroakApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(HwarokApplication.class, args);
+        SpringApplication.run(HwaroakApplication.class, args);
     }
 
 }
