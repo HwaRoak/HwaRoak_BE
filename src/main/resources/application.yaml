@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: hwarok
+
+  profiles:
+    group:
+      local: "local"
+      dev: "dev"
+
+  #jpa
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
