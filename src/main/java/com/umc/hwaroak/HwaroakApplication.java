@@ -1,4 +1,4 @@
-package com.umc.hwarok;
+package com.umc.hwaroak;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
