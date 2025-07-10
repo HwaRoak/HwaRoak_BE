@@ -5,11 +5,9 @@ on:
     branches:
       - main
 
-# 본인이 설정한 값을 여기서 채워넣습니다.
-# 리전, 버킷 이름, CodeDeploy 앱 이름, CodeDeploy 배포 그룹 이름
 env:
   AWS_REGION: ap-northeast-2
-  S3_BUCKET_NAME: my-ch-actions-s3-bucket
+  S3_BUCKET_NAME: hwaroak-github-actions-s3-bucket
   CODE_DEPLOY_APPLICATION_NAME: my-codedeploy-app
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: my-codedeploy-dev-group
 
@@ -40,6 +38,14 @@ jobs:
         with:
           arguments: clean build -x test
 
+      # (3.5) 배포 파일 준비 (jar, appspec.yml, scripts 등)
+      - name: Prepare deploy package
+        run: |
+          mkdir -p deploy/build/libs
+          cp build/libs/*.jar deploy/build/libs/
+          cp -r scripts deploy/
+          cp appspec.yml deploy/
+
       # (4) AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -55,7 +61,7 @@ jobs:
             --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
             --ignore-hidden-files \
             --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-            --source .
+            --source ./deploy
 
       # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
       - name: Deploy to AWS EC2 from S3
