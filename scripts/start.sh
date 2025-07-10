@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# .env 파일 로딩
+set -a
+[ -f "/home/ubuntu/app/.env" ] && source /home/ubuntu/app/.env
+set +a
+
+
 PROJECT_ROOT="/home/ubuntu/app"
 JAR_FILE="$PROJECT_ROOT/spring-webapp.jar"
 
