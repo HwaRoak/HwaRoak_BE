@@ -7,7 +7,7 @@ set +a
 
 
 PROJECT_ROOT="/home/ubuntu/app"
-JAR_FILE="$PROJECT_ROOT/spring-webapp.jar"
+JAR_FILE="$PROJECT_ROOT/hwaroak-0.0.1-SNAPSHOT.jar"
 
 APP_LOG="$PROJECT_ROOT/application.log"
 ERROR_LOG="$PROJECT_ROOT/error.log"
@@ -17,7 +17,7 @@ TIME_NOW=$(date +%c)
 
 # build 파일 복사
 echo "$TIME_NOW > $JAR_FILE 파일 복사" >> $DEPLOY_LOG
-cp $PROJECT_ROOT/build/libs/*.jar $JAR_FILE
+cp $PROJECT_ROOT/build/libs/hwaroak-0.0.1-SNAPSHOT.jar $JAR_FILE
 
 # jar 파일 실행 (spring.profiles.active=dev 추가)
 echo "$TIME_NOW > $JAR_FILE 파일 실행" >> $DEPLOY_LOG
