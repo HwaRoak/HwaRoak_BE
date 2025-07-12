@@ -15,12 +15,11 @@ public class MemberServiceImpl implements MemberService{
     private final MemberRepository memberRepository;
 
     @Override
-    public MemberResponseDTO.InfoDTO getInfo(Long id) {
-        Member member = memberRepository.findById(id)
+    public MemberResponseDTO.InfoDTO getInfo(Long memberId) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(()->new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
         return MemberResponseDTO.InfoDTO.builder()
-                .id(member.getId())
                 .userId(member.getUserId())
                 .nickname(member.getNickname())
                 .introduction(member.getIntroduction())
