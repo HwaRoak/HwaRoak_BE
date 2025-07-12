@@ -1,4 +1,4 @@
-package service;
+package com.umc.hwaroak.service;
 
 import com.umc.hwaroak.dto.MemberResponseDTO;
 
