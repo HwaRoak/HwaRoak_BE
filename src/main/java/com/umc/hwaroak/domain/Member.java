@@ -34,6 +34,9 @@ public class Member extends BaseEntity {
     @Column(name = "feeling")
     private String feeling;
 
+    @Column(name = "introduction")
+    private String introduction;
+
     @OneToMany(mappedBy = "member")
     private List<Diary> diaryList = new ArrayList<>();
 

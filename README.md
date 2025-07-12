@@ -18,7 +18,8 @@
 | `hotfix`  | 운영 중인 서비스에서 발생한 긴급 버그 수정용 브랜치입니다.                        |
 
 > 모든 브랜치는 명확한 목적에 맞게 사용하며, 적절한 브랜치로 병합되어야 합니다.
->
+> 
+| **예시: feat/13-kakao-login**
 
 ---
 
@@ -49,16 +50,40 @@
 
 전통적인 **계층형 아키텍처(Layered Architecture)** 구조를 기반으로 패키지를 구성합니다.
 ```dockerignore
-src/
-├── controller/    
-├── service/       
-├── repository/     
-├── domain/         # 엔티티 클래스 및 핵심 도메인 모델
-├── dto/            
-├── converter/      # Entity ↔ DTO 변환 처리
-├── exception/      # 공통 예외 처리
-├── config/         
-└── util/           # 유틸성 클래스
+🔥hwaroak
+ ┣ 📂.github
+ ┃ ┣ 📂ISSUE_TEMPLATE   # 이슈 템플릿
+ ┃ ┣ 📂workflows     # Github Actions Workflow 설정
+ ┣ 📂nginx       # Proxy 설정
+ ┃ ┣ 📂html
+ ┣ 📂src
+ ┃ ┗ 📂main
+ ┃   ┣ 📂java
+ ┃   ┃ ┗ 📂com
+ ┃   ┃   ┗ 📂umc
+ ┃   ┃     ┗ 📂hwaroak
+ ┃   ┃       ┣ 📂service   # 도메인별 핵심 비즈니스 로직 영역
+ ┃   ┃       ┣ 📂controller  # 도메인별 핵심 비즈니스 로직 영역
+ ┃   ┃       ┣ 📂config   # 프로젝트 설정 파일들(Security, Web 등)
+ ┃   ┃       ┣ 📂converter  # Entity <-> DTO 간 변환
+ ┃   ┃       ┣ 📂domain    # 전역적으로 사용하는 domain
+ ┃   ┃       ┃ ┣ 📂entity    # 프로젝트 Entity(JPA로 DB와 매핑되는 크래스들)
+ ┃   ┃       ┣ 📂dto   # 클라이언트와 데이터를 주고받을 객체
+ ┃   ┃       ┃ ┣ 📂request   # 요청 객체
+ ┃   ┃       ┃ ┗ 📂response   # 응답 객체
+ ┃   ┃       ┣ 📂exception  # 전역 예외 처리
+ ┃   ┃       ┣ 📂repository   # JPA Repository 인터페이스
+ ┃   ┃       ┗ 📂util   # 공통 유틸리티 클래스 정의
+ ┃   ┃       ┗ 📜HwaroakApplication.java # Spring Boot 메인 실행 클래스
+ ┃   ┗ 📂resources
+ ┃     ┣ 📂static
+ ┃     ┣ 📜application-dev.yaml # 개발 프로필
+ ┃     ┣ 📜application-local.yaml # 로컬 프로필
+ ┃     ┗ 📜application.yaml # 공통 프로필
+ ┣ 📜.env # 중요 환경변수 설정
+ ┣ 📜.gitignore
+ ┣ 📜README.md
+ ┗ 📜build.gradle
 ```
 
 > 기능 단위로가 아닌 역할에 따른 계층 분리를 통해 각 레이어의 책임을 명확히 합니다.
