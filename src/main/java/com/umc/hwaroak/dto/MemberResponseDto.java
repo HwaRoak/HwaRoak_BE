@@ -6,13 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-public class MemberResponseDTO {
+public class MemberResponseDto {
 
     @Builder
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class InfoDTO{
+    @Schema(description = "회원 정보 조회 응답 DTO")
+    public static class InfoDto {
 
         @Schema(description = "유저 아이디", example = "a123456789")
         String userId;
