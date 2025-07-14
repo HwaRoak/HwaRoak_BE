@@ -2,7 +2,7 @@ package com.umc.hwaroak.service;
 
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.common.AlarmType;
-import com.umc.hwaroak.dto.NoticeResponseDto;
+import com.umc.hwaroak.dto.AlarmResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.response.ErrorCode;
@@ -23,9 +23,9 @@ public class AlarmServiceImpl implements AlarmService {
      * 공지(NOTIFIACTION) 최신순 정렬 가져오기
      */
     @Override
-    public List<NoticeResponseDto.PreviewDto> getNoticeList() {
+    public List<AlarmResponseDto.PreviewDto> getNoticeList() {
         return alarmRepository.findByAlarmTypeOrderByCreatedAtDesc(AlarmType.NOTIFICATION).stream()
-                .map(alarm -> NoticeResponseDto.PreviewDto.builder()
+                .map(alarm -> AlarmResponseDto.PreviewDto.builder()
                         .id(alarm.getId())
                         .title(alarm.getTitle())
                         .createdAt(alarm.getCreatedAt())
@@ -37,11 +37,11 @@ public class AlarmServiceImpl implements AlarmService {
      * 공지 id로 상세조회하기
      */
     @Override
-    public NoticeResponseDto.InfoDto getNoticeDetail(Long id) {
+    public AlarmResponseDto.InfoDto getNoticeDetail(Long id) {
         Alarm alarm = alarmRepository.findByIdAndAlarmType(id, AlarmType.NOTIFICATION)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOTICE_NOT_FOUND));
 
-        return NoticeResponseDto.InfoDto.builder()
+        return AlarmResponseDto.InfoDto.builder()
                 .id(alarm.getId())
                 .title(alarm.getTitle())
                 .content(alarm.getContent())

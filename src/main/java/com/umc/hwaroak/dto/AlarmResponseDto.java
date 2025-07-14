@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-public class NoticeResponseDto {
+public class AlarmResponseDto {
 
     /**
      * 최신순 정렬용 Dto
