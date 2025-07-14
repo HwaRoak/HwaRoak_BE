@@ -14,6 +14,11 @@ public enum ErrorCode implements BaseCode{
 
     // Notice 관련
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NO4041", "해당 공지를 찾을 수 없습니다."),
+  
+  
+    //Member
+    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
+
     ;
 
     private final HttpStatus status;
