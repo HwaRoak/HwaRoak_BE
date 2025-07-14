@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Alarm-Notice", description = "알림 도메인의 공지(NOTIFICATION) 관련 API")
+@Tag(name = "Alarm", description = "알림 관련 API")
 @RestController
 @RequestMapping("/alarms")
 @RequiredArgsConstructor
