@@ -2,8 +2,10 @@ package com.umc.hwaroak.domain;
 
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 @Table(name = "notice")
 public class Notice extends BaseEntity {
 

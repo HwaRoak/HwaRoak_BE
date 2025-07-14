@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class NoticeResponseDto {
     /**
@@ -18,7 +18,7 @@ public class NoticeResponseDto {
     public static class PreviewDto {
         private Long id;
         private String title;
-        private LocalDateTime createdAt; // 프론트에서 언제 올라온 공지인지 정렬 및 표시용
+        private LocalDate createdAt; // 프론트에서 언제 올라온 공지인지 정렬 및 표시용
     }
 
     /**
@@ -32,6 +32,6 @@ public class NoticeResponseDto {
         private Long id;
         private String title;
         private String content;
-        private LocalDateTime createdAt;
+        private LocalDate createdAt;
     }
 }
