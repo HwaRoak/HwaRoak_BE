@@ -1,7 +1,10 @@
 package com.umc.hwaroak.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,8 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Builder
 @Table(name = "member")
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
 public class Member extends BaseEntity {
 
@@ -45,27 +50,35 @@ public class Member extends BaseEntity {
     private String profileImage;
 
     @OneToMany(mappedBy = "member")
+    @JsonIgnore //테스트용
     private List<Diary> diaryList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore //테스트용
     private List<MemberAnswer> memberAnswerList = new ArrayList<>();
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore //테스트용
     private AlarmSetting alarmSetting;
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore //테스트용
     private List<Alarm> receivedAlarmList = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore //테스트용
     private List<Alarm> sendAlarmList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore //테스트용
     private List<MemberItem> itemList = new ArrayList<>();
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore //테스트용
     private List<Friend> receivedFriend = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore //테스트용
     private List<Friend> sendFriend = new ArrayList<>();
 
     // 로그인 시 사용

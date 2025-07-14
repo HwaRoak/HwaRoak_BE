@@ -2,15 +2,15 @@
 // 로그인 성공시 -> JWT 토큰 + 사용자 닉네임으로 응답을 줌
 package com.umc.hwaroak.dto.response;
 
+import com.umc.hwaroak.domain.Member;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
 public class KakaoLoginResponseDto {
-    private String jwtToken;
-    private String nickname;
-    private String profileImage;
-    private String birthday;
+    private String accessToken;
+    private String refreshToken;
+    private Member member;
 }
 
