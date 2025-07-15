@@ -28,7 +28,7 @@ public class FriendServiceImpl implements FriendService {
      * TODO: 이후 JWT 인증 정보를 기반으로 실제 로그인 유저를 반환하도록 수정 필요
      */
     private Member getCurrentMember() {
-        return memberRepository.findById(1L) // 임시 고정 ID
+        return memberRepository.findById(5L) // 임시 고정 ID
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
