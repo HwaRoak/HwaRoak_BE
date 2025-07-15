@@ -18,6 +18,16 @@ public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
 
+
+    /**
+     * 현재 로그인된 사용자를 임시로 반환합니다.
+     * TODO: 이후 JWT 인증 정보를 기반으로 실제 로그인 유저를 반환하도록 수정 필요
+     */
+    private Member getCurrentMember() {
+        return memberRepository.findById(1L) // 임시 고정 ID
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
     /**
      * 친구 요청을 보냅니다.
      * 요청 전에 다음 조건을 확인합니다:
@@ -57,14 +67,6 @@ public class FriendServiceImpl implements FriendService {
         friendRepository.save(friend);
     }
 
-    /**
-     * 현재 로그인된 사용자를 임시로 반환합니다.
-     * TODO: 이후 JWT 인증 정보를 기반으로 실제 로그인 유저를 반환하도록 수정 필요
-     */
-    private Member getCurrentMember() {
-        return memberRepository.findById(1L) // 임시 고정 ID
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
-    }
 
 
 
@@ -89,6 +91,30 @@ public class FriendServiceImpl implements FriendService {
 
         // [5] 요청 상태를 ACCEPTED로 변경
         friendRequest.updateStatus(FriendStatus.ACCEPTED);
+    }
+
+
+    @Override
+    @Transactional
+    public void rejectFriendRequest(Long senderId) {
+        // [1] 로그인한 유저 (receiver)
+        Member receiver = getCurrentMember();
+
+        // [2] 요청 보낸 유저(sender) 존재 여부 확인
+        Member sender = memberRepository.findById(senderId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // [3] sender → receiver 요청 존재 확인
+        Friend friendRequest = friendRepository.findBySenderAndReceiver(sender, receiver)
+                .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
+
+        // [4] 상태가 REQUESTED 인지 확인
+        if (friendRequest.getStatus() != FriendStatus.REQUESTED) {
+            throw new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_PENDING);
+        }
+
+        // [5] 상태를 REJECTED 로 변경
+        friendRequest.updateStatus(FriendStatus.REJECTED);
     }
 
 }

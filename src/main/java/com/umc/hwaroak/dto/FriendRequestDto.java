@@ -20,4 +20,11 @@ public class FriendRequestDto {
         @Schema(description = "요청을 보낸 친구의 member ID", example = "1")
         private Long senderId;
     }
+
+    @Getter
+    @NoArgsConstructor
+    public static class Reject {
+        @Schema(description = "친구 요청을 보낸 사람의 member ID", example = "1")
+        private Long senderId;
+    }
 }

@@ -29,4 +29,12 @@ public class FriendController {
     public void acceptFriendRequest(@RequestBody FriendRequestDto.Accept requestDto) {
         friendService.acceptFriendRequest(requestDto.getSenderId());
     }
+
+    @Operation(summary = "친구 요청 거절", description = "상대방이 보낸 친구 요청을 거절합니다.")
+    @ApiResponse(responseCode = "200", description = "친구 요청 거절 성공")
+    @PostMapping("/reject")
+    public void rejectFriendRequest(@RequestBody FriendRequestDto.Reject requestDto) {
+        friendService.rejectFriendRequest(requestDto.getSenderId());
+    }
+
 }
