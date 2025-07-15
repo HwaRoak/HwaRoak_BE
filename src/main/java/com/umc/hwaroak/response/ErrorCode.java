@@ -19,6 +19,11 @@ public enum ErrorCode implements BaseCode{
     //Member
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
 
+
+    // Friend
+    CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "FRIEND4001", "자기 자신에게는 친구 요청을 보낼 수 없습니다."),
+    FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4002", "이미 친구이거나 요청을 보낸 상태입니다."),
+
     ;
 
     private final HttpStatus status;
