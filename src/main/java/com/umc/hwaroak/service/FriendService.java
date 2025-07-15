@@ -13,5 +13,7 @@ public interface FriendService {
 
     List<FriendResponseDto.FriendInfo> getFriendList();
 
-    public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests();
+    List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests();
+
+    void deleteFriend(Long friendMemberId);
 }

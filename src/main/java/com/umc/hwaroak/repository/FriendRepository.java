@@ -47,4 +47,15 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
      * 조건: receiver = 현재 유저, status = REQUESTED
      */
     List<Friend> findAllByReceiverAndStatusOrderByCreatedAtDesc(Member receiver, FriendStatus status);
+
+    /**
+     * 특정 상태(FriendStatus)를 가진 친구 관계를 조회
+     * 예: 친구 삭제 시 ACCEPTED 상태인 관계 찾기
+     *
+     * @param sender 나 or 상대방
+     * @param receiver 상대방 or 나
+     * @param status 친구 상태
+     * @return Friend 관계 (Optional)
+     */
+    Optional<Friend> findBySenderAndReceiverAndStatus(Member sender, Member receiver, FriendStatus status);
 }

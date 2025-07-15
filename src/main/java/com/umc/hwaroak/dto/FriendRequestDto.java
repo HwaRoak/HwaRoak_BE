@@ -27,4 +27,11 @@ public class FriendRequestDto {
         @Schema(description = "친구 요청을 보낸 사람의 member ID", example = "1")
         private Long senderId;
     }
+
+    @Getter
+    @NoArgsConstructor
+    public static class Delete {
+        @Schema(description = "삭제할 친구의 member ID", example = "3")
+        private Long memberId;
+    }
 }

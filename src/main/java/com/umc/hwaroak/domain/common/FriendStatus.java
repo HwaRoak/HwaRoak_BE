@@ -4,5 +4,5 @@ public enum FriendStatus {
     ACCEPTED,
     REQUESTED,
     REJECTED,
-    BLOCKED
+    BLOCKED // soft delete
 }

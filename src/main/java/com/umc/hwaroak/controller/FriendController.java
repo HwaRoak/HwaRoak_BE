@@ -58,4 +58,14 @@ public class FriendController {
     public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
         return friendService.getReceivedFriendRequests();
     }
+
+    @Operation(summary = "친구 삭제", description = "현재 친구인 사용자를 친구 목록에서 삭제합니다.")
+    @ApiResponse(responseCode = "200", description = "친구 삭제 성공")
+    @ApiResponse(responseCode = "404", description = "친구 관계가 존재하지 않음 (FRIEND_NOT_FOUND)")
+    @DeleteMapping
+    public void deleteFriend(@RequestBody FriendRequestDto.Delete requestDto) {
+        friendService.deleteFriend(requestDto.getMemberId());
+    }
+
+
 }

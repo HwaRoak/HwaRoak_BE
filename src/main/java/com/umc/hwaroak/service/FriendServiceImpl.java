@@ -173,4 +173,25 @@ public class FriendServiceImpl implements FriendService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional
+    public void deleteFriend(Long friendMemberId) {
+        Member me = getCurrentMember();
+        Member friend = memberRepository.findById(friendMemberId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // [1] 나 ↔ 친구 관계에서 상태가 ACCEPTED 인 친구 관계 조회
+        Friend relationship = friendRepository.findBySenderAndReceiverAndStatus(me, friend, FriendStatus.ACCEPTED)
+                .or(() -> friendRepository.findBySenderAndReceiverAndStatus(friend, me, FriendStatus.ACCEPTED))
+                .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_NOT_FOUND));
+
+        // [2] 관계 상태가 ACCEPTED가 아닌 경우 삭제 불가 (예외 상황 대비용, 안전하게)
+        if (relationship.getStatus() != FriendStatus.ACCEPTED) {
+            throw new GeneralException(ErrorCode.FRIEND_CANNOT_BE_DELETED);
+        }
+
+        // [3] BLOCKED 상태로 변경 (soft delete)
+        relationship.updateStatus(FriendStatus.BLOCKED);
+    }
+
 }
