@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @Schema(name = "일기 작성 응답 DTO")
 public class DiaryResponseDto {
 
-    @Schema(name = "일기 ID")
+    @Schema(description = "일기 ID")
     private Long id;
-    @Schema(name = "감정 피드백",
+    @Schema(description = "감정 피드백",
     example = "오늘은 참 재미있는 일이 있었네!>ㅁ<")
     private String feedback;
-    @Schema(name = "리워드")
+    @Schema(description = "리워드")
     private Integer reward;
-    @Schema(name = "다음 아이템")
+    @Schema(description = "다음 아이템")
     private Item item;
 }
