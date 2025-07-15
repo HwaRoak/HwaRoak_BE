@@ -4,6 +4,8 @@ import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.FriendStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,16 +33,18 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     Optional<Friend> findBySenderAndReceiver(Member sender, Member receiver);
 
     /**
-     * 친구 목록 조회용
-     * 현재 로그인한 유저가 sender 또는 receiver 이고,
-     * 친구 상태가 ACCEPTED 인 모든 Friend 관계를 가져온다.
+     * 친구 목록 조회 (정확한 ACCEPTED 상태만)
+     * - 로그인한 사용자가 sender 또는 receiver인 친구 관계 중
+     * - 상태가 정확히 FriendStatus.ACCEPTED 인 것만 반환
+     * - status 조건이 OR 조건과 충돌하지 않도록 JPQL로 명시
      *
-     * @param sender 나
-     * @param receiver 나
-     * @param status 친구 상태 (ACCEPTED)
-     * @return 나와 친구인 Friend 리스트
+     * @param member 현재 로그인한 사용자
+     * @return 친구 관계 리스트 (ACCEPTED 상태만)
      */
-    List<Friend> findAllBySenderOrReceiverAndStatus(Member sender, Member receiver, FriendStatus status);
+    @Query("SELECT f FROM Friend f " +
+            "WHERE (f.sender = :member OR f.receiver = :member) " +
+            "AND f.status = com.umc.hwaroak.domain.common.FriendStatus.ACCEPTED")
+    List<Friend> findAllAcceptedFriends(@Param("member") Member member);
 
     /**
      * 받은 친구 요청 목록을 최신순(createdAt DESC)으로 조회

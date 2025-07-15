@@ -130,7 +130,7 @@ public class FriendServiceImpl implements FriendService {
 
         // [2] 내가 sender 또는 receiver로 포함된 친구 관계 중, 상태가 ACCEPTED인 것들 모두 조회
         // → 단방향으로 저장되어 있기 때문에 sender 또는 receiver 둘 다 체크 필요
-        List<Friend> acceptedFriends = friendRepository.findAllBySenderOrReceiverAndStatus(me, me, FriendStatus.ACCEPTED);
+        List<Friend> acceptedFriends = friendRepository.findAllAcceptedFriends(me);
 
         // [3] 각 친구 관계에서 "나"와 반대쪽에 있는 Member만 추출
         // → 그게 진짜 '친구'임
