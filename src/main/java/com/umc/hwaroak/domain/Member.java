@@ -50,39 +50,40 @@ public class Member extends BaseEntity {
     private String profileImage;
 
     @OneToMany(mappedBy = "member")
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private List<Diary> diaryList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private List<MemberAnswer> memberAnswerList = new ArrayList<>();
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private AlarmSetting alarmSetting;
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private List<Alarm> receivedAlarmList = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private List<Alarm> sendAlarmList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private List<MemberItem> itemList = new ArrayList<>();
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private List<Friend> receivedFriend = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore //테스트용
+//    @JsonIgnore //테스트용
     private List<Friend> sendFriend = new ArrayList<>();
 
     // 로그인 시 사용
-    public Member(String userId, String email, String name, String nickname, String birthday, String profileImage) {
+    //public Member(String userId, String email, String name, String nickname, String birthday, String profileImage) {
+    public Member(String userId, String nickname, String profileImage) {
         this.userId = userId;
         this.email = email;
         this.name = name;

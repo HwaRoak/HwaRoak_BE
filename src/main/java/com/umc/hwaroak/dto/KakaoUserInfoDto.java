@@ -5,24 +5,40 @@ package com.umc.hwaroak.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-@Getter @Setter
+//@Getter
+//public class KakaoUserInfoDto {
+//    private String id;
+//    private Profile profile;
+//
+//    @Getter @Setter
+//    public static class Profile {
+//        private String nickname;
+//        private String profileImageUrl;
+//    }
+//}
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class KakaoUserInfoDto {
     private Long id;
     private KakaoAccount kakao_account;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class KakaoAccount {
         private Profile profile;
-        private String email;
-        private String birthday;
-        private String birthyear;
-        private String name; // 실명
+    }
 
-        @Getter @Setter
-        public static class Profile {
-            private String nickname;
-            private String profile_image_url;
-        }
+    @Getter
+    @Setter
+    public static class Profile {
+        private String nickname;
+        private String profile_image_url;
     }
 }
+
+
 

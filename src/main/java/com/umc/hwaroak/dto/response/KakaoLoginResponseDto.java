@@ -11,6 +11,11 @@ import lombok.Getter;
 public class KakaoLoginResponseDto {
     private String accessToken;
     private String refreshToken;
-    private Member member;
+    private Long memberId;
+    private String nickname;
+
+    public static KakaoLoginResponseDto from(String accessToken, String refreshToken, Member member ) {
+        return new KakaoLoginResponseDto(accessToken, refreshToken, member.getId(), member.getNickname() );
+    }
 }
 

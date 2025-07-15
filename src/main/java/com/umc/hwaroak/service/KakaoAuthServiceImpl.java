@@ -1,15 +1,220 @@
-//// 안드에게서 access token을 받아서 해당 유저의 정보를 카카오 api통해서 가져오기
-//// 이미 회원이면 로그인 처리
-//// 처음이면 회원가입 후 로그인 처리
-//// JWT 토큰과 유저 정보를 응답으로 반환
+////// 안드에게서 access token을 받아서 해당 유저의 정보를 카카오 api통해서 가져오기
+////// 이미 회원이면 로그인 처리
+////// 처음이면 회원가입 후 로그인 처리
+////// JWT 토큰과 유저 정보를 응답으로 반환
+//package com.umc.hwaroak.service;
+//
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.umc.hwaroak.domain.Member;
+//import com.umc.hwaroak.dto.TokenDto;
+//import com.umc.hwaroak.dto.KakaoUserInfoDto;
+//import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
+//import com.umc.hwaroak.exception.GeneralException;
+//import com.umc.hwaroak.repository.MemberRepository;
+//import com.umc.hwaroak.response.ErrorCode;
+//import com.umc.hwaroak.util.JwtProvider;
+//import lombok.RequiredArgsConstructor;
+//import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.data.redis.core.StringRedisTemplate;
+//import org.springframework.http.*;
+//import org.springframework.stereotype.Service;
+//import org.springframework.web.client.RestTemplate;
+//
+//import java.util.Optional;
+//import java.util.concurrent.TimeUnit;
+//
+//@Service
+//@RequiredArgsConstructor
+//public class KakaoAuthServiceImpl implements KakaoAuthService {
+//
+//    private final MemberRepository memberRepository;
+//    private final JwtProvider jwtProvider;
+//    private final StringRedisTemplate redisTemplate;
+//    private final ObjectMapper objectMapper;
+//
+//    @Value("${jwt.refresh-token-validity}")
+//    private long refreshTokenValidity;
+//    @Override
+//    public KakaoLoginResponseDto kakaoLogin(String kakaoAccessToken) {
+//        KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
+//
+//        String kakaoId = kakaoUser.getId();
+//        KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakaoAccount();
+//
+//        if (account == null || account.getProfile() == null) {
+//            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
+//        }
+//
+//        String nickname = account.getProfile().getNickname();
+//        String profileImage = account.getProfile().getProfileImageUrl();
+//        if (nickname == null || profileImage == null) {
+//            throw new GeneralException(ErrorCode.TEST_ERROR);
+//        }
+//
+//        // 기존 사용자 여부 확인
+//        Member member = memberRepository.findByUserId(kakaoId)
+//                .orElseGet(() -> {
+//                    Member newMember = Member.builder()
+//                            .userId(kakaoId)
+//                            .nickname(nickname)
+//                            .profileImage(profileImage)
+//                            .build();
+//                    return memberRepository.save(newMember);
+//                });
+//
+//        String accessToken = jwtProvider.createAccessToken(member.getId());
+//        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+//
+//        // Redis에 refresh token 저장
+//        redisTemplate.opsForValue().set(
+//                "RT:" + member.getId(), refreshToken,
+//                refreshTokenValidity, TimeUnit.MILLISECONDS
+//        );
+//
+//        return KakaoLoginResponseDto.from(accessToken, refreshToken, member);
+//    }
+//
+//
+////    @Override
+////    public KakaoLoginResponseDto kakaoLogin(String kakaoAccessToken) {
+////        // 카카오 API에서 사용자 정보 가져오기
+////        KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
+////        String kakaoId = kakaoUser.getId();
+////
+////        // 응답에서 프로필 정보 꺼내오기
+////        KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
+////        if (account == null || account.getProfile() == null) {
+////            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS); // 접근 권한 없음 예외
+////        }
+////
+////        KakaoUserInfoDto.Profile profile = account.getProfile();
+////        String nickname = profile.getNickname();
+////        String profileImage = profile.getProfileImageUrl();
+////
+////        if (nickname == null || profileImage == null) {
+////            throw new GeneralException(ErrorCode.TEST_ERROR); // 정보 부족 예외
+////        }
+////
+////        // DB에 사용자 있는지 확인하고 없으면 회원가입
+////        Member member = memberRepository.findByUserId(kakaoId)
+////                .orElseGet(() -> {
+////                    Member newMember = Member.builder()
+////                            .userId(kakaoId)
+////                            .nickname(nickname)
+////                            .profileImage(profileImage)
+////                            .build();
+////                    return memberRepository.save(newMember);
+////                });
+////
+////        // JWT 토큰 발급
+////        String accessToken = jwtProvider.createAccessToken(member.getId());
+////        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+////
+////        // Redis에 refresh 토큰 저장
+////        redisTemplate.opsForValue().set(
+////                "RT:" + member.getId(),
+////                refreshToken,
+////                refreshTokenValidity,
+////                TimeUnit.MILLISECONDS
+////        );
+////
+////        // 클라이언트에게 응답
+////        return KakaoLoginResponseDto.from(accessToken, refreshToken, member);
+////    }
+//
+////    @Override
+////    public KakaoLoginResponseDto kakaoLogin(String kakaoAccessToken) {
+////        KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
+////
+////        String kakaoId = kakaoUser.getId();
+////
+////        KakaoUserInfoDto.Profile profile = kakaoUser.getProfile();
+////
+////
+////        if (profile == null) {
+////            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
+////        }
+////
+////        String nickname = profile.getNickname();
+////        String profileImage = profile.getProfileImageUrl();
+////        if (nickname == null || profileImage == null) {
+////            throw new GeneralException(ErrorCode.TEST_ERROR);
+////        }
+////
+////        // 기존 사용자 여부 확인
+////        Member member = memberRepository.findByUserId(kakaoId)
+////                .orElseGet(() -> {
+////                    Member newMember = Member.builder()
+////                            .userId(kakaoId)
+////                            .nickname(nickname)
+////                            .profileImage(profileImage)
+////                            .build();
+////                    return memberRepository.save(newMember);
+////                });
+////
+////        String accessToken = jwtProvider.createAccessToken(member.getId());
+////        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+////
+////        // redis에 refresh 토큰 저장
+////        redisTemplate.opsForValue().set(
+////                "RT:" + member.getId(), refreshToken,
+////                refreshTokenValidity, TimeUnit.MILLISECONDS
+////        );
+////
+////        // 응답 객체로 반환
+////        return KakaoLoginResponseDto.from(accessToken, refreshToken, member);
+////    }
+//
+//    @Override
+//    public TokenDto reissueTokens(TokenDto tokenRequest) {
+//        String refreshToken = tokenRequest.getRefreshToken();
+//        if (!jwtProvider.validateToken(refreshToken)) {
+//            throw new RuntimeException("Invalid refresh token");
+//        }
+//
+//        Long userId = jwtProvider.getUserId(refreshToken);
+//        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + userId);
+//
+//        if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
+//            throw new RuntimeException("Refresh token mismatch");
+//        }
+//
+//        String newAccessToken = jwtProvider.createAccessToken(userId);
+//        return new TokenDto(newAccessToken, refreshToken);
+//    }
+//
+//    private KakaoUserInfoDto getUserInfoFromKakao(String kakaoAccessToken) {
+//        try {
+//            RestTemplate restTemplate = new RestTemplate();
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.set("Authorization", "Bearer " + kakaoAccessToken);
+//            headers.set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+//
+//            HttpEntity<String> request = new HttpEntity<>(headers);
+//            ResponseEntity<String> response = restTemplate.exchange(
+//                    "https://kapi.kakao.com/v2/user/me",
+//                    HttpMethod.GET,
+//                    request,
+//                    String.class
+//            );
+//
+//            return objectMapper.readValue(response.getBody(), KakaoUserInfoDto.class);
+//        } catch (Exception e) {
+//            throw new RuntimeException("카카오 유저 정보를 불러오지 못했습니다.", e);
+//        }
+//    }
+//}
+//
 package com.umc.hwaroak.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.dto.TokenDto;
 import com.umc.hwaroak.dto.KakaoUserInfoDto;
+import com.umc.hwaroak.dto.TokenDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
+import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.MemberRepository;
+import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +223,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -36,31 +240,42 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     @Override
     public KakaoLoginResponseDto kakaoLogin(String kakaoAccessToken) {
         KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
-        String kakaoId = String.valueOf(kakaoUser.getId());
 
-        Optional<Member> optionalMember = memberRepository.findByUserId(kakaoId);
-        Member member = optionalMember.orElseGet(() -> {
-            KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
-            KakaoUserInfoDto.KakaoAccount.Profile profile = account.getProfile();
-            return memberRepository.save(new Member(
-                    kakaoId,
-                    account.getEmail(),
-                    account.getName(),
-                    profile.getNickname(),
-                    account.getBirthyear() + "." + account.getBirthday(),
-                    profile.getProfile_image_url()
-            ));
-        });
+        String kakaoId = String.valueOf(kakaoUser.getId());
+        KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
+
+        if (account == null || account.getProfile() == null) {
+            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        String nickname = account.getProfile().getNickname();
+        String profileImage = account.getProfile().getProfile_image_url();
+
+        if (nickname == null || profileImage == null) {
+            throw new GeneralException(ErrorCode.TEST_ERROR);
+        }
+
+        // 기존 사용자 여부 확인
+        Member member = memberRepository.findByUserId(kakaoId)
+                .orElseGet(() -> {
+                    Member newMember = Member.builder()
+                            .userId(kakaoId)
+                            .nickname(nickname)
+                            .profileImage(profileImage)
+                            .build();
+                    return memberRepository.save(newMember);
+                });
 
         String accessToken = jwtProvider.createAccessToken(member.getId());
         String refreshToken = jwtProvider.createRefreshToken(member.getId());
 
+        // Redis에 refresh 토큰 저장
         redisTemplate.opsForValue().set(
                 "RT:" + member.getId(), refreshToken,
                 refreshTokenValidity, TimeUnit.MILLISECONDS
         );
 
-        return new KakaoLoginResponseDto(accessToken, refreshToken, member);
+        return KakaoLoginResponseDto.from(accessToken, refreshToken, member);
     }
 
     @Override
@@ -82,25 +297,6 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     }
 
     private KakaoUserInfoDto getUserInfoFromKakao(String kakaoAccessToken) {
-        if ("mock".equals(kakaoAccessToken)) {
-            KakaoUserInfoDto.KakaoAccount.Profile profile = new KakaoUserInfoDto.KakaoAccount.Profile();
-            profile.setNickname("MockUser");
-            profile.setProfile_image_url("https://mock.profile.img");
-
-            KakaoUserInfoDto.KakaoAccount account = new KakaoUserInfoDto.KakaoAccount();
-            account.setEmail("mockuser@kakao.com");
-            account.setName("Mock Name");
-            account.setBirthyear("1999");
-            account.setBirthday("0101");
-            account.setProfile(profile);
-
-            KakaoUserInfoDto mockUser = new KakaoUserInfoDto();
-            mockUser.setId(123456789L);
-            mockUser.setKakao_account(account);
-
-            return mockUser;
-        }
-
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
@@ -114,11 +310,11 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     request,
                     String.class
             );
-
+            // ✅ 여기에 응답 전체를 출력해서 확인!
+            System.out.println("카카오 응답: " + response.getBody());
             return objectMapper.readValue(response.getBody(), KakaoUserInfoDto.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch user info from Kakao", e);
+            throw new RuntimeException("카카오 유저 정보를 불러오지 못했습니다.", e);
         }
     }
 }
-
