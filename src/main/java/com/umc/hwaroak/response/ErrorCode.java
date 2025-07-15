@@ -8,6 +8,7 @@ public enum ErrorCode implements BaseCode{
 
     TEST_ERROR(HttpStatus.BAD_REQUEST, "TEST", "오류 응답에 대한 테스트입니다."),
 
+    // Member
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ME4001", "회원을 찾을 수 없습니다."),
 
     // Diary
@@ -20,10 +21,6 @@ public enum ErrorCode implements BaseCode{
 
     // Notice 관련
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NO4041", "해당 공지를 찾을 수 없습니다."),
-  
-  
-    //Member
-    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
 
     ;
 
