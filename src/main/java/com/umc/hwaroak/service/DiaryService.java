@@ -10,7 +10,7 @@ import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.util.OpenAiUtil;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,13 +49,15 @@ public class DiaryService {
         return DiaryConverter.toDto(diary);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public DiaryResponseDto readDiary(LocalDate date) {
 
         return DiaryConverter.toDto(diaryRepository.findByRecordDate(date)
-                .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND))
+        );
     }
 
+    @Transactional
     public DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto) {
 
         Diary diary = diaryRepository.findById(diaryId)
