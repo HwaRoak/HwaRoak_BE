@@ -12,4 +12,6 @@ public interface FriendService {
     void rejectFriendRequest(Long senderId);
 
     List<FriendResponseDto.FriendInfo> getFriendList();
+
+    public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests();
 }

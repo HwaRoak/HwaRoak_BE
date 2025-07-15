@@ -41,4 +41,10 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
      * @return 나와 친구인 Friend 리스트
      */
     List<Friend> findAllBySenderOrReceiverAndStatus(Member sender, Member receiver, FriendStatus status);
+
+    /**
+     * 받은 친구 요청 목록을 최신순(createdAt DESC)으로 조회
+     * 조건: receiver = 현재 유저, status = REQUESTED
+     */
+    List<Friend> findAllByReceiverAndStatusOrderByCreatedAtDesc(Member receiver, FriendStatus status);
 }

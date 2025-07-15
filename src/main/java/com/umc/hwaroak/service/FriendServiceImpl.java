@@ -149,4 +149,28 @@ public class FriendServiceImpl implements FriendService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
+        Member me = getCurrentMember();
+
+        // [1] 상태가 REQUESTED이고, 내가 받은 요청만 최신순 정렬로 조회
+        List<Friend> requests = friendRepository.findAllByReceiverAndStatusOrderByCreatedAtDesc(
+                me, FriendStatus.REQUESTED
+        );
+
+        // [2] 요청 보낸 사람 정보를 DTO로 변환
+        return requests.stream()
+                .map(friend -> {
+                    Member sender = friend.getSender();
+                    return FriendResponseDto.ReceivedRequestInfo.builder()
+                            .memberId(sender.getId())
+                            .nickname(sender.getNickname())
+                            .introduction(sender.getIntroduction())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
 }

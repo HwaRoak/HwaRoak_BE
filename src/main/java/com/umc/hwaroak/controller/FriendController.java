@@ -51,4 +51,11 @@ public class FriendController {
     public List<FriendResponseDto.FriendInfo> getFriendList() {
         return friendService.getFriendList();
     }
+
+    @Operation(summary = "받은 친구 요청 목록 조회", description = "아직 수락/거절되지 않은, 내가 받은 친구 요청 목록을 최신순으로 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "받은 친구 요청 목록 조회 성공")
+    @GetMapping("/received")
+    public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
+        return friendService.getReceivedFriendRequests();
+    }
 }
