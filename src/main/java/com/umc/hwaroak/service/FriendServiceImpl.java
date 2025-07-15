@@ -64,8 +64,8 @@ public class FriendServiceImpl implements FriendService {
         if (existingFriend.isPresent()) {
             Friend friend = existingFriend.get();
 
-            // [4-1] 기존 상태가 BLOCKED이면 상태를 REQUESTED로 바꿔 재요청 처리
-            if (friend.getStatus() == FriendStatus.BLOCKED) {
+            // [4-1] 기존 상태가 BLOCKED 또는 REJECTED 이면 상태를 REQUESTED로 바꿔 재요청 처리
+            if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
                 friend.updateStatus(FriendStatus.REQUESTED);
                 return;
             }
