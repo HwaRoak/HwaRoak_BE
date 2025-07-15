@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +29,7 @@ public class FriendServiceImpl implements FriendService {
      * TODO: 이후 JWT 인증 정보를 기반으로 실제 로그인 유저를 반환하도록 수정 필요
      */
     private Member getCurrentMember() {
-        return memberRepository.findById(5L) // 임시 고정 ID
+        return memberRepository.findById(1L) // 임시 고정 ID
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
@@ -57,16 +58,29 @@ public class FriendServiceImpl implements FriendService {
             throw new GeneralException(ErrorCode.CANNOT_ADD_SELF);
         }
 
-        // [4] 이미 친구 요청을 보냈거나 친구 상태인지 확인 (양방향 모두 검사)
-        boolean alreadyExists =
-                friendRepository.existsBySenderAndReceiver(sender, receiver) ||
-                        friendRepository.existsBySenderAndReceiver(receiver, sender);
+        // [4] 기존 친구 요청/관계가 존재하는지 조회 (단방향 sender → receiver 기준)
+        Optional<Friend> existingFriend = friendRepository.findBySenderAndReceiver(sender, receiver);
 
-        if (alreadyExists) {
+        if (existingFriend.isPresent()) {
+            Friend friend = existingFriend.get();
+
+            // [4-1] 기존 상태가 BLOCKED이면 상태를 REQUESTED로 바꿔 재요청 처리
+            if (friend.getStatus() == FriendStatus.BLOCKED) {
+                friend.updateStatus(FriendStatus.REQUESTED);
+                return;
+            }
+
+            // [4-2] 그 외 상태라면 중복 요청 예외 처리
             throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [5] 친구 요청 엔티티 생성 및 저장
+        // [5] 기존 단방향 요청이 없을 경우, 역방향(receiver → sender) 중복 여부도 검사
+        boolean reverseExists = friendRepository.existsBySenderAndReceiver(receiver, sender);
+        if (reverseExists) {
+            throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
+        }
+
+        // [6] 친구 요청 엔티티 생성 및 저장
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
     }
