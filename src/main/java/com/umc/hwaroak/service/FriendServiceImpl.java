@@ -3,6 +3,7 @@ package com.umc.hwaroak.service;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.FriendStatus;
+import com.umc.hwaroak.dto.FriendResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.FriendRepository;
 import com.umc.hwaroak.repository.MemberRepository.MemberRepository;
@@ -10,6 +11,9 @@ import com.umc.hwaroak.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -117,4 +121,32 @@ public class FriendServiceImpl implements FriendService {
         friendRequest.updateStatus(FriendStatus.REJECTED);
     }
 
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FriendResponseDto.FriendInfo> getFriendList() {
+        // [1] 현재 로그인된 사용자 (나)
+        Member me = getCurrentMember();
+
+        // [2] 내가 sender 또는 receiver로 포함된 친구 관계 중, 상태가 ACCEPTED인 것들 모두 조회
+        // → 단방향으로 저장되어 있기 때문에 sender 또는 receiver 둘 다 체크 필요
+        List<Friend> acceptedFriends = friendRepository.findAllBySenderOrReceiverAndStatus(me, me, FriendStatus.ACCEPTED);
+
+        // [3] 각 친구 관계에서 "나"와 반대쪽에 있는 Member만 추출
+        // → 그게 진짜 '친구'임
+        return acceptedFriends.stream()
+                .map(friend -> {
+                    Member friendMember = friend.getSender().equals(me)
+                            ? friend.getReceiver()  // 내가 sender일 경우 → 친구는 receiver
+                            : friend.getSender();  // 내가 receiver일 경우 → 친구는 sender
+
+                    // [4] 친구 정보를 응답 DTO로 변환
+                    return FriendResponseDto.FriendInfo.builder()
+                            .memberId(friendMember.getId())
+                            .nickname(friendMember.getNickname())
+                            .introduction(friendMember.getIntroduction())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
 }

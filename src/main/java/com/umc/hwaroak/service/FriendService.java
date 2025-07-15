@@ -1,5 +1,9 @@
 package com.umc.hwaroak.service;
 
+import com.umc.hwaroak.dto.FriendResponseDto;
+
+import java.util.List;
+
 public interface FriendService {
     void requestFriend(Long receiverId);
 
@@ -7,4 +11,5 @@ public interface FriendService {
 
     void rejectFriendRequest(Long senderId);
 
+    List<FriendResponseDto.FriendInfo> getFriendList();
 }

@@ -2,8 +2,10 @@ package com.umc.hwaroak.repository;
 
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.common.FriendStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FriendRepository extends JpaRepository<Friend, Long> {
@@ -27,4 +29,16 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
      * @return Friend 엔티티 (없으면 Optional.empty)
      */
     Optional<Friend> findBySenderAndReceiver(Member sender, Member receiver);
+
+    /**
+     * 친구 목록 조회용
+     * 현재 로그인한 유저가 sender 또는 receiver 이고,
+     * 친구 상태가 ACCEPTED 인 모든 Friend 관계를 가져온다.
+     *
+     * @param sender 나
+     * @param receiver 나
+     * @param status 친구 상태 (ACCEPTED)
+     * @return 나와 친구인 Friend 리스트
+     */
+    List<Friend> findAllBySenderOrReceiverAndStatus(Member sender, Member receiver, FriendStatus status);
 }
