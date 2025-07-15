@@ -4,6 +4,8 @@ import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     /**
@@ -15,4 +17,14 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
      * @return 해당 쌍의 Friend 관계가 존재하면 true
      */
     boolean existsBySenderAndReceiver(Member sender, Member receiver);
+
+    /**
+     * sender → receiver 방향의 친구 요청을 조회
+     * - 수락/거절 시 요청을 식별하기 위한 메서드
+     *
+     * @param sender 요청 보낸 사람
+     * @param receiver 요청 받은 사람 (로그인 유저)
+     * @return Friend 엔티티 (없으면 Optional.empty)
+     */
+    Optional<Friend> findBySenderAndReceiver(Member sender, Member receiver);
 }

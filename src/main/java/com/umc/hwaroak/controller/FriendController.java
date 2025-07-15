@@ -22,4 +22,11 @@ public class FriendController {
     public void requestFriend(@RequestBody FriendRequestDto.Request requestDto) {
         friendService.requestFriend(requestDto.getReceiverId());
     }
+
+    @Operation(summary = "친구 요청 수락", description = "상대방이 보낸 친구 요청을 수락합니다.")
+    @ApiResponse(responseCode = "200", description = "친구 요청 수락 성공")
+    @PostMapping("/accept")
+    public void acceptFriendRequest(@RequestBody FriendRequestDto.Accept requestDto) {
+        friendService.acceptFriendRequest(requestDto.getSenderId());
+    }
 }

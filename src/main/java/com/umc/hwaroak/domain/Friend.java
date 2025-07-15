@@ -35,4 +35,9 @@ public class Friend extends BaseEntity {
         this.receiver = receiver;
         this.status = status;
     }
+
+    // 상태 변경 로직
+    public void updateStatus(FriendStatus status) {
+        this.status = status;
+    }
 }

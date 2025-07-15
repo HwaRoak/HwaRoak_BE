@@ -65,4 +65,30 @@ public class FriendServiceImpl implements FriendService {
         return memberRepository.findById(1L) // 임시 고정 ID
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
     }
+
+
+
+    @Override
+    @Transactional
+    public void acceptFriendRequest(Long senderId) {
+        // [1] 현재 로그인한 유저 (친구 요청을 받은 사람 = receiver)
+        Member receiver = getCurrentMember();
+
+        // [2] 요청 보낸 sender 유저가 존재하는지 확인
+        Member sender = memberRepository.findById(senderId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // [3] sender → receiver로 상태가 REQUESTED인 친구 요청 찾기
+        Friend friendRequest = friendRepository.findBySenderAndReceiver(sender, receiver)
+                .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
+
+        // [4] 이미 수락되었거나 거절된 요청인 경우 수락 불가
+        if (friendRequest.getStatus() != FriendStatus.REQUESTED) {
+            throw new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_PENDING);
+        }
+
+        // [5] 요청 상태를 ACCEPTED로 변경
+        friendRequest.updateStatus(FriendStatus.ACCEPTED);
+    }
+
 }

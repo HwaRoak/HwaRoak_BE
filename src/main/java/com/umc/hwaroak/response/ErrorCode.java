@@ -21,8 +21,10 @@ public enum ErrorCode implements BaseCode{
 
 
     // Friend
-    CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "FRIEND4001", "자기 자신에게는 친구 요청을 보낼 수 없습니다."),
-    FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4002", "이미 친구이거나 요청을 보낸 상태입니다."),
+    FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4041", "해당 친구 요청을 찾을 수 없습니다."),
+    FRIEND_REQUEST_NOT_PENDING(HttpStatus.BAD_REQUEST, "FRIEND4002", "이미 처리된 친구 요청입니다."),
+    CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "FRIEND4003", "자기 자신에게는 친구 요청을 보낼 수 없습니다."),
+    FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4004", "이미 친구이거나 요청을 보낸 상태입니다."),
 
     ;
 
