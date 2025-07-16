@@ -31,18 +31,18 @@ public class FriendController {
     @ApiResponse(responseCode = "200", description = "친구 요청 수락 성공")
     @ApiResponse(responseCode = "400", description = "이미 처리된 요청 (FRIEND_REQUEST_NOT_PENDING)")
     @ApiResponse(responseCode = "404", description = "요청 보낸 사용자 없음 (MEMBER_NOT_FOUND) 또는 친구 요청 없음 (FRIEND_REQUEST_NOT_FOUND)")
-    @PostMapping("/accept")
-    public void acceptFriendRequest(@RequestBody FriendRequestDto.Accept requestDto) {
-        friendService.acceptFriendRequest(requestDto.getSenderId());
+    @PostMapping("/{friendId}/accept")
+    public void acceptFriendRequest(@PathVariable Long friendId) {
+        friendService.acceptFriendRequest(friendId);
     }
 
     @Operation(summary = "친구 요청 거절", description = "상대방이 보낸 친구 요청을 거절합니다.")
     @ApiResponse(responseCode = "200", description = "친구 요청 거절 성공")
     @ApiResponse(responseCode = "400", description = "이미 처리된 요청 (FRIEND_REQUEST_NOT_PENDING)")
     @ApiResponse(responseCode = "404", description = "요청 보낸 사용자 없음 (MEMBER_NOT_FOUND) 또는 친구 요청 없음 (FRIEND_REQUEST_NOT_FOUND)")
-    @PostMapping("/reject")
-    public void rejectFriendRequest(@RequestBody FriendRequestDto.Reject requestDto) {
-        friendService.rejectFriendRequest(requestDto.getSenderId());
+    @PostMapping("/{friendId}/reject")
+    public void rejectFriendRequest(@PathVariable Long friendId) {
+        friendService.rejectFriendRequest(friendId);
     }
 
     @Operation(summary = "친구 목록 조회", description = "현재 로그인한 유저의 친구 목록을 조회합니다.")
@@ -62,9 +62,9 @@ public class FriendController {
     @Operation(summary = "친구 삭제", description = "현재 친구인 사용자를 친구 목록에서 삭제합니다.")
     @ApiResponse(responseCode = "200", description = "친구 삭제 성공")
     @ApiResponse(responseCode = "404", description = "친구 관계가 존재하지 않음 (FRIEND_NOT_FOUND)")
-    @DeleteMapping
-    public void deleteFriend(@RequestBody FriendRequestDto.Delete requestDto) {
-        friendService.deleteFriend(requestDto.getMemberId());
+    @DeleteMapping("/{friendId}")
+    public void deleteFriend(@PathVariable Long friendId) {
+        friendService.deleteFriend(friendId);
     }
 
 
