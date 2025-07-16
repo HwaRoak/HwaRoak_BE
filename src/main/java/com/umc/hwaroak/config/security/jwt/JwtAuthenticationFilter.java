@@ -1,3 +1,4 @@
+// JWT를 검사하고 유효한 경우 인증 정보를 SecurityContext에 등록
 package com.umc.hwaroak.config.security.jwt;
 
 import jakarta.servlet.FilterChain;
@@ -13,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// 요청당 한 번만 실행되는 필터
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -25,8 +27,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Authorization 헤더에서 Bearer<토큰> 형식으로 추출
         String token = resolveToken(request);
 
+        // 유효성 검증
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Long userId = jwtTokenProvider.getUserId(token);
 

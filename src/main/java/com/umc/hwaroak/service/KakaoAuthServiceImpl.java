@@ -256,16 +256,6 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             throw new GeneralException(ErrorCode.TEST_ERROR);
         }
 
-//        // 기존 사용자 여부 확인
-//        Member member = memberRepository.findByUserId(kakaoId)
-//                .orElseGet(() -> {
-//                    Member newMember = Member.builder()
-//                            .userId(kakaoId)
-//                            .nickname(nickname)
-//                            .profileImage(profileImage)
-//                            .build();
-//                    return memberRepository.save(newMember);
-//                });
         Optional<Member> optionalMember = memberRepository.findByUserId(kakaoId);
 
         Member member;
@@ -329,7 +319,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     request,
                     String.class
             );
-            // ✅ 여기에 응답 전체를 출력해서 확인!
+            //  응답 전체를 출력해서 확인(테스트용)
             System.out.println("카카오 응답: " + response.getBody());
             return objectMapper.readValue(response.getBody(), KakaoUserInfoDto.class);
         } catch (Exception e) {

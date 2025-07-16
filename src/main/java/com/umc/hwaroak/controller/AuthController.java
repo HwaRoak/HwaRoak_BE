@@ -3,7 +3,6 @@ package com.umc.hwaroak.controller;
 import com.umc.hwaroak.dto.TokenDto;
 import com.umc.hwaroak.dto.request.KakaoLoginRequestDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
-import com.umc.hwaroak.response.SuccessCode;
 import com.umc.hwaroak.service.KakaoAuthServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,9 +25,7 @@ public class AuthController {
     @PostMapping("/kakao")
     public ResponseEntity<KakaoLoginResponseDto> kakaoLogin(@RequestBody KakaoLoginRequestDto request) {
         KakaoLoginResponseDto response = kakaoAuthService.kakaoLogin(request.getAccessToken());
-//        ApiResponse<KakaoLoginResponseDto> result = ApiResponse.of(SuccessCode.OK, response);
-//
-//        return ResponseEntity.ok(result);
+
         return ResponseEntity.ok(response);
     }
 
@@ -38,7 +35,6 @@ public class AuthController {
     @PostMapping("/reissue")
     public ResponseEntity<TokenDto> reissue(@RequestBody TokenDto tokenRequest) {
         TokenDto newTokens = kakaoAuthService.reissueTokens(tokenRequest);
-        //return ResponseEntity.ok(ApiResponse.of(SuccessCode.OK, newTokens));
         return ResponseEntity.ok(newTokens);
     }
 }

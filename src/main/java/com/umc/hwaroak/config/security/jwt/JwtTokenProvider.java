@@ -1,5 +1,4 @@
-// JWT 발급 및 검증
-// 자체 access/refresh token생성 및 파싱
+// JWT 발급, 검증, 파싱
 package com.umc.hwaroak.config.security.jwt;
 
 import io.jsonwebtoken.Jwts;
@@ -24,6 +23,7 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-token-validity}")
     private long refreshTokenValidity;
 
+    // .yml에 설정한 jwt.secret을 바탕으로 서명키 생성(위조 방지)
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
@@ -48,6 +48,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    // 토큰에서 사용자 id 추출
     public Long getUserId(String token) {
         Key key = getSigningKey();
         Claims claims = Jwts.parser()
@@ -57,6 +58,7 @@ public class JwtTokenProvider {
         return Long.parseLong(claims.getSubject());
     }
 
+    // 토큰 유효성 검증
     public boolean validateToken(String token) {
         try {
             Key key = getSigningKey();

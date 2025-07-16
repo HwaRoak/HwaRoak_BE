@@ -1,47 +1,3 @@
-//package com.umc.hwaroak.config.security;
-//
-//import com.umc.hwaroak.config.security.jwt.JwtAuthenticationEntryPoint;
-//import com.umc.hwaroak.config.security.jwt.JwtAuthenticationFilter;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.security.authentication.AuthenticationManager;
-//import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-//import org.springframework.security.config.http.SessionCreationPolicy;
-//import org.springframework.security.web.SecurityFilterChain;
-//import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-//
-//@Configuration
-//@RequiredArgsConstructor
-//public class SecurityConfig {
-//
-//    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-//    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        return http
-//                .csrf(csrf -> csrf.disable())
-//                .httpBasic(httpBasic -> httpBasic.disable())
-//                .formLogin(formLogin -> formLogin.disable())
-//                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .exceptionHandling(exception -> exception
-//                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/v1/auth/**").permitAll()
-//                        ///api/v1/auth로 시작하는 모든 요청 경로에 대해 인증없이 접근 가능
-//                        .anyRequest().authenticated())
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .build();
-//    }
-//
-//    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-//        return configuration.getAuthenticationManager();
-//    }
-//}
 package com.umc.hwaroak.config.security;
 
 import com.umc.hwaroak.config.security.jwt.JwtAuthenticationEntryPoint;
@@ -61,7 +17,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    // 매 요청마다 JWT 토큰을 검사하여 인증 정보를 Security Context에 저장
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    // 인증 실패 시 발생하는 예외 처리
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
@@ -87,11 +46,13 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
+                // 사용자의 인증보다 JWT 우선 검사
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    // 사용자 인증에 사용
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {

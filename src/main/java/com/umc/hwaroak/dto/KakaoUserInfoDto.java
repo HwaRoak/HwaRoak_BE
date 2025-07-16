@@ -5,20 +5,6 @@ package com.umc.hwaroak.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-//@Getter
-//public class KakaoUserInfoDto {
-//    private String id;
-//    private Profile profile;
-//
-//    @Getter @Setter
-//    public static class Profile {
-//        private String nickname;
-//        private String profileImageUrl;
-//    }
-//}
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter
