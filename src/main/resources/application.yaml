@@ -19,9 +19,8 @@ spring:
     redis:
       host: localhost
       port: 6379
-      # 필요 시 password도 설정할 수 있습니다.
       # password: your_redis_password
 jwt:
-  secret : my-super-secure-secret-key-123456  # ✅ 최소 32자 이상
-  access-token-validity : 3600      # 1시간
-  refresh-token-validity : 1209600  # 14일
+  secret : my-super-secure-secret-key-123456
+  access-token-validity : 100           # 1시간, 3600000 |7200 는 3.6초
+  refresh-token-validity : 2592000000       # 14일

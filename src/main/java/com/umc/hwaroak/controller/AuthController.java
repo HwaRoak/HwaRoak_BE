@@ -7,7 +7,6 @@ import com.umc.hwaroak.response.SuccessCode;
 import com.umc.hwaroak.service.KakaoAuthServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-//import com.umc.hwaroak.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

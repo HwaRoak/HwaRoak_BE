@@ -1,6 +1,6 @@
 // JWT 발급 및 검증
 // 자체 access/refresh token생성 및 파싱
-package com.umc.hwaroak.util;
+package com.umc.hwaroak.config.security.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 @Component
-public class JwtProvider {
+public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
     private String secretKey;

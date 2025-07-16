@@ -215,7 +215,7 @@ import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
-import com.umc.hwaroak.util.JwtProvider;
+import com.umc.hwaroak.config.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -223,6 +223,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -230,7 +231,7 @@ import java.util.concurrent.TimeUnit;
 public class KakaoAuthServiceImpl implements KakaoAuthService {
 
     private final MemberRepository memberRepository;
-    private final JwtProvider jwtProvider;
+    private final JwtTokenProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
@@ -255,16 +256,34 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             throw new GeneralException(ErrorCode.TEST_ERROR);
         }
 
-        // 기존 사용자 여부 확인
-        Member member = memberRepository.findByUserId(kakaoId)
-                .orElseGet(() -> {
-                    Member newMember = Member.builder()
-                            .userId(kakaoId)
-                            .nickname(nickname)
-                            .profileImage(profileImage)
-                            .build();
-                    return memberRepository.save(newMember);
-                });
+//        // 기존 사용자 여부 확인
+//        Member member = memberRepository.findByUserId(kakaoId)
+//                .orElseGet(() -> {
+//                    Member newMember = Member.builder()
+//                            .userId(kakaoId)
+//                            .nickname(nickname)
+//                            .profileImage(profileImage)
+//                            .build();
+//                    return memberRepository.save(newMember);
+//                });
+        Optional<Member> optionalMember = memberRepository.findByUserId(kakaoId);
+
+        Member member;
+        if (optionalMember.isPresent()) {
+            member = optionalMember.get();
+            // 테스트용 출력
+            System.out.println("✅ 기존 회원입니다: " + member.getNickname());
+        } else {
+            member = Member.builder()
+                    .userId(kakaoId)
+                    .nickname(nickname)
+                    .profileImage(profileImage)
+                    .build();
+            memberRepository.save(member);
+            // 테스트용 출력
+            System.out.println("새 회원 가입: " + nickname);
+        }
+
 
         String accessToken = jwtProvider.createAccessToken(member.getId());
         String refreshToken = jwtProvider.createRefreshToken(member.getId());
