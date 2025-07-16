@@ -19,6 +19,9 @@ public enum ErrorCode implements BaseCode{
     //Member
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
 
+    // login
+    INVALID_KAKAO_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_001", "유효하지 않은 access token입니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다.")
     ;
 
     private final HttpStatus status;
