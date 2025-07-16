@@ -14,7 +14,7 @@ import java.util.List;
 @Tag(name = "Friend", description = "친구 기능 관련 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/friends")
+@RequestMapping("/api/v1/friends")
 public class FriendController {
 
     private final FriendService friendService;

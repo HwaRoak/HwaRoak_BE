@@ -12,7 +12,7 @@ import java.util.List;
 
 @Tag(name = "Alarm", description = "알림 관련 API")
 @RestController
-@RequestMapping("/alarms")
+@RequestMapping("/api/v1/alarms")
 @RequiredArgsConstructor
 public class AlarmController {
 
