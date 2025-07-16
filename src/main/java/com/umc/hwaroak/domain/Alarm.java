@@ -3,8 +3,10 @@ package com.umc.hwaroak.domain;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 @Table(name = "alarm")
 public class Alarm extends BaseEntity {
     @Id
