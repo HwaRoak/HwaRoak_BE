@@ -1,15 +1,21 @@
 // JWT 발급, 검증, 파싱
 package com.umc.hwaroak.config.security.jwt;
 
+import com.umc.hwaroak.response.ErrorCode;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SecurityException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.SignatureException;
 import java.util.Date;
 @Component
 public class JwtTokenProvider {
@@ -60,13 +66,10 @@ public class JwtTokenProvider {
 
     // 토큰 유효성 검증
     public boolean validateToken(String token) {
-        try {
-            Key key = getSigningKey();
-            Jwts.parser().setSigningKey(key).parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        Jwts.parser()
+                .setSigningKey(getSigningKey())
+                .parseClaimsJws(token);
+        return true;
     }
 }
 
