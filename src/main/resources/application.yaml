@@ -21,7 +21,7 @@ spring:
       port: 6379
       # password: your_redis_password
 jwt:
-  secret : my-super-secure-secret-key-123456
+  secret : ${JWT_SECRET} #my-super-secure-secret-key-123456
   access-token-validity : 3600000           # 1시간
   refresh-token-validity : 2592000000       # 30일
 
