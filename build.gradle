@@ -19,8 +19,15 @@ configurations {
     }
 }
 
+ext {
+    set('springAiVersion', "1.0.0-M3")
+}
+
 repositories {
     mavenCentral()
+    maven {
+        url 'https://repo.spring.io/milestone'
+    }
 }
 
 dependencies {
@@ -43,6 +50,11 @@ dependencies {
 
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
+    // Spring AI
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-M3")
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+
 }
 
 tasks.named('test') {

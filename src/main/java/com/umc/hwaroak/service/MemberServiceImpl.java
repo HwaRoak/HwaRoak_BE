@@ -3,7 +3,7 @@ package com.umc.hwaroak.service;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.MemberResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
-import com.umc.hwaroak.repository.MemberRepository.MemberRepository;
+import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
