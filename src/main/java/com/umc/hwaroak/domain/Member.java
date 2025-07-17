@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Builder
 @Table(name = "member")
 @Getter
 @AllArgsConstructor
@@ -22,9 +21,6 @@ public class Member extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)
     private Long id;
-
-//    @Column(name = "email")
-//    private String email;
 
     @Column(name = "user_id")
     private String userId;
@@ -73,7 +69,7 @@ public class Member extends BaseEntity {
     private List<Friend> sendFriend = new ArrayList<>();
 
     // 로그인 시 사용
-    public Member(String userId, String nickname, String profileImage) {
+    public Member( String userId, String nickname, String profileImage) {
         this.userId = userId;
         //this.email = email;
         this.name = name;

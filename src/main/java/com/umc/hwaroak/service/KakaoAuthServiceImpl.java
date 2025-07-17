@@ -11,7 +11,7 @@ import com.umc.hwaroak.dto.KakaoUserInfoDto;
 import com.umc.hwaroak.dto.TokenDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
-import com.umc.hwaroak.repository.MemberRepository.MemberRepository;
+import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.config.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,6 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper;
     private final WebClient.Builder webClientBuilder;  // WebClient는 Builder로 주입받음
 
     @Value("${jwt.refresh-token-validity}")
@@ -55,11 +54,10 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         }
 
         Member member = memberRepository.findByUserId(kakaoId)
-                .orElseGet(() -> memberRepository.save(Member.builder()
-                        .userId(kakaoId)
-                        .nickname(nickname)
-                        .profileImage(profileImage)
-                        .build()));
+                .orElseGet(() -> {
+                    Member newMember = new Member(kakaoId, nickname, profileImage);
+                    return memberRepository.save(newMember);
+                });
 
         String accessToken = jwtProvider.createAccessToken(member.getId());
         String refreshToken = jwtProvider.createRefreshToken(member.getId());
