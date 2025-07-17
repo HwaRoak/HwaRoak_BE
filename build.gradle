@@ -19,8 +19,15 @@ configurations {
     }
 }
 
+ext {
+    set('springAiVersion', "1.0.0-M3")
+}
+
 repositories {
     mavenCentral()
+    maven {
+        url 'https://repo.spring.io/milestone'
+    }
 }
 
 dependencies {
@@ -57,7 +64,9 @@ dependencies {
 
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
-
+    // Spring AI
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-M3")
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
 }
 
 tasks.named('test') {

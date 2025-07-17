@@ -36,7 +36,7 @@ public class Member extends BaseEntity {
     private String nickname;
 
     @Column(name = "reward")
-    private int reward;
+    private Integer reward;
 
     @Column(name = "feeling")
     private String feeling;
