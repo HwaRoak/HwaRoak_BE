@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,7 @@ public class DiaryServiceImpl implements DiaryService {
         Diary diary = DiaryConverter.toDiary(member, requestDto);
         log.info(requestDto.getContent());
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
+        diary.setDeleted(false);
         diaryRepository.save(diary);
 
         // TODO: Reward 계산
@@ -70,4 +72,27 @@ public class DiaryServiceImpl implements DiaryService {
         return DiaryConverter.toDto(diary);
     }
 
+    // 월별 일기 전체 조회하기
+    @Transactional(readOnly = true)
+    public List<DiaryResponseDto> readMonthDiary(
+            Long memberId,   // TODO: Spring Security 기반으로 변경
+            Integer month) {
+        return diaryRepository.findDiaryByMonth(memberId, month);
+    }
+
+    @Transactional
+    public void moveToTrash(Long diaryId) {
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
+
+        diary.setDeleted(true);
+        diary.setDeletedAt(LocalDate.now());
+        diaryRepository.save(diary);
+    }
+
+    @Override
+    @Transactional
+    public void cancelDeleteDiary(Long diaryId) {
+
+    }
 }
