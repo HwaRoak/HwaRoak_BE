@@ -57,6 +57,8 @@ public class DiaryServiceImpl implements DiaryService {
     @Transactional(readOnly = true)
     public DiaryResponseDto readDiary(LocalDate date) {
 
+        memberLoader.getMemberByContextHolder();
+
         return DiaryConverter.toDto(diaryRepository.findByRecordDate(date)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND))
         );
@@ -64,6 +66,8 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Transactional
     public DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto) {
+
+        memberLoader.getMemberByContextHolder();
 
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
