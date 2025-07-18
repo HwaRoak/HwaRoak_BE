@@ -55,6 +55,11 @@ dependencies {
     implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-M3")
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
 
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 tasks.named('test') {
@@ -63,4 +68,16 @@ tasks.named('test') {
 
 jar {
     enabled = false
+}
+
+sourceSets {
+    main.java.srcDirs += ['build/generated/querydsl/']
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.getGeneratedSourceOutputDirectory().set(file('build/generated/querydsl/'))
+}
+
+clean {
+    delete file('build/generated/querydsl/')
 }
