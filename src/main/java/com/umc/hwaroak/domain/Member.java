@@ -37,7 +37,7 @@ public class Member extends BaseEntity {
     @Column(name = "introduction")
     private String introduction;
 
-    @Column(name = "profileImage")
+    @Column(name = "profile_image")
     private String profileImage;
 
     @OneToMany(mappedBy = "member")
