@@ -10,9 +10,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
-public interface DiaryRepository extends JpaRepository<Diary, Long> {
+public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryRepositoryCustom {
 
-    @Query("SELECT d FROM Diary d WHERE d.recordDate = :recordDate")
+    @Query("SELECT d FROM Diary d WHERE d.recordDate = :recordDate and d.isDeleted = false")
     Optional<Diary> findByRecordDate(@Param("recordDate") LocalDate recordDate);
-
 }
