@@ -1,8 +1,12 @@
 package com.umc.hwaroak.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +14,13 @@ import java.util.List;
 @Entity
 @Table(name = "member")
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Member extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)
     private Long id;
-
-    @Column(name = "email")
-    private String email;
 
     @Column(name = "user_id")
     private String userId;
@@ -33,6 +36,10 @@ public class Member extends BaseEntity {
 
     @Column(name = "feeling")
     private String feeling;
+
+    // 프로필 이미지 추가
+    @Column(name = "profile_image")
+    private String profileImage;
 
     @Column(name = "introduction")
     private String introduction;
@@ -77,4 +84,16 @@ public class Member extends BaseEntity {
             this.introduction = introduction;
         }
     }
+  
+    // 로그인 시 사용
+    public Member( String userId, String nickname, String profileImage) {
+        this.userId = userId;
+        //this.email = email;
+        this.name = name;
+        this.nickname = nickname;
+        this.profileImage = profileImage;
+        this.reward = 0;
+        this.feeling = "default";
+    }
+
 }
