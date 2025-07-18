@@ -33,4 +33,5 @@ public class TestController {
     public ResponseEntity<?> getError() {
         throw new GeneralException(ErrorCode.TEST_ERROR);
     }
+
 }

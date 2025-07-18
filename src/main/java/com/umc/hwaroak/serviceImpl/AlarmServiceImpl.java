@@ -1,11 +1,13 @@
-package com.umc.hwaroak.service;
+package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.common.AlarmType;
-import com.umc.hwaroak.dto.AlarmResponseDto;
+import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class AlarmServiceImpl implements AlarmService {
 
+    private final MemberLoader memberLoader;
     private final AlarmRepository alarmRepository;
 
     /**
@@ -24,6 +27,9 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public List<AlarmResponseDto.PreviewDto> getNoticeList() {
+
+        memberLoader.getMemberByContextHolder();
+
         return alarmRepository.findByAlarmTypeOrderByCreatedAtDesc(AlarmType.NOTIFICATION).stream()
                 .map(alarm -> AlarmResponseDto.PreviewDto.builder()
                         .id(alarm.getId())
@@ -38,6 +44,9 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public AlarmResponseDto.InfoDto getNoticeDetail(Long id) {
+
+        memberLoader.getMemberByContextHolder();
+
         Alarm alarm = alarmRepository.findByIdAndAlarmType(id, AlarmType.NOTIFICATION)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOTICE_NOT_FOUND));
 

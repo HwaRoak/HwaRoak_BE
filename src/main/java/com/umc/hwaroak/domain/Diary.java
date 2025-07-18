@@ -3,11 +3,16 @@ package com.umc.hwaroak.domain;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import com.umc.hwaroak.domain.common.Emotion;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "diary")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class Diary extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +32,25 @@ public class Diary extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @Setter
+    @Column(name = "feedback")
+    private String feedback;
+
+    @Setter
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
+
+    @Setter
+    @Column(name = "deleted_at")
+    private LocalDate deletedAt;
+
+    public void update(String content, Emotion emotion) {
+        if (content != null) {
+            this.content = content;
+        }
+        if (emotion != null) {
+            this.emotion = emotion;
+        }
+    }
 }

@@ -3,9 +3,24 @@ spring:
     activate:
       on-profile: "local"
 
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${LOCAL_DB_URL}
     username: ${LOCAL_DB_USERNAME}
     password: ${LOCAL_DB_PASSWORD}
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        model: gpt-3.5-turbo
+
+  data:
+    redis:
+      host: ${REDIS_LOCAL_HOST}
+      port: 6379
+
+jwt:
+  secret : ${JWT_SECRET}
+  access-token-validity : 2592000000           # 1시간
+  refresh-token-validity : 2592000000       # 30일

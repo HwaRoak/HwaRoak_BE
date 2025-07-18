@@ -1,6 +1,6 @@
 package com.umc.hwaroak.controller;
 
-import com.umc.hwaroak.dto.AlarmResponseDto;
+import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.service.AlarmService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Tag(name = "Alarm", description = "알림 관련 API")
 @RestController
-@RequestMapping("/alarms")
+@RequestMapping("/api/v1/alarms")
 @RequiredArgsConstructor
 public class AlarmController {
 
