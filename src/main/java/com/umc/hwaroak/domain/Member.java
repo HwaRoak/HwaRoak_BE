@@ -44,6 +44,9 @@ public class Member extends BaseEntity {
     @Column(name = "introduction")
     private String introduction;
 
+    @Column(name = "profile_image")
+    private String profileImage;
+
     @OneToMany(mappedBy = "member")
     private List<Diary> diaryList = new ArrayList<>();
 
@@ -68,6 +71,20 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Friend> sendFriend = new ArrayList<>();
 
+    public void update(String nickname, String profileImage, String introduction){
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+
+        if (profileImage != null) {
+            this.profileImage = profileImage;
+        }
+
+        if (introduction != null) {
+            this.introduction = introduction;
+        }
+    }
+  
     // 로그인 시 사용
     public Member( String userId, String nickname, String profileImage) {
         this.userId = userId;

@@ -21,7 +21,8 @@ public class MemberResponseDto {
         @Schema(description = "닉네임", example = "테스트 닉네임")
         String nickname;
 
-        // Todo: 프로필 사진 url
+        @Schema(description = "프로필 사진 url", example = "https://example.com/image.png")
+        String profileImgUrl;
 
         @Schema(description = "자기소개", example = "안녕하세요.")
         String introduction;

@@ -1,8 +1,10 @@
 package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.converter.MemberConverter;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
+import com.umc.hwaroak.dto.request.MemberRequestDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
@@ -30,5 +32,16 @@ public class MemberServiceImpl implements MemberService {
                 .nickname(member.getNickname())
                 .introduction(member.getIntroduction())
                 .build();
+    }
+
+    @Override
+    public MemberResponseDto.InfoDto editInfo(MemberRequestDto.editDto requestDto) {
+
+        Member member = memberLoader.getMemberByContextHolder();
+
+        member.update(requestDto.getNickname(), requestDto.getProfileImageUrl(), requestDto.getIntroduction());
+        memberRepository.save(member);
+
+        return MemberConverter.toDto(member);
     }
 }

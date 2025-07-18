@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,6 @@ public class DiaryServiceImpl implements DiaryService {
     public DiaryResponseDto createDiary(DiaryRequestDto requestDto) {
 
         Long memberId = memberLoader.getCurrentMemberId();
-
         log.info(requestDto.getContent());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
@@ -47,7 +47,7 @@ public class DiaryServiceImpl implements DiaryService {
         Diary diary = DiaryConverter.toDiary(member, requestDto);
         log.info(requestDto.getContent());
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
-
+        diary.setDeleted(false);
         diaryRepository.save(diary);
 
         // TODO: Reward 계산
@@ -56,7 +56,6 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryResponseDto readDiary(LocalDate date) {
-
         memberLoader.getMemberByContextHolder();
 
         return DiaryConverter.toDto(diaryRepository.findByRecordDate(date)
@@ -79,4 +78,30 @@ public class DiaryServiceImpl implements DiaryService {
         return DiaryConverter.toDto(diary);
     }
 
+    // 월별 일기 전체 조회하기
+    @Transactional(readOnly = true)
+    public List<DiaryResponseDto> readMonthDiary(Integer month) {
+
+        Long memberId = memberLoader.getCurrentMemberId();
+        return diaryRepository.findDiaryByMonth(memberId, month);
+    }
+
+    @Transactional
+    public void moveToTrash(Long diaryId) {
+
+        memberLoader.getMemberByContextHolder();
+
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
+
+        diary.setDeleted(true);
+        diary.setDeletedAt(LocalDate.now());
+        diaryRepository.save(diary);
+    }
+
+    @Override
+    @Transactional
+    public void cancelDeleteDiary(Long diaryId) {
+        memberLoader.getMemberByContextHolder();
+    }
 }
