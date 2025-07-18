@@ -1,5 +1,6 @@
-package com.umc.hwaroak.service;
+package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.converter.DiaryConverter;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Member;
@@ -9,6 +10,7 @@ import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.service.DiaryService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +26,14 @@ public class DiaryServiceImpl implements DiaryService {
 
     private final OpenAiUtil openAiUtil;
 
+    private final MemberLoader memberLoader;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
 
     @Transactional
-    public DiaryResponseDto createDiary(
-            Long memberId, DiaryRequestDto requestDto) { // TODO: SpringSecurity 기반으로 변경
+    public DiaryResponseDto createDiary(DiaryRequestDto requestDto) {
+
+        Long memberId = memberLoader.getCurrentMemberId();
 
         log.info(requestDto.getContent());
         Member member = memberRepository.findById(memberId)
@@ -43,6 +47,7 @@ public class DiaryServiceImpl implements DiaryService {
         Diary diary = DiaryConverter.toDiary(member, requestDto);
         log.info(requestDto.getContent());
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
+
         diaryRepository.save(diary);
 
         // TODO: Reward 계산

@@ -1,11 +1,12 @@
-package com.umc.hwaroak.service;
+package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.common.AlarmType;
-import com.umc.hwaroak.dto.AlarmResponseDto;
+import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
