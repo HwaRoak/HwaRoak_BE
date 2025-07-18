@@ -15,14 +15,14 @@ public enum ErrorCode implements BaseCode{
     DIARY_ALREADY_RECORDED(HttpStatus.BAD_REQUEST, "DE4001", "일기는 하루만 기록할 수 있습니다."),
     DIARY_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4002", "해당 일기 ID가 존재하지 않습니다."),
 
+    // Auth
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "메소드 요청이 잘못됐습니다."),
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "접근 권한이 없습니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
 
     // Notice 관련
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NO4041", "해당 공지를 찾을 수 없습니다."),
 
-    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),
 
     // JWT token
     INVALID_JWT_SIGNATURE(HttpStatus.UNAUTHORIZED, "JWT_001", "서명이 유효하지 않습니다."),
@@ -40,7 +40,8 @@ public enum ErrorCode implements BaseCode{
     FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4005", "해당 친구 상태에서는 삭제할 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4042", "해당 친구 관계를 찾을 수 없습니다."),
 
-
+    // SERVER
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
     ;
 
     private final HttpStatus status;
