@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/diary")
@@ -47,5 +49,35 @@ public class DiaryController {
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
     public DiaryResponseDto update(@PathVariable Long diaryId, @RequestBody DiaryRequestDto requestDto) {
         return diaryService.updateDiary(diaryId, requestDto);
+    }
+
+    @Operation(summary = "월별 일기 전체 조회 API", description = """
+            월별 일기를 전체 조회하는 API입니다.<br>
+            Parameter에 조회하려는 일기의 달을 작성해주세요.
+            """)
+    @GetMapping("/monthly")
+    public List<DiaryResponseDto> getAllDiaries(
+            @RequestParam Long memberId, // TODO: SpringSecurity 기반 변경
+            @RequestParam("month") Integer month
+    ) {
+        return diaryService.readMonthDiary(memberId, month);
+    }
+
+    @Operation(summary = "일기 삭제 API", description = """
+            일기를 휴지통으로 보내는 API입니다.<br>
+            휴지통으로 보낼 일기의 ID를 입력해주세요.
+            """)
+    @PatchMapping("/trash/{diaryId}")
+    public ResponseEntity<?> diaryTrash(
+            @PathVariable Long diaryId) {
+        diaryService.moveToTrash(diaryId);
+        return ResponseEntity.ok().body("일기 삭제에 성공하였습니다.");
+    }
+
+    @PatchMapping("/trash/{diaryId}/cancel")
+    public ResponseEntity<?> cancelDelete(
+
+    ) {
+        return ResponseEntity.ok().body("일기를 다시 복원하였습니다.");
     }
 }
