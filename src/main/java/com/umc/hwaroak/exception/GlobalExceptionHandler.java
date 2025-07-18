@@ -47,4 +47,5 @@ public class GlobalExceptionHandler {
         log.error("Request URI : [{}] {}", request.getMethod(), request.getRequestURI());
         log.error("Exception : ", e);
     }
+
 }
