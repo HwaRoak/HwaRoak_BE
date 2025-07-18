@@ -8,3 +8,19 @@ spring:
     url: ${DEV_DB_URL}
     username: ${DEV_DB_USERNAME}
     password: ${DEV_DB_PASSWORD}
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        model: gpt-3.5-turbo
+
+  data:
+    redis:
+      host: ${REDIS_DEV_HOST}
+      port: 6379
+
+jwt:
+  secret : ${JWT_SECRET}
+  access-token-validity : 86400000           # 1일 = 24 * 60 * 60 * 1000
+  refresh-token-validity : 2592000000       # 30일

@@ -1,13 +1,15 @@
-package com.umc.hwaroak.service;
+package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.FriendStatus;
-import com.umc.hwaroak.dto.FriendResponseDto;
+import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.FriendRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,18 +22,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
 
+    private final MemberLoader memberLoader;
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
-
-
-    /**
-     * 현재 로그인된 사용자를 임시로 반환합니다.
-     * TODO: 이후 JWT 인증 정보를 기반으로 실제 로그인 유저를 반환하도록 수정 필요
-     */
-    private Member getCurrentMember() {
-        return memberRepository.findById(1L) // 임시 고정 ID
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
-    }
 
     /**
      * 친구 요청을 보냅니다.
@@ -47,7 +40,7 @@ public class FriendServiceImpl implements FriendService {
     @Transactional
     public void requestFriend(Long receiverId) {
         // [1] 현재 로그인된 유저를 가져옵니다. (나중에 인증 시스템으로 교체 필요)
-        Member sender = getCurrentMember();
+        Member sender = memberLoader.getMemberByContextHolder();
 
         // [2] 요청받을 유저가 존재하는지 확인
         Member receiver = memberRepository.findById(receiverId)
@@ -87,12 +80,11 @@ public class FriendServiceImpl implements FriendService {
 
 
 
-
     @Override
     @Transactional
     public void acceptFriendRequest(Long senderId) {
         // [1] 현재 로그인한 유저 (친구 요청을 받은 사람 = receiver)
-        Member receiver = getCurrentMember();
+        Member receiver = memberLoader.getMemberByContextHolder();
 
         // [2] 요청 보낸 sender 유저가 존재하는지 확인
         Member sender = memberRepository.findById(senderId)
@@ -116,7 +108,7 @@ public class FriendServiceImpl implements FriendService {
     @Transactional
     public void rejectFriendRequest(Long senderId) {
         // [1] 로그인한 유저 (receiver)
-        Member receiver = getCurrentMember();
+        Member receiver = memberLoader.getMemberByContextHolder();
 
         // [2] 요청 보낸 유저(sender) 존재 여부 확인
         Member sender = memberRepository.findById(senderId)
@@ -140,7 +132,7 @@ public class FriendServiceImpl implements FriendService {
     @Transactional(readOnly = true)
     public List<FriendResponseDto.FriendInfo> getFriendList() {
         // [1] 현재 로그인된 사용자 (나)
-        Member me = getCurrentMember();
+        Member me = memberLoader.getMemberByContextHolder();
 
         // [2] 내가 sender 또는 receiver로 포함된 친구 관계 중, 상태가 ACCEPTED인 것들 모두 조회
         // → 단방향으로 저장되어 있기 때문에 sender 또는 receiver 둘 다 체크 필요
@@ -167,7 +159,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional(readOnly = true)
     public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
-        Member me = getCurrentMember();
+        Member me = memberLoader.getMemberByContextHolder();
 
         // [1] 상태가 REQUESTED이고, 내가 받은 요청만 최신순 정렬로 조회
         List<Friend> requests = friendRepository.findAllByReceiverAndStatusOrderByCreatedAtDesc(
@@ -190,7 +182,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void deleteFriend(Long friendMemberId) {
-        Member me = getCurrentMember();
+        Member me = memberLoader.getMemberByContextHolder();
         Member friend = memberRepository.findById(friendMemberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 

@@ -1,9 +1,9 @@
 package com.umc.hwaroak.controller;
 
-import com.umc.hwaroak.dto.TokenDto;
+import com.umc.hwaroak.dto.response.TokenDto;
 import com.umc.hwaroak.dto.request.KakaoLoginRequestDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
-import com.umc.hwaroak.service.KakaoAuthServiceImpl;
+import com.umc.hwaroak.serviceImpl.KakaoAuthServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

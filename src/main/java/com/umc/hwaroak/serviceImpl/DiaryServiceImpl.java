@@ -1,5 +1,6 @@
-package com.umc.hwaroak.service;
+package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.converter.DiaryConverter;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Member;
@@ -9,6 +10,7 @@ import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.service.DiaryService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +27,14 @@ public class DiaryServiceImpl implements DiaryService {
 
     private final OpenAiUtil openAiUtil;
 
+    private final MemberLoader memberLoader;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
 
     @Transactional
-    public DiaryResponseDto createDiary(
-            Long memberId, DiaryRequestDto requestDto) { // TODO: SpringSecurity 기반으로 변경
+    public DiaryResponseDto createDiary(DiaryRequestDto requestDto) {
 
+        Long memberId = memberLoader.getCurrentMemberId();
         log.info(requestDto.getContent());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
@@ -53,6 +56,7 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryResponseDto readDiary(LocalDate date) {
+        memberLoader.getMemberByContextHolder();
 
         return DiaryConverter.toDto(diaryRepository.findByRecordDate(date)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND))
@@ -61,6 +65,8 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Transactional
     public DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto) {
+
+        memberLoader.getMemberByContextHolder();
 
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
@@ -74,14 +80,17 @@ public class DiaryServiceImpl implements DiaryService {
 
     // 월별 일기 전체 조회하기
     @Transactional(readOnly = true)
-    public List<DiaryResponseDto> readMonthDiary(
-            Long memberId,   // TODO: Spring Security 기반으로 변경
-            Integer month) {
+    public List<DiaryResponseDto> readMonthDiary(Integer month) {
+
+        Long memberId = memberLoader.getCurrentMemberId();
         return diaryRepository.findDiaryByMonth(memberId, month);
     }
 
     @Transactional
     public void moveToTrash(Long diaryId) {
+
+        memberLoader.getMemberByContextHolder();
+
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
 
@@ -93,6 +102,6 @@ public class DiaryServiceImpl implements DiaryService {
     @Override
     @Transactional
     public void cancelDeleteDiary(Long diaryId) {
-
+        memberLoader.getMemberByContextHolder();
     }
 }

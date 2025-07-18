@@ -1,6 +1,6 @@
 package com.umc.hwaroak.service;
 
-import com.umc.hwaroak.dto.AlarmResponseDto;
+import com.umc.hwaroak.dto.response.AlarmResponseDto;
 
 import java.util.List;
 

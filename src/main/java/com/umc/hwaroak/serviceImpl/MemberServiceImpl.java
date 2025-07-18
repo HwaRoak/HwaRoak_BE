@@ -1,23 +1,29 @@
-package com.umc.hwaroak.service;
+package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.converter.MemberConverter;
 import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.dto.MemberResponseDto;
+import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MemberServiceImpl implements MemberService{
+public class MemberServiceImpl implements MemberService {
 
+    private final MemberLoader memberLoader;
     private final MemberRepository memberRepository;
 
     @Override
-    public MemberResponseDto.InfoDto getInfo(Long memberId) {
+    public MemberResponseDto.InfoDto getInfo() {
+
+        Long memberId = memberLoader.getCurrentMemberId();
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(()->new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
@@ -31,8 +37,7 @@ public class MemberServiceImpl implements MemberService{
     @Override
     public MemberResponseDto.InfoDto editInfo(MemberRequestDto.editDto requestDto) {
 
-        Member member = memberRepository.findById(1L)   // Todo: Spring security 기반으로 변경
-                .orElseThrow(()->new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = memberLoader.getMemberByContextHolder();
 
         member.update(requestDto.getNickname(), requestDto.getProfileImageUrl(), requestDto.getIntroduction());
         memberRepository.save(member);

@@ -27,10 +27,9 @@ public class DiaryController {
     @PostMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
     public DiaryResponseDto create(
-            @RequestParam Long memberId, // TODO: SpringSecurity 기반으로 변환
             @io.swagger.v3.oas.annotations.parameters.RequestBody @RequestBody DiaryRequestDto requestDto
             ) {
-        return diaryService.createDiary(memberId,requestDto);
+        return diaryService.createDiary(requestDto);
     }
 
 
@@ -57,10 +56,9 @@ public class DiaryController {
             """)
     @GetMapping("/monthly")
     public List<DiaryResponseDto> getAllDiaries(
-            @RequestParam Long memberId, // TODO: SpringSecurity 기반 변경
             @RequestParam("month") Integer month
     ) {
-        return diaryService.readMonthDiary(memberId, month);
+        return diaryService.readMonthDiary(month);
     }
 
     @Operation(summary = "일기 삭제 API", description = """

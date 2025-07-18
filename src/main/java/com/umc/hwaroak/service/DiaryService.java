@@ -8,10 +8,10 @@ import java.util.List;
 
 public interface DiaryService {
 
-    DiaryResponseDto createDiary(Long memberId, DiaryRequestDto requestDto);
+    DiaryResponseDto createDiary(DiaryRequestDto requestDto);
     DiaryResponseDto readDiary(LocalDate date);
     DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto);
-    List<DiaryResponseDto> readMonthDiary(Long memberId, Integer month);
+    List<DiaryResponseDto> readMonthDiary(Integer month);
     void moveToTrash(Long diaryId);
     void cancelDeleteDiary(Long diaryId);
 }

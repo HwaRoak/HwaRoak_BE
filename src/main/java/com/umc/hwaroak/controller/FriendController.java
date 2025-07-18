@@ -1,7 +1,7 @@
 package com.umc.hwaroak.controller;
 
-import com.umc.hwaroak.dto.FriendRequestDto;
-import com.umc.hwaroak.dto.FriendResponseDto;
+import com.umc.hwaroak.dto.request.FriendRequestDto;
+import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

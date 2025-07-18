@@ -1,6 +1,5 @@
-package com.umc.hwaroak.dto;
+package com.umc.hwaroak.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

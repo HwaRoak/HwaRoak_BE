@@ -1,7 +1,7 @@
 package com.umc.hwaroak.converter;
 
 import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.dto.MemberResponseDto;
+import com.umc.hwaroak.dto.response.MemberResponseDto;
 
 public class MemberConverter {
     public static MemberResponseDto.InfoDto toDto(Member member){

@@ -1,7 +1,7 @@
-package com.umc.hwaroak.config.security;
+package com.umc.hwaroak.config;
 
-import com.umc.hwaroak.config.security.jwt.JwtAuthenticationEntryPoint;
-import com.umc.hwaroak.config.security.jwt.JwtAuthenticationFilter;
+import com.umc.hwaroak.authentication.JwtAuthenticationEntryPoint;
+import com.umc.hwaroak.authentication.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,10 +36,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-
                         // 인증 없는 경로 허용 - 카카오 로그인
                         .requestMatchers("/api/v1/auth/**").permitAll()
-
                         // 그 외 인증 필요
                         .anyRequest().authenticated()
                 )

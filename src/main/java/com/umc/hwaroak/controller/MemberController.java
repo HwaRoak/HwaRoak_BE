@@ -1,7 +1,7 @@
 package com.umc.hwaroak.controller;
 
 
-import com.umc.hwaroak.dto.MemberResponseDto;
+import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,11 +24,8 @@ public class MemberController {
     @GetMapping("/{memberId}")
     @Operation(summary = "회원 정보 조회", description = "회원 정보를 조회합니다.(임시로 id 기반 조회)")
     @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.InfoDto.class)))
-    public MemberResponseDto.InfoDto getInfo(
-            @Parameter(name = "memberId", description = "회원 id", example = "1")
-            @PathVariable Long memberId
-    ) {
-        return memberService.getInfo(memberId);
+    public MemberResponseDto.InfoDto getInfo() {
+        return memberService.getInfo();
     }
 
     @PatchMapping("")

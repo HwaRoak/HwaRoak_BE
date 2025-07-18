@@ -1,5 +1,5 @@
 // 토큰 만료 시 Spring security가 자동으로 401 반환
-package com.umc.hwaroak.config.security.jwt;
+package com.umc.hwaroak.authentication;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

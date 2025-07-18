@@ -3,17 +3,17 @@
 //// 처음이면 회원가입 후 로그인 처리
 //// JWT 토큰과 유저 정보를 응답으로 반환
 
-package com.umc.hwaroak.service;
+package com.umc.hwaroak.serviceImpl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.dto.KakaoUserInfoDto;
-import com.umc.hwaroak.dto.TokenDto;
+import com.umc.hwaroak.dto.response.KakaoUserInfoDto;
+import com.umc.hwaroak.dto.response.TokenDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
-import com.umc.hwaroak.config.security.jwt.JwtTokenProvider;
+import com.umc.hwaroak.authentication.JwtTokenProvider;
+import com.umc.hwaroak.service.KakaoAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;

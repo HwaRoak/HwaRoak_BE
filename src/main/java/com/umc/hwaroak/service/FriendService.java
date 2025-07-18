@@ -1,6 +1,6 @@
 package com.umc.hwaroak.service;
 
-import com.umc.hwaroak.dto.FriendResponseDto;
+import com.umc.hwaroak.dto.response.FriendResponseDto;
 
 import java.util.List;
 
