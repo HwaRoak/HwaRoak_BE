@@ -1,4 +1,4 @@
-package com.umc.hwaroak.dto;
+package com.umc.hwaroak.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
