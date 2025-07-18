@@ -1,7 +1,9 @@
 package com.umc.hwaroak.service;
 
+import com.umc.hwaroak.converter.MemberConverter;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.MemberResponseDto;
+import com.umc.hwaroak.dto.request.MemberRequestDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
@@ -24,5 +26,17 @@ public class MemberServiceImpl implements MemberService{
                 .nickname(member.getNickname())
                 .introduction(member.getIntroduction())
                 .build();
+    }
+
+    @Override
+    public MemberResponseDto.InfoDto editInfo(MemberRequestDto.editDto requestDto) {
+
+        Member member = memberRepository.findById(1L)   // Todo: Spring security 기반으로 변경
+                .orElseThrow(()->new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        member.update(requestDto.getNickname(), requestDto.getProfileImageUrl(), requestDto.getIntroduction());
+        memberRepository.save(member);
+
+        return MemberConverter.toDto(member);
     }
 }
