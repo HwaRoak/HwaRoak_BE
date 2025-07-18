@@ -29,7 +29,7 @@ jobs:
 
       # Docker login
       - name: Docker Login to GHCR
-        run: echo ${{ secrets.GITHUB_PAT }} | docker login ghcr.io -u ${{ secrets.GITHUB_USERNAME }} --password-stdin
+        run: echo ${{ secrets.YOUYEON_GITHUB_PAT }} | docker login ghcr.io -u ${{ secrets.YOUYEON_GITHUB_USERNAME }} --password-stdin
 
       # Image Build
       - name: Build Docker Image
@@ -86,7 +86,7 @@ jobs:
             echo "${{ secrets.ENV_FILE_CONTENTS }}" > .env
             
             # 3. GHCR 로그인
-            echo "${{ secrets.GITHUB_PAT }}" | docker login ghcr.io -u ${{ secrets.GITHUB_USERNAME }} --password-stdin
+            echo "${{ secrets.YOUYEON_GITHUB_PAT }}" | docker login ghcr.io -u ${{ secrets.YOUYEON_GITHUB_USERNAME }} --password-stdin
             
             # 4. pull image:latest
             docker pull ghcr.io/${{ secrets.ORG_NAME }}/hwaroak-api:latest
