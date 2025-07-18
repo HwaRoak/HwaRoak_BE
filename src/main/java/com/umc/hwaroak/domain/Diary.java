@@ -37,6 +37,14 @@ public class Diary extends BaseEntity {
     @Column(name = "feedback")
     private String feedback;
 
+    @Setter
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
+
+    @Setter
+    @Column(name = "deleted_at")
+    private LocalDate deletedAt;
+
     public void update(String content, Emotion emotion) {
         if (content != null) {
             this.content = content;
