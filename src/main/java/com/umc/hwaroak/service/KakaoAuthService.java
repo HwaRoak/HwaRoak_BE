@@ -1,6 +1,6 @@
 package com.umc.hwaroak.service;
 
-import com.umc.hwaroak.dto.TokenDto;
+import com.umc.hwaroak.dto.response.TokenDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 
 public interface KakaoAuthService {

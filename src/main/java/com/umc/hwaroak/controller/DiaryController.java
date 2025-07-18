@@ -25,10 +25,9 @@ public class DiaryController {
     @PostMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
     public DiaryResponseDto create(
-            @RequestParam Long memberId, // TODO: SpringSecurity 기반으로 변환
             @io.swagger.v3.oas.annotations.parameters.RequestBody @RequestBody DiaryRequestDto requestDto
             ) {
-        return diaryService.createDiary(memberId,requestDto);
+        return diaryService.createDiary(requestDto);
     }
 
 

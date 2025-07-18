@@ -1,6 +1,6 @@
 package com.umc.hwaroak.controller;
 
-import com.umc.hwaroak.dto.AlarmResponseDto;
+import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.service.AlarmService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

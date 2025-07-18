@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 public interface DiaryService {
 
-    DiaryResponseDto createDiary(Long memberId, DiaryRequestDto requestDto);
+    DiaryResponseDto createDiary(DiaryRequestDto requestDto);
     DiaryResponseDto readDiary(LocalDate date);
     DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto);
 }

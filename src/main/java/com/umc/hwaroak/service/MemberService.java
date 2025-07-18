@@ -1,8 +1,8 @@
 package com.umc.hwaroak.service;
 
-import com.umc.hwaroak.dto.MemberResponseDto;
+import com.umc.hwaroak.dto.response.MemberResponseDto;
 
 public interface MemberService {
 
-    MemberResponseDto.InfoDto getInfo(Long memberId);
+    MemberResponseDto.InfoDto getInfo();
 }
