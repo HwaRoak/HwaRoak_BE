@@ -15,7 +15,7 @@ public enum ErrorCode implements BaseCode{
     DIARY_ALREADY_RECORDED(HttpStatus.BAD_REQUEST, "DE4001", "일기는 하루만 기록할 수 있습니다."),
     DIARY_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4002", "해당 일기 ID가 존재하지 않습니다."),
 
-    // Auth
+    // kakao login
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "메소드 요청이 잘못됐습니다."),
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "접근 권한이 없습니다."),

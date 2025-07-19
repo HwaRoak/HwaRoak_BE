@@ -5,6 +5,7 @@ import com.umc.hwaroak.response.ApiResponse;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.response.SuccessCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,7 @@ public class TestController {
     @GetMapping("/success/data")
     public ResponseEntity<?> getSuccessData() {
         return ResponseEntity.ok(
-                ApiResponse.of(SuccessCode.OK, "성공 응답 예시 확인")
+                ApiResponse.success(SuccessCode.OK)
         );
     }
 
