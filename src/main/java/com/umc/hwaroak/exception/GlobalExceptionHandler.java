@@ -1,5 +1,6 @@
 package com.umc.hwaroak.exception;
 
+import com.umc.hwaroak.response.ApiResponse;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.response.ErrorResponse;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -18,9 +19,11 @@ import java.nio.file.AccessDeniedException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(GeneralException.class)
-    protected ResponseEntity<ErrorResponse> handlerGeneralException(GeneralException e, HttpServletRequest request) {
-        logError(e, request);
-        return ErrorResponse.of(e.getErrorCode());
+    protected ResponseEntity<ApiResponse<Void>> handlerGeneralException(GeneralException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(ApiResponse.fail(errorCode));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -38,9 +41,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handlerException(Exception e, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> handlerException(Exception e, HttpServletRequest request) {
         logError(e, request);
-        return ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
+        return ResponseEntity
+                .status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+                .body(ApiResponse.fail(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 
     private void logError(Exception e, HttpServletRequest request) {
