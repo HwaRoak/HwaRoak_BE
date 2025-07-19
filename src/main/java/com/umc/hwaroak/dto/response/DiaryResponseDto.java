@@ -1,6 +1,5 @@
 package com.umc.hwaroak.dto.response;
 
-import com.umc.hwaroak.domain.common.Item;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,5 +21,5 @@ public class DiaryResponseDto {
     @Schema(description = "리워드")
     private Integer reward;
     @Schema(description = "다음 아이템")
-    private Item item;
+    private Long memberItemId;
 }
