@@ -22,8 +22,8 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping("/{memberId}")
-    @Operation(summary = "회원 정보 조회", description = "회원 정보를 조회합니다.(임시로 id 기반 조회)")
+    @GetMapping("")
+    @Operation(summary = "회원 정보 조회", description = "회원 정보를 조회합니다.")
     @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.InfoDto.class)))
     public MemberResponseDto.InfoDto getInfo() {
         return memberService.getInfo();
