@@ -69,7 +69,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public MemberResponseDto.ItemDto changeSelectedItem(Long itemId) {
 
         Long memberId = memberLoader.getCurrentMemberId();
@@ -77,6 +77,11 @@ public class MemberServiceImpl implements MemberService {
         // 기존 대표 아이템 해제
         MemberItem currentSelected = memberItemRepository.findByMemberIdAndIsSelectedTrue(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.SELECTED_ITEM_NOT_FOUND));
+
+        // 이미 대표 아이템이라면 예외 발생
+        if (currentSelected.getItem().getId().equals(itemId)) {
+            throw new GeneralException(ErrorCode.ALREADY_SELECTED_ITEM);
+        }
 
         currentSelected.setIsSelected(false);
 
@@ -97,7 +102,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public MemberResponseDto.ItemDto findSelectedItem() {
 
         Long memberId = memberLoader.getCurrentMemberId();
