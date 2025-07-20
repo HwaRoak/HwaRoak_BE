@@ -45,7 +45,7 @@ public class DiaryServiceImpl implements DiaryService {
         }
 
         Diary diary = DiaryConverter.toDiary(member, requestDto);
-        log.info(requestDto.getContent());
+        log.info("작성 일기 내용: " + requestDto.getContent());
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
         diary.setDeleted(false);
         diaryRepository.save(diary);

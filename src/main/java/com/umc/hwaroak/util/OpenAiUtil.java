@@ -28,8 +28,8 @@ public class OpenAiUtil {
         SystemMessage systemMessage = new SystemMessage(systemPrompt);
 
         UserMessage userMessage = new UserMessage(diary);
-        log.info(diary);
         String result = chatModel.call(systemMessage, userMessage);
+        log.info("Response from Open AI: " + result);
         return result;
     }
 }
