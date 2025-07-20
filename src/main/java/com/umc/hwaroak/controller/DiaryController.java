@@ -34,7 +34,8 @@ public class DiaryController {
 
 
     @Operation(summary = "일기 조회 API", description = """
-    일기 조회 API입니다. parmaeter로 조회하려는 날짜를 입력해주세요.
+    일기 조회 API입니다. parmaeter로 조회하려는 날짜를 입력해주세요.<br>
+    "yyyy-MM-dd"의 날짜 형식을 지켜주셔야합니다.
     """)
     @GetMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
@@ -52,13 +53,14 @@ public class DiaryController {
 
     @Operation(summary = "월별 일기 전체 조회 API", description = """
             월별 일기를 전체 조회하는 API입니다.<br>
-            Parameter에 조회하려는 일기의 달을 작성해주세요.
+            Parameter에 조회하려는 일기의 년도와 달을 작성해주세요.
             """)
     @GetMapping("/monthly")
     public List<DiaryResponseDto> getAllDiaries(
+            @RequestParam("year") Integer year,
             @RequestParam("month") Integer month
     ) {
-        return diaryService.readMonthDiary(month);
+        return diaryService.readMonthDiary(year, month);
     }
 
     @Operation(summary = "일기 삭제 API", description = """

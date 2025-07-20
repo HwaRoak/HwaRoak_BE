@@ -39,7 +39,7 @@ public class DiaryServiceImpl implements DiaryService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        if (diaryRepository.findByRecordDate(requestDto.getRecordDate()).isPresent()) {
+        if (diaryRepository.findByRecordDate(memberId, requestDto.getRecordDate()).isPresent()) {
             log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
             throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
         }
@@ -47,7 +47,6 @@ public class DiaryServiceImpl implements DiaryService {
         Diary diary = DiaryConverter.toDiary(member, requestDto);
         log.info("작성 일기 내용: " + requestDto.getContent());
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
-        diary.setDeleted(false);
         diaryRepository.save(diary);
 
         // TODO: Reward 계산
@@ -56,17 +55,16 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryResponseDto readDiary(LocalDate date) {
-        memberLoader.getMemberByContextHolder();
 
-        return DiaryConverter.toDto(diaryRepository.findByRecordDate(date)
+        Long memberId = memberLoader.getCurrentMemberId();
+
+        return DiaryConverter.toDto(diaryRepository.findByRecordDate(memberId, date)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND))
         );
     }
 
     @Transactional
     public DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto) {
-
-        memberLoader.getMemberByContextHolder();
 
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
@@ -80,10 +78,10 @@ public class DiaryServiceImpl implements DiaryService {
 
     // 월별 일기 전체 조회하기
     @Transactional(readOnly = true)
-    public List<DiaryResponseDto> readMonthDiary(Integer month) {
+    public List<DiaryResponseDto> readMonthDiary(Integer year, Integer month) {
 
         Long memberId = memberLoader.getCurrentMemberId();
-        return diaryRepository.findDiaryByMonth(memberId, month);
+        return diaryRepository.findDiaryByMonth(memberId, year, month);
     }
 
     @Transactional
