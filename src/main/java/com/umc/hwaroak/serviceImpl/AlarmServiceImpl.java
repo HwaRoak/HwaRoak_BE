@@ -2,6 +2,7 @@ package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Alarm;
+import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
@@ -56,5 +57,24 @@ public class AlarmServiceImpl implements AlarmService {
                 .content(alarm.getContent())
                 .createdAt(alarm.getCreatedAt())
                 .build();
+    }
+
+    /**
+     *  친구 요청시 알람 생성하기
+     */
+    @Override
+    public void sendFriendRequestAlarm(Member sender, Member receiver) {
+        String nickname = sender.getNickname();
+
+        Alarm alarm = Alarm.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .alarmType(AlarmType.FRIEND_REQUEST)
+                .title("친구 요청")
+                .message(nickname + "님이 친구 요청을 보냈습니다.")
+                .content("알림함에서 요청을 확인할 수 있습니다.")
+                .build();
+
+        alarmRepository.save(alarm);
     }
 }
