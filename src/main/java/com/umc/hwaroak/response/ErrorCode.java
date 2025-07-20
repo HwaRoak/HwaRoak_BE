@@ -1,6 +1,7 @@
 package com.umc.hwaroak.response;
 
 import lombok.AllArgsConstructor;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @AllArgsConstructor
@@ -14,6 +15,8 @@ public enum ErrorCode implements BaseCode{
     // Diary
     DIARY_ALREADY_RECORDED(HttpStatus.BAD_REQUEST, "DE4001", "일기는 하루만 기록할 수 있습니다."),
     DIARY_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4002", "해당 일기 ID가 존재하지 않습니다."),
+    TOO_MANY_EMOTIONS(HttpStatus.BAD_REQUEST, "DE4003", "저장할 수 있는 감정의 최대 개수는 3개입니다."),
+    EMOTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4004", "해당 감정을 찾을 수 없습니다."),
 
     // kakao login
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),

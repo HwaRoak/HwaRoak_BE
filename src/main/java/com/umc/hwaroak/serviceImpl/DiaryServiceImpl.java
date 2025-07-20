@@ -4,6 +4,7 @@ import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.converter.DiaryConverter;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,11 @@ public class DiaryServiceImpl implements DiaryService {
         if (diaryRepository.findByRecordDate(memberId, requestDto.getRecordDate()).isPresent()) {
             log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
             throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
+        }
+
+        // 요청 감정의 개수 확인하기
+        if (requestDto.getEmotionList().size() > 3) {
+            throw new GeneralException(ErrorCode.TOO_MANY_EMOTIONS);
         }
 
         Diary diary = DiaryConverter.toDiary(member, requestDto);
@@ -81,7 +87,16 @@ public class DiaryServiceImpl implements DiaryService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
 
-        diary.update(requestDto.getContent(), requestDto.getEmotion());
+        List<Emotion> emotionList = requestDto.getEmotionList().stream()
+                        .map(Emotion::fromDisplayName)
+                                .collect(Collectors.toList());
+
+        // 요청 감정의 개수 확인하기
+        if (emotionList.size() > 3) {
+            throw new GeneralException(ErrorCode.TOO_MANY_EMOTIONS);
+        }
+
+        diary.update(requestDto.getContent(), emotionList);
         diary.setFeedback(openAiUtil.reviewDiary(requestDto.getContent()));
         diaryRepository.save(diary);
 
