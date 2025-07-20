@@ -1,6 +1,5 @@
 package com.umc.hwaroak.dto.response;
 
-import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.Item;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -9,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Builder
 @Getter
@@ -19,6 +19,8 @@ public class DiaryResponseDto {
 
     @Schema(description = "일기 ID")
     private Long id;
+    @Schema(description = "기록한 감정")
+    private List<String> emotionList;
     @Schema(description = "감정 피드백",
     example = "오늘은 참 재미있는 일이 있었네!>ㅁ<")
     private String feedback;
@@ -37,8 +39,8 @@ public class DiaryResponseDto {
         private Long id;
         @Schema(description = "일기 작성 날짜")
         private LocalDate recordDate;
-        @Schema(description = "감정")
-        private Emotion emotion;
+        @Schema(description = "기록한 감정")
+        private List<String> emotionList;
         @Schema(description = "일기 본문")
         private String content;
     }
