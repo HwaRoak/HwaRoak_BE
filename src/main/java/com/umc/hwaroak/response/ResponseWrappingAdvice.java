@@ -40,6 +40,6 @@ public class ResponseWrappingAdvice implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        return ApiResponse.success(SuccessCode.OK);
+        return ApiResponse.success(SuccessCode.OK, body);
     }
 }
