@@ -71,10 +71,25 @@ public class AlarmServiceImpl implements AlarmService {
                 .receiver(receiver)
                 .alarmType(AlarmType.FRIEND_REQUEST)
                 .title("친구 요청")
-                .message(nickname + "님이 친구 요청을 보냈습니다.")
-                .content("알림함에서 요청을 확인할 수 있습니다.")
+                .content(nickname + "님이 친구 요청을 보냈습니다.")
                 .build();
 
         alarmRepository.save(alarm);
     }
+
+    @Override
+    public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member member) {
+        List<Alarm> alarms = alarmRepository.findAllByReceiverOrderByCreatedAtDesc(member);
+
+        return alarms.stream()
+                .map(alarm -> AlarmResponseDto.InfoDto.builder()
+                        .id(alarm.getId())
+                        .title(alarm.getTitle())
+                        .content(alarm.getContent())
+                        .alarmType(alarm.getAlarmType())
+                        .createdAt(alarm.getCreatedAt())
+                        .build())
+                .toList();
+    }
+
 }

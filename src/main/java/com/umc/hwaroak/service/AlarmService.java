@@ -20,4 +20,10 @@ public interface AlarmService {
      *  친구 요청 알람 보내기
      */
     void sendFriendRequestAlarm(Member sender, Member receiver);
+
+    /**
+     * 로그인한 유저의 알림함 전체를 최신순으로 조회
+     */
+    List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member member);
+
 }
