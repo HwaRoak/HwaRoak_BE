@@ -1,11 +1,14 @@
 package com.umc.hwaroak.dto.response;
 
+import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.Item;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Builder
 @Getter
@@ -23,4 +26,20 @@ public class DiaryResponseDto {
     private Integer reward;
     @Schema(description = "다음 아이템")
     private Item item;
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DetailDto {
+
+        @Schema(description = "일기 ID")
+        private Long id;
+        @Schema(description = "일기 작성 날짜")
+        private LocalDate recordDate;
+        @Schema(description = "감정")
+        private Emotion emotion;
+        @Schema(description = "일기 본문")
+        private String content;
+    }
 }

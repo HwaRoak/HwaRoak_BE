@@ -33,7 +33,7 @@ public class DiaryController {
     }
 
 
-    @Operation(summary = "일기 조회 API", description = """
+    @Operation(summary = "날짜별 일기 조회 API", description = """
     일기 조회 API입니다. parmaeter로 조회하려는 날짜를 입력해주세요.<br>
     "yyyy-MM-dd"의 날짜 형식을 지켜주셔야합니다.
     """)
@@ -41,6 +41,15 @@ public class DiaryController {
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
     public DiaryResponseDto get(@RequestParam("date")LocalDate date) {
         return diaryService.readDiary(date);
+    }
+
+    @Operation(summary = "일기 상세 조회 API", description = """
+    일기 상세보기 API입니다. Path에 해당 일기의 ID값을 입력해주세요.
+    """)
+    @GetMapping("/{diaryId}")
+    @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
+    public DiaryResponseDto.DetailDto getDetail(@PathVariable Long diaryId) {
+        return diaryService.readDiaryWithDetail(diaryId);
     }
 
     @Operation(summary = "일기 수정 API", description = """
@@ -64,10 +73,10 @@ public class DiaryController {
     }
 
     @Operation(summary = "일기 삭제 API", description = """
-            일기를 휴지통으로 보내는 API입니다.<br>
-            휴지통으로 보낼 일기의 ID를 입력해주세요.
+            일기 삭제 API입니다.<br>
+            삭제할 일기의 ID를 입력해주세요.
             """)
-    @DeleteMapping("")
+    @DeleteMapping("/{diaryId}")
     public ResponseEntity<?> delete(@PathVariable Long diaryId) {
         diaryService.deleteDiary(diaryId);
         return ResponseEntity.ok().body("일기 삭제에 성공하였습니다.");

@@ -13,4 +13,5 @@ public interface DiaryService {
     DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto);
     List<DiaryResponseDto> readMonthDiary(Integer year, Integer month);
     void deleteDiary(Long diaryId);
+    DiaryResponseDto.DetailDto readDiaryWithDetail(Long diaryId);
 }

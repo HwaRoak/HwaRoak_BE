@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +62,17 @@ public class DiaryServiceImpl implements DiaryService {
         return DiaryConverter.toDto(diaryRepository.findByRecordDate(memberId, date)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND))
         );
+    }
+
+    @Transactional(readOnly = true)
+    public DiaryResponseDto.DetailDto readDiaryWithDetail(Long diaryId) {
+
+        memberLoader.getMemberByContextHolder();
+
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
+
+        return DiaryConverter.toDetailDto(diary);
     }
 
     @Transactional
