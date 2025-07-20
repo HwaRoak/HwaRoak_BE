@@ -20,10 +20,11 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
     private final QDiary diary = QDiary.diary;
 
     @Override
-    public List<DiaryResponseDto> findDiaryByMonth(Long memberId, Integer month) {
+    public List<DiaryResponseDto> findDiaryByMonth(Long memberId, Integer year, Integer month) {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(diary.member.id.eq(memberId));
+        builder.and(diary.recordDate.year().eq(year));
         builder.and(diary.recordDate.month().eq(month));
 
         List<Diary> results = jpaQueryFactory
@@ -33,18 +34,5 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
         return results.stream()
                 .map(DiaryConverter::toDto)
                 .toList();
-    }
-
-    @Override
-    public void deleteForever() {
-
-        BooleanBuilder builder = new BooleanBuilder();
-
-        builder.and(diary.isDeleted.eq(true));
-        builder.and(diary.deletedAt.loe(LocalDate.now().minusDays(30)));
-
-        jpaQueryFactory.delete(diary)
-                .where(builder)
-                .execute();
     }
 }

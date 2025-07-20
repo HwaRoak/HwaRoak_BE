@@ -49,15 +49,11 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
 
         if (account == null || account.getProfile() == null) {
-            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
+            throw new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
         String nickname = account.getProfile().getNickname();
         String profileImage = account.getProfile().getProfile_image_url();
-
-        if (nickname == null || profileImage == null) {
-            throw new GeneralException(ErrorCode.TEST_ERROR);
-        }
 
         Member member = memberRepository.findByUserId(kakaoId)
                 .orElseGet(() -> {
