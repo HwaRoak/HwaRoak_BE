@@ -46,7 +46,14 @@ public class MemberController {
         return memberService.getMyItems();
     }
 
-    @PatchMapping("/items/{itemId}")
+    @GetMapping("/items/selected")
+    @Operation(summary = "대표 아이템 조회", description = "사용자의 대표 아이템을 조회합니다.")
+    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ItemDto.class)))
+    public MemberResponseDto.ItemDto getMySelectedItem(){
+        return memberService.findSelectedItem();
+    }
+
+    @PatchMapping("/items/{itemId}/selected")
     @Operation(summary = "대표 아이템 변경", description = "대표 아이템을 선택한 아이템으로 변경합니다.")
     @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ItemDto.class)))
     public MemberResponseDto.ItemDto changeSelectedItem(

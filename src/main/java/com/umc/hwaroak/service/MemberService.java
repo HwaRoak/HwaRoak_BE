@@ -14,4 +14,8 @@ public interface MemberService {
     List<MemberResponseDto.ItemDto> getMyItems();
 
     MemberResponseDto.ItemDto changeSelectedItem(Long itemId);
+
+    MemberResponseDto.ItemDto findSelectedItem();
+
+
 }

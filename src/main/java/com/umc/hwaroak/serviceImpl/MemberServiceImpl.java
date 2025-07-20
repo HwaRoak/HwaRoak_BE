@@ -11,14 +11,11 @@ import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.MemberService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +69,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public MemberResponseDto.ItemDto changeSelectedItem(Long itemId) {
 
         Long memberId = memberLoader.getCurrentMemberId();
@@ -96,6 +93,23 @@ public class MemberServiceImpl implements MemberService {
                 .name(memberItem.getItem().getName())
                 .level(memberItem.getItem().getLevel())
                 .isSelected(memberItem.getIsSelected())
+                .build();
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public MemberResponseDto.ItemDto findSelectedItem() {
+
+        Long memberId = memberLoader.getCurrentMemberId();
+
+        MemberItem currentSelected = memberItemRepository.findByMemberIdAndIsSelectedTrue(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.SELECTED_ITEM_NOT_FOUND));
+
+        return MemberResponseDto.ItemDto.builder()
+                .item_id(currentSelected.getItem().getId())
+                .name(currentSelected.getItem().getName())
+                .level(currentSelected.getItem().getLevel())
+                .isSelected(currentSelected.getIsSelected())
                 .build();
     }
 }
