@@ -9,10 +9,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+@Schema(name = "알람 응답 DTO")
 public class AlarmResponseDto {
 
     /**
-     * 최신순 정렬용 Dto
+     * 알람 제목만.
      */
     @Builder
     @Getter
@@ -31,7 +32,7 @@ public class AlarmResponseDto {
     }
 
     /**
-     * 공지 상세보기용 Dto
+     * 알람 제목 + content(내용) , 현재 message 안쓰는중
      */
     @Builder
     @Getter
