@@ -87,21 +87,13 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Transactional
-    public void moveToTrash(Long diaryId) {
+    public void deleteDiary(Long diaryId) {
 
         memberLoader.getMemberByContextHolder();
 
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
 
-        diary.setDeleted(true);
-        diary.setDeletedAt(LocalDate.now());
-        diaryRepository.save(diary);
-    }
-
-    @Override
-    @Transactional
-    public void cancelDeleteDiary(Long diaryId) {
-        memberLoader.getMemberByContextHolder();
+        diaryRepository.delete(diary);
     }
 }

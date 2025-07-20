@@ -65,17 +65,9 @@ public class DiaryController {
             일기를 휴지통으로 보내는 API입니다.<br>
             휴지통으로 보낼 일기의 ID를 입력해주세요.
             """)
-    @PatchMapping("/trash/{diaryId}")
-    public ResponseEntity<?> diaryTrash(
-            @PathVariable Long diaryId) {
-        diaryService.moveToTrash(diaryId);
+    @DeleteMapping("")
+    public ResponseEntity<?> delete(@PathVariable Long diaryId) {
+        diaryService.deleteDiary(diaryId);
         return ResponseEntity.ok().body("일기 삭제에 성공하였습니다.");
-    }
-
-    @PatchMapping("/trash/{diaryId}/cancel")
-    public ResponseEntity<?> cancelDelete(
-
-    ) {
-        return ResponseEntity.ok().body("일기를 다시 복원하였습니다.");
     }
 }

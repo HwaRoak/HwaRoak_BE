@@ -11,7 +11,6 @@ public interface DiaryService {
     DiaryResponseDto createDiary(DiaryRequestDto requestDto);
     DiaryResponseDto readDiary(LocalDate date);
     DiaryResponseDto updateDiary(Long diaryId, DiaryRequestDto requestDto);
-    List<DiaryResponseDto> readMonthDiary(Integer month);
-    void moveToTrash(Long diaryId);
-    void cancelDeleteDiary(Long diaryId);
+    List<DiaryResponseDto> readMonthDiary(Integer year, Integer month);
+    void deleteDiary(Long diaryId);
 }
