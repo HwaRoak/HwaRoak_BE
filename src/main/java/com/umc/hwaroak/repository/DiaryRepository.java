@@ -12,6 +12,6 @@ import java.util.Optional;
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryRepositoryCustom {
 
-    @Query("SELECT d FROM Diary d WHERE d.recordDate = :recordDate and d.isDeleted = false")
-    Optional<Diary> findByRecordDate(@Param("recordDate") LocalDate recordDate);
+    @Query("SELECT d FROM Diary d WHERE d.recordDate = :recordDate and d.member.id = :memberId")
+    Optional<Diary> findByRecordDate(@Param("memberId") Long memberId, @Param("recordDate") LocalDate recordDate);
 }

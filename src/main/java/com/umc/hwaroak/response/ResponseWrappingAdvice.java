@@ -2,6 +2,7 @@ package com.umc.hwaroak.response;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.ServerHttpRequest;
@@ -39,6 +40,6 @@ public class ResponseWrappingAdvice implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        return ApiResponse.of(SuccessCode.OK, body);
+        return ApiResponse.success(SuccessCode.OK);
     }
 }

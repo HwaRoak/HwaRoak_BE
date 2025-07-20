@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface DiaryRepositoryCustom {
 
-    List<DiaryResponseDto> findDiaryByMonth(Long memberId, Integer month);
-    void deleteForever();
+    List<DiaryResponseDto> findDiaryByMonth(Long memberId, Integer year, Integer month);
+
 }

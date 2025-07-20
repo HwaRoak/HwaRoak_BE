@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "diary")
@@ -22,12 +23,12 @@ public class Diary extends BaseEntity {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "record_date")
+    @Column(name = "record_date", nullable = false)
     private LocalDate recordDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "emotion")
-    private Emotion emotion;
+    private List<Emotion> emotionList;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -37,20 +38,12 @@ public class Diary extends BaseEntity {
     @Column(name = "feedback")
     private String feedback;
 
-    @Setter
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
-
-    @Setter
-    @Column(name = "deleted_at")
-    private LocalDate deletedAt;
-
-    public void update(String content, Emotion emotion) {
+    public void update(String content, List<Emotion> emotionList) {
         if (content != null) {
             this.content = content;
         }
-        if (emotion != null) {
-            this.emotion = emotion;
+        if (emotionList.stream() != null) {
+            this.emotionList = emotionList;
         }
     }
 }
