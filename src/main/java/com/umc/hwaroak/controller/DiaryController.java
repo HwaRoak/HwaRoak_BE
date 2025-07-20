@@ -23,7 +23,10 @@ public class DiaryController {
 
     private final DiaryService diaryService;
 
-    @Operation(summary = "일기 작성 API", description = "일기 작성 API입니다.")
+    @Operation(summary = "일기 작성 API", description = """
+    일기 작성 API입니다.<br>
+    기록할 감정은 3개를 넘으면 안 됩니다.
+    """)
     @PostMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
     public DiaryResponseDto create(
@@ -35,7 +38,7 @@ public class DiaryController {
 
     @Operation(summary = "날짜별 일기 조회 API", description = """
     일기 조회 API입니다. parmaeter로 조회하려는 날짜를 입력해주세요.<br>
-    "yyyy-MM-dd"의 날짜 형식을 지켜주셔야합니다.
+    yyyy-MM-dd의 날짜 형식을 지켜주셔야합니다.
     """)
     @GetMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
@@ -53,7 +56,9 @@ public class DiaryController {
     }
 
     @Operation(summary = "일기 수정 API", description = """
-            일기 수정 API입니다. 수정하려는 일기의 ID를 작성해주세요.""")
+            일기 수정 API입니다. 수정하려는 일기의 ID를 작성해주세요.<br>
+            RequestBody 방식은 일기 작성 API와 동일합니다.
+            """)
     @PatchMapping("/{diaryId}")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
     public DiaryResponseDto update(@PathVariable Long diaryId, @RequestBody DiaryRequestDto requestDto) {
