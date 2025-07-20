@@ -3,6 +3,7 @@ package com.umc.hwaroak.serviceImpl;
 import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.converter.MemberConverter;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
 import com.umc.hwaroak.exception.GeneralException;
@@ -11,6 +12,10 @@ import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -43,5 +48,22 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
 
         return MemberConverter.toDto(member);
+    }
+
+    @Override
+    public List<MemberResponseDto.ItemDto> getMyItems() {
+
+        Long memberId = memberLoader.getCurrentMemberId();
+
+        List<MemberItem> memberItems = memberRepository.findByMemberIdWithItemOrderedByLevel(memberId);
+
+        return memberItems.stream()
+                .map(mi -> MemberResponseDto.ItemDto.builder()
+                        .memberItemId(mi.getId())
+                        .name(mi.getItem().getName())
+                        .level(mi.getItem().getLevel())
+                        .isSelected(mi.getIsSelected())
+                        .build())
+                .toList();
     }
 }

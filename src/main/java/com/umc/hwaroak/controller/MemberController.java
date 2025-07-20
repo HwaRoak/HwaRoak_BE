@@ -4,7 +4,6 @@ package com.umc.hwaroak.controller;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,6 +11,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.umc.hwaroak.service.MemberService;
+
+import java.util.List;
 
 @Tag(name = "Member API", description = "사용자 관련 API")
 @RestController
@@ -36,6 +37,13 @@ public class MemberController {
             @RequestBody MemberRequestDto.editDto requestDto
             ){
         return memberService.editInfo(requestDto);
+    }
+
+    @GetMapping("/items")
+    @Operation(summary = "보유 아이템 리스트 조회", description = "사용자의 아이템 목록을 조회합니다.")
+    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ItemDto.class)))
+    public List<MemberResponseDto.ItemDto> getMyItems(){
+        return memberService.getMyItems();
     }
 
 }
