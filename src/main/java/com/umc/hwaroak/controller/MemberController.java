@@ -46,10 +46,11 @@ public class MemberController {
         return memberService.getMyItems();
     }
 
-    @GetMapping("/items/{itemId}")
+    @PatchMapping("/items/{itemId}")
     @Operation(summary = "대표 아이템 변경", description = "대표 아이템을 선택한 아이템으로 변경합니다.")
     @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ItemDto.class)))
     public MemberResponseDto.ItemDto changeSelectedItem(
+            @Schema(description = "변경하려는 아이템의 id", example = "1")
             @PathVariable Long itemId
     ){
         return memberService.changeSelectedItem(itemId);

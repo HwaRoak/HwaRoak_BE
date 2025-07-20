@@ -63,7 +63,7 @@ public class MemberServiceImpl implements MemberService {
 
         return memberItems.stream()
                 .map(mi -> MemberResponseDto.ItemDto.builder()
-                        .memberItemId(mi.getId())
+                        .item_id(mi.getItem().getId())
                         .name(mi.getItem().getName())
                         .level(mi.getItem().getLevel())
                         .isSelected(mi.getIsSelected())
@@ -92,7 +92,7 @@ public class MemberServiceImpl implements MemberService {
         memberItem.setIsSelected(true);
 
         return MemberResponseDto.ItemDto.builder()
-                .memberItemId(memberItem.getId())
+                .item_id(memberItem.getItem().getId())
                 .name(memberItem.getItem().getName())
                 .level(memberItem.getItem().getLevel())
                 .isSelected(memberItem.getIsSelected())

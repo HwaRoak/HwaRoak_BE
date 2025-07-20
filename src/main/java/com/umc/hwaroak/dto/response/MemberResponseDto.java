@@ -36,8 +36,8 @@ public class MemberResponseDto {
     @Schema(description = "보유 아이템 조회 응답 DTO")
     public static class ItemDto {
 
-        @Schema(description = "id", example = "1")
-        Long memberItemId;
+        @Schema(description = "item_id", example = "1")
+        Long item_id;
 
         @Schema(description = "아이템 이름", example = "두루마리 휴지")
         String name;
