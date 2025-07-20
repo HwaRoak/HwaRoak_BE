@@ -7,13 +7,16 @@ import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.MemberService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -23,6 +26,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberLoader memberLoader;
     private final MemberRepository memberRepository;
+    private final MemberItemRepository memberItemRepository;
 
     @Override
     public MemberResponseDto.InfoDto getInfo() {
@@ -65,5 +69,33 @@ public class MemberServiceImpl implements MemberService {
                         .isSelected(mi.getIsSelected())
                         .build())
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public MemberResponseDto.ItemDto changeSelectedItem(Long itemId) {
+
+        Long memberId = memberLoader.getCurrentMemberId();
+
+        // 기존 대표 아이템 해제
+        MemberItem currentSelected = memberItemRepository.findByMemberIdAndIsSelectedTrue(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.SELECTED_ITEM_NOT_FOUND));
+
+        currentSelected.setIsSelected(false);
+
+
+        // 변경하려는 아이템 확인
+        MemberItem memberItem = memberItemRepository.findByMemberIdAndItemId(memberId, itemId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.ITEM_NOT_FOUND));
+
+        // 대표 지정
+        memberItem.setIsSelected(true);
+
+        return MemberResponseDto.ItemDto.builder()
+                .memberItemId(memberItem.getId())
+                .name(memberItem.getItem().getName())
+                .level(memberItem.getItem().getLevel())
+                .isSelected(memberItem.getIsSelected())
+                .build();
     }
 }

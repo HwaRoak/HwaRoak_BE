@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "member_item")
@@ -25,6 +26,7 @@ public class MemberItem extends BaseEntity {
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
+    @Setter
     @Column(name = "is_selected")
     private Boolean isSelected;     // 대표 아이템 여부
 }
