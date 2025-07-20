@@ -23,4 +23,13 @@ public class DiaryConverter {
                 .reward(diary.getMember().getReward())
                 .build();
     }
+
+    public static DiaryResponseDto.DetailDto toDetailDto(Diary diary) {
+        return DiaryResponseDto.DetailDto.builder()
+                .id(diary.getId())
+                .recordDate(diary.getRecordDate())
+                .content(diary.getContent())
+                .emotion(diary.getEmotion())
+                .build();
+    }
 }
