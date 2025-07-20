@@ -2,16 +2,14 @@ package com.umc.hwaroak.domain;
 
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "member_item")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class MemberItem extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
