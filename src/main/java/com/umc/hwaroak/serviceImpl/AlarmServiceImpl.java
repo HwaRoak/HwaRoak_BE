@@ -78,8 +78,8 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     @Override
-    public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member member) {
-        List<Alarm> alarms = alarmRepository.findAllByReceiverOrderByCreatedAtDesc(member);
+    public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member receiver) {
+        List<Alarm> alarms = alarmRepository.findAllByReceiverOrderByCreatedAtDesc(receiver);
 
         return alarms.stream()
                 .map(alarm -> AlarmResponseDto.InfoDto.builder()
