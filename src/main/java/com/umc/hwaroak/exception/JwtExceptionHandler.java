@@ -2,17 +2,14 @@ package com.umc.hwaroak.exception;
 
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.response.ErrorResponse;
-import groovy.util.logging.Slf4j;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.swagger.v3.oas.annotations.Hidden;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.umc.hwaroak.exception.GeneralException;
 import java.security.SignatureException;
 import io.jsonwebtoken.security.SecurityException;
 
@@ -20,8 +17,6 @@ import io.jsonwebtoken.security.SecurityException;
 @RestControllerAdvice
 @Hidden
 public class JwtExceptionHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(JwtExceptionHandler.class);
 
     @ExceptionHandler({SecurityException.class, SignatureException.class})
     public ResponseEntity<ErrorResponse> handleInvalidSignature(Exception ex) {
