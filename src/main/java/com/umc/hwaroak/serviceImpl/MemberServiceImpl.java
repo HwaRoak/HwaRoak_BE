@@ -34,6 +34,7 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(()->new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
         return MemberResponseDto.InfoDto.builder()
+                .memberId(member.getId())
                 .userId(member.getUserId())
                 .nickname(member.getNickname())
                 .introduction(member.getIntroduction())
