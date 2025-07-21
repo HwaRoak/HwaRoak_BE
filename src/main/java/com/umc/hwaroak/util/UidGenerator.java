@@ -2,27 +2,31 @@ package com.umc.hwaroak.util;
 
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.response.ErrorCode;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 @Component
+@RequiredArgsConstructor
 public class UidGenerator {
 
-    public String generatedUid(String kakaoId) {
+    public static String generateShortUid(String kakaoId) {
         try {
-            // 1. SHA-256 해시
+            // byte[] 변환 후 SHA-256 해싱
+            byte[] inputBytes = kakaoId.getBytes(StandardCharsets.UTF_8);
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(kakaoId.getBytes(StandardCharsets.UTF_8));
+            byte[] hash = digest.digest(inputBytes);
 
-            // 2. encoding by Base64
-            String base64 = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+            // Base64 URL-safe encoding 후 앞 16자리 사용
+            return Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(hash)
+                    .substring(0, 16);
 
-            // 3. 일부만 사용
-            return base64.substring(0, 16);
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new GeneralException(ErrorCode.FAILED_UUID);
         }
     }

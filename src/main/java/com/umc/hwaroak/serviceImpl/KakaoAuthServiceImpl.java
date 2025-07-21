@@ -51,7 +51,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
 
         KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
 
-        String uid = uidGenerator.generatedUid(String.valueOf(kakaoUser.getId()));
+        String uid = uidGenerator.generateShortUid(String.valueOf(kakaoUser.getId()));
         KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
 
         if (account == null || account.getProfile() == null) {
