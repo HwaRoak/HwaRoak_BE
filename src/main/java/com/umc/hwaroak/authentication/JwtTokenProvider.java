@@ -38,20 +38,20 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createAccessToken(String userId) {
-        return createToken(userId, accessTokenValidity);
+    public String createAccessToken(Long memberId) {
+        return createToken(memberId, accessTokenValidity);
     }
 
-    public String createRefreshToken(String userId) {
-        return createToken(userId, refreshTokenValidity);
+    public String createRefreshToken(Long memberId) {
+        return createToken(memberId, refreshTokenValidity);
     }
 
-    private String createToken(String userId, long validity) {
+    private String createToken(Long memberId, long validity) {
         Date now = new Date();
         Key key = getSigningKey();
 
         return Jwts.builder()
-                .setSubject(userId)
+                .setSubject(String.valueOf(memberId))
                 .claim("authority", "ROLE_USER")
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + validity))
@@ -60,7 +60,7 @@ public class JwtTokenProvider {
     }
 
     // 토큰에서 사용자 id 추출
-    public String getUserId(String token) {
+    public String getMemberId(String token) {
         Key key = getSigningKey();
         Claims claims = Jwts.parser()
                 .setSigningKey(key)
@@ -107,6 +107,6 @@ public class JwtTokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        return new UsernamePasswordAuthenticationToken(getUserId(token), null, authorities);
+        return new UsernamePasswordAuthenticationToken(getMemberId(token), null, authorities);
     }
 }

@@ -61,8 +61,8 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     return memberRepository.save(newMember);
                 });
 
-        String accessToken = jwtProvider.createAccessToken(member.getUserId());
-        String refreshToken = jwtProvider.createRefreshToken(member.getUserId());
+        String accessToken = jwtProvider.createAccessToken(member.getId());
+        String refreshToken = jwtProvider.createRefreshToken(member.getId());
 
         redisTemplate.opsForValue().set(
                 "RT:" + member.getId(), refreshToken,
@@ -80,14 +80,14 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        String userId = jwtProvider.getUserId(refreshToken);
-        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + userId);
+        String memberId = jwtProvider.getMemberId(refreshToken);
+        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + memberId);
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        String newAccessToken = jwtProvider.createAccessToken(userId);
+        String newAccessToken = jwtProvider.createAccessToken(Long.parseLong(memberId));
         return new TokenDto(newAccessToken, refreshToken);
     }
 

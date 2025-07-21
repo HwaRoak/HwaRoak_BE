@@ -29,15 +29,9 @@ public class MemberLoader {
         }
 
         Object principal = authentication.getPrincipal();
-        String userId;
+        Long memberId = Long.parseLong((String) principal);
 
-        if (principal instanceof String) {
-            userId = (String) principal;
-        } else {
-            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
-        return memberRepository.findByUserId(userId)
+        return memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }
