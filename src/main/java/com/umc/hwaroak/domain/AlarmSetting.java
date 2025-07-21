@@ -3,6 +3,7 @@ package com.umc.hwaroak.domain;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -20,15 +21,20 @@ public class AlarmSetting extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Setter
     @Column(name ="reminder_enabled")
     private boolean reminderEnabled;
 
+    @Setter
     @Column(name = "fire_enabled")
     private boolean fireEnabled;
 
+    @Setter
     @Column(name = "reminder_time")
     private LocalTime reminderTime;
 
+    @Setter
     @Column(name = "all_off_enabled")
     private boolean allOffEnabled;
+
 }
