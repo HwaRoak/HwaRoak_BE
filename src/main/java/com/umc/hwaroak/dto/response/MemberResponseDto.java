@@ -15,6 +15,9 @@ public class MemberResponseDto {
     @Schema(description = "회원 정보 조회 응답 DTO")
     public static class InfoDto {
 
+        @Schema(name = "회원ID", description = "파싱 처리 위한 회원 ID")
+        private Long memberId;
+
         @Schema(description = "유저 아이디", example = "a123456789")
         String userId;
 
