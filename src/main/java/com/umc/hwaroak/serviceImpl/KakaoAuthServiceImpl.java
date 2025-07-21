@@ -55,15 +55,28 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     return memberRepository.save(newMember);
                 });
 
-        String accessToken = jwtProvider.createAccessToken(member.getId());
-        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+        // redis에서 현재 발급된 refresh token확인하기
+        String existingRefreshToken = redisTemplate.opsForValue().get("RT:" + member.getId());
 
-        redisTemplate.opsForValue().set(
-                "RT:" + member.getId(), refreshToken,
-                refreshTokenValidity, TimeUnit.MILLISECONDS
-        );
+        String accessToken;
+        String refreshToken;
+
+        if (existingRefreshToken != null && jwtProvider.validateToken(existingRefreshToken)) {
+            // refresh token 유효 -> 재사용
+            refreshToken = existingRefreshToken;
+        } else {
+            // 없거나 만료 -> 새로 발급
+            refreshToken = jwtProvider.createRefreshToken(member.getId());
+            redisTemplate.opsForValue().set(
+                    "RT:" + member.getId(), refreshToken,
+                    refreshTokenValidity, TimeUnit.MILLISECONDS
+            );
+        }
+
+        accessToken = jwtProvider.createAccessToken(member.getId());
 
         return KakaoLoginResponseDto.from(accessToken, refreshToken, member);
+
     }
 
     @Override
