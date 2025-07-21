@@ -21,7 +21,7 @@ public enum ErrorCode implements BaseCode{
     EMOTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4004", "해당 감정을 찾을 수 없습니다."),
     FAILED_EMOTION_PARSING(HttpStatus.BAD_REQUEST, "DE4005", "감정 저장 처리에 실패하였습니다."),
 
-    // Auth
+    // kakao login
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "메소드 요청이 잘못됐습니다."),
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "접근 권한이 없습니다."),
@@ -48,6 +48,11 @@ public enum ErrorCode implements BaseCode{
     FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4004", "이미 친구이거나 요청을 보낸 상태입니다."),
     FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4005", "해당 친구 상태에서는 삭제할 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4042", "해당 친구 관계를 찾을 수 없습니다."),
+
+    // Item
+    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),
+    SELECTED_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4002", "대표 아이템을 찾을 수 없습니다"),
+    ALREADY_SELECTED_ITEM(HttpStatus.BAD_REQUEST, "ITEM4003", "해당 아이템은 이미 대표 아이템입니다"),
 
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),

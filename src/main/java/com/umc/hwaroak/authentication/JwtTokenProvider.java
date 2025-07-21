@@ -39,20 +39,21 @@ public class JwtTokenProvider {
     }
 
     public String createAccessToken(Long memberId) {
-        return createToken(memberId, accessTokenValidity);
+        return createToken(memberId, accessTokenValidity, "ACCESS");
     }
 
     public String createRefreshToken(Long memberId) {
-        return createToken(memberId, refreshTokenValidity);
+        return createToken(memberId, refreshTokenValidity, "REFRESH");
     }
 
-    private String createToken(Long memberId, long validity) {
+    private String createToken(Long memberId, long validity, String tokenType) {
         Date now = new Date();
         Key key = getSigningKey();
 
         return Jwts.builder()
                 .setSubject(String.valueOf(memberId))
                 .claim("authority", "ROLE_USER")
+                .claim("tokenType", tokenType)  // 🔥 추가
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + validity))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -67,6 +68,21 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+
+    // 토큰 파싱 및 유효성 검증
+    private Claims parseClaims(String token) {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(getSigningKey())
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT expired: {}", e.getMessage());
+            return e.getClaims(); // 만료되었어도 claims는 반환
+        } catch (JwtException e) {
+            throw new GeneralException(ErrorCode.EXPIRED_JWT_TOKEN);
+        }
     }
 
     // 토큰 유효성 검증
@@ -90,15 +106,11 @@ public class JwtTokenProvider {
         return false;
     }
 
+    // Spring Security 인증 객체 생성
     public Authentication getAuthentication(String token) {
-        Key key = getSigningKey();
+        Claims claims = parseClaims(token);
 
-        Claims claims = Jwts.parser()
-                .setSigningKey(key)
-                .parseClaimsJws(token)
-                .getBody();
-
-        if (!claims.get("authority").equals("ROLE_USER")) {
+        if (!"ROLE_USER".equals(claims.get("authority"))) {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
