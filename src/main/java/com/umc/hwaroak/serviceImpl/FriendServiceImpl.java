@@ -6,9 +6,11 @@ import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.FriendStatus;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.FriendRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.service.AlarmService;
 import com.umc.hwaroak.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class FriendServiceImpl implements FriendService {
     private final MemberLoader memberLoader;
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+    private final AlarmService alarmService;
 
     /**
      * 친구 요청을 보냅니다.
@@ -76,6 +79,9 @@ public class FriendServiceImpl implements FriendService {
         // [6] 친구 요청 엔티티 생성 및 저장
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
+
+        // 👉 알람 전송
+        alarmService.sendFriendRequestAlarm(sender, receiver);
     }
 
 

@@ -5,11 +5,15 @@
 
 package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.domain.Item;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.dto.response.KakaoUserInfoDto;
 import com.umc.hwaroak.dto.response.TokenDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.repository.ItemRepository;
+import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.authentication.JwtTokenProvider;
@@ -33,6 +37,8 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     private final JwtTokenProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
     private final WebClient.Builder webClientBuilder;  // WebClient는 Builder로 주입받음
+    private final ItemRepository itemRepository;
+    private final MemberItemRepository memberItemRepository;
 
     @Value("${jwt.refresh-token-validity}")
     private long refreshTokenValidity;
@@ -56,9 +62,24 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
 
         Member member = memberRepository.findByUserId(kakaoId)
                 .orElseGet(() -> {
+
+                    // 신규 가입
                     Member newMember = new Member(kakaoId, nickname, profileImage);
                     log.info("신규 회원 가입 - userId: {}", kakaoId);
-                    return memberRepository.save(newMember);
+                    Member savedNewMember = memberRepository.save(newMember);
+
+                    // 기본 아이템 설정
+                    Item defaultItem = itemRepository.findByLevel(1);
+
+                    MemberItem newMemberItem = MemberItem.builder()
+                            .member(savedNewMember)
+                            .item(defaultItem)
+                            .isSelected(true)
+                            .build();
+
+                    memberItemRepository.save(newMemberItem);
+
+                    return savedNewMember;
                 });
 
         // redis에서 현재 발급된 refresh token확인하기

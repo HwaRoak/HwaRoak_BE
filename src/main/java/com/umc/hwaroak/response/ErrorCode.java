@@ -15,8 +15,11 @@ public enum ErrorCode implements BaseCode{
     // Diary
     DIARY_ALREADY_RECORDED(HttpStatus.BAD_REQUEST, "DE4001", "일기는 하루만 기록할 수 있습니다."),
     DIARY_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4002", "해당 일기 ID가 존재하지 않습니다."),
+
+    // emotion
     TOO_MANY_EMOTIONS(HttpStatus.BAD_REQUEST, "DE4003", "저장할 수 있는 감정의 최대 개수는 3개입니다."),
     EMOTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4004", "해당 감정을 찾을 수 없습니다."),
+    FAILED_EMOTION_PARSING(HttpStatus.BAD_REQUEST, "DE4005", "감정 저장 처리에 실패하였습니다."),
 
     // kakao login
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),
@@ -42,6 +45,11 @@ public enum ErrorCode implements BaseCode{
     FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4004", "이미 친구이거나 요청을 보낸 상태입니다."),
     FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4005", "해당 친구 상태에서는 삭제할 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4042", "해당 친구 관계를 찾을 수 없습니다."),
+
+    // Item
+    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),
+    SELECTED_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4002", "대표 아이템을 찾을 수 없습니다"),
+    ALREADY_SELECTED_ITEM(HttpStatus.BAD_REQUEST, "ITEM4003", "해당 아이템은 이미 대표 아이템입니다"),
 
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
