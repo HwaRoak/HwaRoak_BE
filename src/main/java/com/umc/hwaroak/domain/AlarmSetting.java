@@ -2,11 +2,14 @@ package com.umc.hwaroak.domain;
 
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "alarm_setting")
+@Getter
 public class AlarmSetting extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,5 +27,8 @@ public class AlarmSetting extends BaseEntity {
     private boolean fireEnabled;
 
     @Column(name = "reminder_time")
-    private LocalDateTime reminderTime;
+    private LocalTime reminderTime;
+
+    @Column(name = "all_off_enabled")
+    private boolean allOffEnabled;
 }

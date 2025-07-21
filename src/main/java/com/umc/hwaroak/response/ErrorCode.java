@@ -43,6 +43,9 @@ public enum ErrorCode implements BaseCode{
     FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4005", "해당 친구 상태에서는 삭제할 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4042", "해당 친구 관계를 찾을 수 없습니다."),
 
+    // Alarm
+    SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "ALARM4041", "알림 설정을 찾을 수 없습니다."),
+
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
     ;
