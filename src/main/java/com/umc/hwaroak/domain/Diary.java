@@ -1,5 +1,6 @@
 package com.umc.hwaroak.domain;
 
+import com.umc.hwaroak.converter.EmotionListConverter;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import com.umc.hwaroak.domain.common.Emotion;
 import jakarta.persistence.*;
@@ -26,8 +27,9 @@ public class Diary extends BaseEntity {
     @Column(name = "record_date", nullable = false)
     private LocalDate recordDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "emotion")
+    @Lob
+    @Convert(converter = EmotionListConverter.class)
+    @Column(name = "emotion", columnDefinition = "TEXT")
     private List<Emotion> emotionList;
 
     @ManyToOne(fetch = FetchType.LAZY)

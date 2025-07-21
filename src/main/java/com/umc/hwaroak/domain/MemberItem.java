@@ -1,11 +1,15 @@
 package com.umc.hwaroak.domain;
 
 import com.umc.hwaroak.domain.common.BaseEntity;
-import com.umc.hwaroak.domain.common.Item;
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "member_item")
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class MemberItem extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +20,11 @@ public class MemberItem extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "item")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
     private Item item;
+
+    @Setter
+    @Column(name = "is_selected")
+    private Boolean isSelected;     // 대표 아이템 여부
 }

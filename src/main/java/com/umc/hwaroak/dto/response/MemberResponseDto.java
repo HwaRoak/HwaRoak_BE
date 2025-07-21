@@ -28,4 +28,24 @@ public class MemberResponseDto {
         String introduction;
 
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "보유 아이템 조회 응답 DTO")
+    public static class ItemDto {
+
+        @Schema(description = "item_id", example = "1")
+        Long item_id;
+
+        @Schema(description = "아이템 이름", example = "두루마리 휴지")
+        String name;
+
+        @Schema(description = "아이템 레벨", example = "1")
+        Integer level;
+
+        @Schema(description = "선택 여부", example = "false")
+        Boolean isSelected;
+    }
 }
