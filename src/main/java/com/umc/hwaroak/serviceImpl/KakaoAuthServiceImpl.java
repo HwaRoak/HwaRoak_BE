@@ -5,16 +5,21 @@
 
 package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.domain.Item;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.dto.response.KakaoUserInfoDto;
 import com.umc.hwaroak.dto.response.TokenDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.repository.ItemRepository;
+import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.authentication.JwtTokenProvider;
 import com.umc.hwaroak.service.KakaoAuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +28,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KakaoAuthServiceImpl implements KakaoAuthService {
@@ -31,12 +37,16 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     private final JwtTokenProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
     private final WebClient.Builder webClientBuilder;  // WebClient는 Builder로 주입받음
+    private final ItemRepository itemRepository;
+    private final MemberItemRepository memberItemRepository;
 
     @Value("${jwt.refresh-token-validity}")
     private long refreshTokenValidity;
 
     @Override
     public KakaoLoginResponseDto kakaoLogin(String kakaoAccessToken) {
+        log.info("카카오 로그인 시도 - AccessToken: {}", kakaoAccessToken);
+
         KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
 
         String kakaoId = String.valueOf(kakaoUser.getId());
@@ -48,22 +58,58 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
 
         String nickname = account.getProfile().getNickname();
         String profileImage = account.getProfile().getProfile_image_url();
+        log.info("카카오 유저 정보 조회 완료 - kakaoId: {}, nickname: {}", kakaoId, nickname);
 
         Member member = memberRepository.findByUserId(kakaoId)
                 .orElseGet(() -> {
+
+                    // 신규 가입
                     Member newMember = new Member(kakaoId, nickname, profileImage);
-                    return memberRepository.save(newMember);
+                    log.info("신규 회원 가입 - userId: {}", kakaoId);
+                    Member savedNewMember = memberRepository.save(newMember);
+
+                    // 기본 아이템 설정
+                    Item defaultItem = itemRepository.findByLevel(1);
+
+                    MemberItem newMemberItem = MemberItem.builder()
+                            .member(savedNewMember)
+                            .item(defaultItem)
+                            .isSelected(true)
+                            .build();
+
+                    memberItemRepository.save(newMemberItem);
+
+                    return savedNewMember;
                 });
 
-        String accessToken = jwtProvider.createAccessToken(member.getId());
-        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+        // redis에서 현재 발급된 refresh token확인하기
+        String existingRefreshToken = redisTemplate.opsForValue().get("RT:" + member.getId());
+        log.debug("기존 Refresh Token 조회 결과 - token: {}", existingRefreshToken);
 
-        redisTemplate.opsForValue().set(
-                "RT:" + member.getId(), refreshToken,
-                refreshTokenValidity, TimeUnit.MILLISECONDS
-        );
+        String accessToken;
+        String refreshToken;
 
+        if (existingRefreshToken != null && jwtProvider.validateToken(existingRefreshToken)) {
+            log.info("기존 Refresh Token 유효 - 재사용");
+            // refresh token 유효 -> 재사용
+            refreshToken = existingRefreshToken;
+        } else {
+            // 없거나 만료 -> 새로 발급
+            log.info("Refresh Token 없음 또는 만료 - 새 발급");
+            refreshToken = jwtProvider.createRefreshToken(member.getId());
+            redisTemplate.opsForValue().set(
+                    "RT:" + member.getId(), refreshToken,
+                    refreshTokenValidity, TimeUnit.MILLISECONDS
+            );
+            log.debug("새 Refresh Token 저장 완료 - ttl: {}ms", refreshTokenValidity);
+        }
+
+        accessToken = jwtProvider.createAccessToken(member.getId());
+        log.debug("AccessToken 발급 완료: {}", accessToken);
+
+        log.info("카카오 로그인 완료 - memberId: {}", member.getId());
         return KakaoLoginResponseDto.from(accessToken, refreshToken, member);
+
     }
 
     @Override
