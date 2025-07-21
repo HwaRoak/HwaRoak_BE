@@ -22,7 +22,7 @@ public class Member extends BaseEntity {
     @Column(name = "member_id", nullable = false)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
     @Column(name = "name")

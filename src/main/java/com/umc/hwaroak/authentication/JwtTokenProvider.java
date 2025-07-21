@@ -38,20 +38,20 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createAccessToken(Long userId) {
+    public String createAccessToken(String userId) {
         return createToken(userId, accessTokenValidity);
     }
 
-    public String createRefreshToken(Long userId) {
+    public String createRefreshToken(String userId) {
         return createToken(userId, refreshTokenValidity);
     }
 
-    private String createToken(Long userId, long validity) {
+    private String createToken(String userId, long validity) {
         Date now = new Date();
         Key key = getSigningKey();
 
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))
+                .setSubject(userId)
                 .claim("authority", "ROLE_USER")
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + validity))
@@ -60,13 +60,13 @@ public class JwtTokenProvider {
     }
 
     // 토큰에서 사용자 id 추출
-    public Long getUserId(String token) {
+    public String getUserId(String token) {
         Key key = getSigningKey();
         Claims claims = Jwts.parser()
                 .setSigningKey(key)
                 .parseClaimsJws(token)
                 .getBody();
-        return Long.parseLong(claims.getSubject());
+        return claims.getSubject();
     }
 
     // 토큰 유효성 검증
@@ -107,8 +107,6 @@ public class JwtTokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        return new UsernamePasswordAuthenticationToken(String.valueOf(getUserId(token)), null, authorities);
+        return new UsernamePasswordAuthenticationToken(getUserId(token), null, authorities);
     }
-
 }
-

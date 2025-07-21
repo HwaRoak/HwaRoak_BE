@@ -14,6 +14,7 @@ import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.authentication.JwtTokenProvider;
 import com.umc.hwaroak.service.KakaoAuthService;
+import com.umc.hwaroak.util.UidGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,6 +31,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
+    private final UidGenerator uidGenerator;
     private final WebClient.Builder webClientBuilder;  // WebClient는 Builder로 주입받음
 
     @Value("${jwt.refresh-token-validity}")
@@ -39,7 +41,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     public KakaoLoginResponseDto kakaoLogin(String kakaoAccessToken) {
         KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
 
-        String kakaoId = String.valueOf(kakaoUser.getId());
+        String uid = uidGenerator.generatedUid(String.valueOf(kakaoUser.getId()));
         KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
 
         if (account == null || account.getProfile() == null) {
@@ -50,17 +52,17 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         String profileImage = account.getProfile().getProfile_image_url();
 
         if (nickname == null || profileImage == null) {
-            throw new GeneralException(ErrorCode.TEST_ERROR);
+            throw new GeneralException(ErrorCode.NOT_ENOUGH_INFO);
         }
 
-        Member member = memberRepository.findByUserId(kakaoId)
+        Member member = memberRepository.findByUserId(uid)
                 .orElseGet(() -> {
-                    Member newMember = new Member(kakaoId, nickname, profileImage);
+                    Member newMember = new Member(uid, nickname, profileImage);
                     return memberRepository.save(newMember);
                 });
 
-        String accessToken = jwtProvider.createAccessToken(member.getId());
-        String refreshToken = jwtProvider.createRefreshToken(member.getId());
+        String accessToken = jwtProvider.createAccessToken(member.getUserId());
+        String refreshToken = jwtProvider.createRefreshToken(member.getUserId());
 
         redisTemplate.opsForValue().set(
                 "RT:" + member.getId(), refreshToken,
@@ -78,7 +80,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        Long userId = jwtProvider.getUserId(refreshToken);
+        String userId = jwtProvider.getUserId(refreshToken);
         String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + userId);
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
@@ -105,7 +107,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     .block();  // 동기식 처리
 
         } catch (Exception e) {
-            throw new RuntimeException("카카오 유저 정보를 불러오지 못했습니다.", e);
+            throw new GeneralException(ErrorCode.FAILED_KAKAO_PROFILE);
         }
     }
 }

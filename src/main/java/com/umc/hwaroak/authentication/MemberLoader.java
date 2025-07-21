@@ -29,17 +29,15 @@ public class MemberLoader {
         }
 
         Object principal = authentication.getPrincipal();
-        Long memberId;
+        String userId;
 
-        if (principal instanceof Long) {
-            memberId = (Long) principal;
-        } else if (principal instanceof String) {
-            memberId = Long.parseLong((String) principal);
+        if (principal instanceof String) {
+            userId = (String) principal;
         } else {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        return memberRepository.findById(memberId)
+        return memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }
