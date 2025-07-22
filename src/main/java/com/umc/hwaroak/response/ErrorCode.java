@@ -56,6 +56,9 @@ public enum ErrorCode implements BaseCode{
     SELECTED_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4002", "대표 아이템을 찾을 수 없습니다"),
     ALREADY_SELECTED_ITEM(HttpStatus.BAD_REQUEST, "ITEM4003", "해당 아이템은 이미 대표 아이템입니다"),
 
+    // Alarm
+    SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "ALARM4041", "알림 설정을 찾을 수 없습니다."),
+
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
     ;
