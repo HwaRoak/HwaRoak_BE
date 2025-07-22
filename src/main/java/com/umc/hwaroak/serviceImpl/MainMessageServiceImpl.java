@@ -1,8 +1,6 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
-import com.umc.hwaroak.domain.MainMessage;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.dto.response.MainMessageResponseDto;
@@ -35,15 +33,17 @@ public class MainMessageServiceImpl implements MainMessageService {
       //  return member.isRewardAvailable(); // 예: 컬럼 하나 있거나, RewardService에서 판단
 
     /**
-     * 이거 정말 고민이 많은데요,,, 잘 읽어주시고 아래에 써놨습니다.. 현재 있는 로직 써먹을라 하는데 도저히 생각이 안떠오르네요 ㅜㅜ
+     * 이거 정말 고민이 많은데요,,, 잘 읽어주시고 아래에 써놨습니다.....
+     *  노션 기획 멘트 페이지 가보면 3순위로 아이템 클릭시(이건 대표아이템) 그 아이템 멘트가 출력되게끔 도 적혀있습니다...
+     *  이 조건 보면 리워드시의 아이템의 멘트와 대표아이템 클릭시(클릭했다고 받아오는 건 구현을...못했습니다) 레벨이 다를 수 있어서 다르게 해야할 듯 합니다.
      */
     /*private String getRewardMessage(Member member) {
         if (!member.isRewardReceived()) {
             return "보상을 받아봐!";
         }
-        int level = member.리워드하려는 아이템의 멘트가져와야함(); -> memberService.findSelectedItem() 하려다가 -> 대표 아이템의 레벨과 리워드로 얻는 아이템의 레벨이 다르면 어떡하지? 라는 생각에 막막합니다. 어떡할까여 이거....
-        return mainMessageRepository.findByTypeAndItemLevel(REWARD_BY_LEVEL, level) // 아이템 레벨 == DB에 있는 멘트랑 일치시켜야함.
-                .map(MainMessage::getContent)
+        int level = member.리워드하려는 아이템의 멘트가져와야함(); -> memberService.findSelectedItem() 하려다가 -> 대표 아이템의 레벨과 리워드로 얻는 아이템의 레벨이 다를 것임.
+        return mainMessageRepository.findByTypeAndItemLevel(REWARD_BY_LEVEL, level) // 아이템 레벨 == DB에 있는 멘트랑 일치시켜야함.-> MainMessage에 level 있습니다.
+                .map(MainMessage::getContent)                                       // 수동으로 아이템 멘트 아닌것들은 레벨0, 레벨에 맞는 멘트는 1,2,3 넣을 생각입니다.
                 .orElse("보상을 축하해!"); // fallback
     } */
 
