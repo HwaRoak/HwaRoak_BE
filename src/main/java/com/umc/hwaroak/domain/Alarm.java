@@ -40,4 +40,7 @@ public class Alarm extends BaseEntity {
 
     @Column(name = "content")
     private String content;
+
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead = false;
 }
