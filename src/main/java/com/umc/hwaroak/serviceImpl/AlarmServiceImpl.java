@@ -12,7 +12,9 @@ import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -105,9 +107,21 @@ public class AlarmServiceImpl implements AlarmService {
                 .alarmType(AlarmType.FIRE)
                 .title("불 키우기")
                 .content(nickname + "님께서 불씨를 지폈어요!")
+                .fired_at(LocalDateTime.now())
                 .build();
 
         alarmRepository.save(alarm);
     }
+    @Override
+    public Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver){
+        List<Alarm> alarms = alarmRepository.findTopBySenderAndReceiverAndAlarmTypeOrderBy(
+                sender, receiver, AlarmType.FIRE
+        );
 
+        if (alarms.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(alarms.get(0).getFired_at());
+    }
 }

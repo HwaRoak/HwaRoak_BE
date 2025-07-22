@@ -3,7 +3,9 @@ package com.umc.hwaroak.service;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface AlarmService {
     /**
@@ -30,4 +32,6 @@ public interface AlarmService {
      *  불씨 보냈을시 알람 생성하기
      */
     void sendFireAlarm(Member sender, Member receiver);
+    Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver);
+
 }

@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder
@@ -44,4 +46,8 @@ public class Alarm extends BaseEntity {
     // 알림 읽었음 추가
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
+
+    // 알람 발송시각 분초까지 추가
+    @Column(name = "fired_at")
+    private LocalDateTime fired_at;
 }
