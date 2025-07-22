@@ -4,6 +4,7 @@ import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
+import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
@@ -113,5 +114,22 @@ public class AlarmServiceImpl implements AlarmService {
         alarm.markAsRead(); // 엔티티 메서드
     }
 
+     /**
+     *  공지 수동 등록
+     */
+    @Transactional
+    public void createNotice(AlarmRequestDto.CreateNoticeDto requestDto) {
+        Alarm alarm = Alarm.builder()
+                .alarmType(AlarmType.NOTIFICATION)
+                .receiver(null)
+                .sender(null) // 필요 시 admin 계정 넣을 수도 있음
+                .title(requestDto.getTitle())
+                .content(requestDto.getContent())
+                .message(requestDto.getMessage())
+                .isRead(false)
+                .build();
+
+        alarmRepository.save(alarm);
+    }
 
 }

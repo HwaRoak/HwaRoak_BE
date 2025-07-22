@@ -2,6 +2,7 @@ package com.umc.hwaroak.controller;
 
 import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.service.AlarmService;
 import com.umc.hwaroak.service.MemberService;
@@ -53,4 +54,13 @@ public class AlarmController {
         Member member = memberLoader.getMemberByContextHolder();
         alarmService.markAsRead(alarmId, member);
     }
+
+    @Operation(summary = "공지 등록", description = "관리자가 공지를 수동 등록합니다.")
+    @ApiResponse(responseCode = "201", description = "공지 등록 성공")
+    @PostMapping("/notices")
+    public void createNotice(@RequestBody AlarmRequestDto.CreateNoticeDto requestDto) {
+        alarmService.createNotice(requestDto);
+    }
+
+
 }

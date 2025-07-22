@@ -1,6 +1,7 @@
 package com.umc.hwaroak.service;
 
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 
 import java.util.List;
@@ -31,4 +32,7 @@ public interface AlarmService {
      */
     void markAsRead(Long alarmId, Member member);
 
+     *  공지 수동 등록
+     */
+    void createNotice(AlarmRequestDto.CreateNoticeDto requestDto);
 }
