@@ -106,7 +106,7 @@ public class AlarmServiceImpl implements AlarmService {
                 .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
 
         // alarm.getReceiver() != null -> 공지는 receiverId NULL이기 때문에 필수!
-        if (alarm.getReceiver() != null && !alarm.getReceiver().equals(member)) {
+        if (alarm.getReceiver() != null && !alarm.getReceiver().getId().equals(member.getId())) {
             throw new GeneralException(ErrorCode.FORBIDDEN_ALARM_ACCESS);
         }
 
