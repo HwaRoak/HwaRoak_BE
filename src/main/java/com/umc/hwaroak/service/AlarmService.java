@@ -26,4 +26,9 @@ public interface AlarmService {
      */
     List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member member);
 
+    /**
+     *  알람 읽음 처리 하기
+     */
+    void markAsRead(Long alarmId, Member member);
+
 }

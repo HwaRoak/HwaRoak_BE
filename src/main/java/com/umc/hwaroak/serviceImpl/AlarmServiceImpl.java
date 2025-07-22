@@ -11,6 +11,7 @@ import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class AlarmServiceImpl implements AlarmService {
         memberLoader.getMemberByContextHolder();
 
         Alarm alarm = alarmRepository.findByIdAndAlarmType(id, AlarmType.NOTIFICATION)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOTICE_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
 
         return AlarmResponseDto.InfoDto.builder()
                 .id(alarm.getId())
@@ -94,6 +95,22 @@ public class AlarmServiceImpl implements AlarmService {
                         .createdAt(alarm.getCreatedAt())
                         .build())
                 .toList();
+    }
+
+    /**
+     *  알람 읽기 api
+     */
+    @Transactional
+    public void markAsRead(Long alarmId, Member member) {
+        Alarm alarm = alarmRepository.findById(alarmId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
+
+        // alarm.getReceiver() != null -> 공지는 receiverId NULL이기 때문에 필수!
+        if (alarm.getReceiver() != null && !alarm.getReceiver().equals(member)) {
+            throw new GeneralException(ErrorCode.FORBIDDEN_ALARM_ACCESS);
+        }
+
+        alarm.markAsRead(); // 엔티티 메서드
     }
 
 

@@ -44,4 +44,13 @@ public class AlarmController {
     public AlarmResponseDto.InfoDto getNoticeDetail(@PathVariable Long id) {
         return alarmService.getNoticeDetail(id);
     }
+
+    @Operation(summary = "알림 읽음 처리", description = "알림을 읽음 처리합니다.")
+    @ApiResponse(responseCode = "200", description = "읽음 처리 성공")
+    @ApiResponse(responseCode = "4041", description = "알림 없음 (ALARM_NOT_FOUND)")
+    @PatchMapping("/{id}/read")
+    public void readAlarm(@PathVariable("id") Long alarmId) {
+        Member member = memberLoader.getMemberByContextHolder();
+        alarmService.markAsRead(alarmId, member);
+    }
 }
