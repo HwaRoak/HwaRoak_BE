@@ -25,6 +25,11 @@ public enum ErrorCode implements BaseCode{
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "메소드 요청이 잘못됐습니다."),
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "접근 권한이 없습니다."),
+    FAILED_KAKAO_PROFILE(HttpStatus.BAD_REQUEST, "KE4001", "카카오 서버로부터 프로필을 얻는 데에 실패하였습니다."),
+    NOT_ENOUGH_INFO(HttpStatus.NOT_FOUND, "KE4002", "카카오로부터 얻은 정보가 충분하지 않습니다."),
+
+    // UID
+    FAILED_UUID(HttpStatus.BAD_REQUEST, "UE4001", "UUID 생성에 실패하였습니다."),
 
     // Notice 관련
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NO4041", "해당 공지를 찾을 수 없습니다."),
@@ -50,6 +55,9 @@ public enum ErrorCode implements BaseCode{
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),
     SELECTED_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4002", "대표 아이템을 찾을 수 없습니다"),
     ALREADY_SELECTED_ITEM(HttpStatus.BAD_REQUEST, "ITEM4003", "해당 아이템은 이미 대표 아이템입니다"),
+
+    // Alarm
+    SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "ALARM4041", "알림 설정을 찾을 수 없습니다."),
 
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
