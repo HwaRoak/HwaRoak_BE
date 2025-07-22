@@ -27,4 +27,9 @@ public class MemberItem extends BaseEntity {
     @Setter
     @Column(name = "is_selected")
     private Boolean isSelected;     // 대표 아이템 여부
+
+    public MemberItem(Member member, Item item) {
+        this.member = member;
+        this.item = item;
+    }
 }
