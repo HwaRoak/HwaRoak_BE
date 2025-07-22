@@ -77,9 +77,13 @@ public class AlarmServiceImpl implements AlarmService {
         alarmRepository.save(alarm);
     }
 
+    /**
+     * 알람함 최신순 전체 조회
+     * receiverId로 조회 or (receiverId=NULL && 공지)
+     */
     @Override
     public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member receiver) {
-        List<Alarm> alarms = alarmRepository.findAllByReceiverOrderByCreatedAtDesc(receiver);
+        List<Alarm> alarms = alarmRepository.findAllIncludingNotifications(receiver);
 
         return alarms.stream()
                 .map(alarm -> AlarmResponseDto.InfoDto.builder()
@@ -91,5 +95,6 @@ public class AlarmServiceImpl implements AlarmService {
                         .build())
                 .toList();
     }
+
 
 }
