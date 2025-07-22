@@ -32,6 +32,7 @@ public interface AlarmService {
      */
     void markAsRead(Long alarmId, Member member);
 
+    /**
      *  공지 수동 등록
      */
     void createNotice(AlarmRequestDto.CreateNoticeDto requestDto);
