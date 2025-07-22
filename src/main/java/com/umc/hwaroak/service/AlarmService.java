@@ -28,6 +28,10 @@ public interface AlarmService {
     List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member member);
 
     /**
+     *  알람 읽음 처리 하기
+     */
+    void markAsRead(Long alarmId, Member member);
+
      *  공지 수동 등록
      */
     void createNotice(AlarmRequestDto.CreateNoticeDto requestDto);

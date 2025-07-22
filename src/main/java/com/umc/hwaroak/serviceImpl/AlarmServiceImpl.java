@@ -51,7 +51,7 @@ public class AlarmServiceImpl implements AlarmService {
         memberLoader.getMemberByContextHolder();
 
         Alarm alarm = alarmRepository.findByIdAndAlarmType(id, AlarmType.NOTIFICATION)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOTICE_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
 
         return AlarmResponseDto.InfoDto.builder()
                 .id(alarm.getId())
@@ -79,9 +79,13 @@ public class AlarmServiceImpl implements AlarmService {
         alarmRepository.save(alarm);
     }
 
+    /**
+     * 알람함 최신순 전체 조회
+     * receiverId로 조회 or (receiverId=NULL && 공지)
+     */
     @Override
     public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member receiver) {
-        List<Alarm> alarms = alarmRepository.findAllByReceiverOrderByCreatedAtDesc(receiver);
+        List<Alarm> alarms = alarmRepository.findAllIncludingNotifications(receiver);
 
         return alarms.stream()
                 .map(alarm -> AlarmResponseDto.InfoDto.builder()
@@ -95,6 +99,22 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     /**
+     *  알람 읽기 api
+     */
+    @Transactional
+    public void markAsRead(Long alarmId, Member member) {
+        Alarm alarm = alarmRepository.findById(alarmId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
+
+        // alarm.getReceiver() != null -> 공지는 receiverId NULL이기 때문에 필수!
+        if (alarm.getReceiver() != null && !alarm.getReceiver().getId().equals(member.getId())) {
+            throw new GeneralException(ErrorCode.FORBIDDEN_ALARM_ACCESS);
+        }
+
+        alarm.markAsRead(); // 엔티티 메서드
+    }
+
+     /**
      *  공지 수동 등록
      */
     @Transactional
