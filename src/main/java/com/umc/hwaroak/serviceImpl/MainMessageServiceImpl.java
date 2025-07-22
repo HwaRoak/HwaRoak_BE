@@ -5,6 +5,7 @@ import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.MainMessage;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
+import com.umc.hwaroak.dto.response.MainMessageResponseDto;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.MainMessageRepository;
@@ -24,7 +25,6 @@ public class MainMessageServiceImpl implements MainMessageService {
     private final DiaryRepository diaryRepository;
     private final AlarmRepository alarmRepository;
     //private final RewardRepository rewardRepository; -> 유연님이 해주신다고 함.
-    private final MemberLoader memberLoader;
 
 
     /**
@@ -60,10 +60,10 @@ public class MainMessageServiceImpl implements MainMessageService {
      * 준비된 불씨 친추멘트 반환 -> 근데 멘트 예시중에 "그 사이 친구들도 다양한 날들을 보냈대. 구경 가볼래?” 이런건 괜찮은데
      * "00님의 요즘 감정이 조금 바뀐 것 같아. 어떤 하루를 보냈을까?" 여기서 @@님은 어쩔까~~요.
      */
-    private String getFireMessage() {
+    private MainMessageResponseDto getFireMessage() {
         return mainMessageRepository.findRandomByType(FIRE_ALERT)
-                .map(MainMessage::getContent)
-                .orElse("🔥 친구가 응원했어요!"); // fallback
+                .map(m -> MainMessageResponseDto.of(m.getContent()))
+                .orElse(MainMessageResponseDto.of("🔥 친구가 응원했어요!")); // fallback
     }
 
     /**
@@ -76,19 +76,20 @@ public class MainMessageServiceImpl implements MainMessageService {
     /**
      * 일기 안쓴 경우의 원래 디폴트 값들을 랜덤으로 반환
      */
-    private String getDiaryPromptMessage() {
+    private MainMessageResponseDto getDiaryPromptMessage() {
         return mainMessageRepository.findRandomByType(DIARY_EMPTY)
-                .map(MainMessage::getContent)
-                .orElse("오늘 하루를 기록해보세요!");
+                .map(m -> MainMessageResponseDto.of(m.getContent()))
+                .orElse(MainMessageResponseDto.of("오늘 하루를 기록해보세요!")); // fallback
     }
 
     /**
      *  일기 쓴 경우의 Diary의 feedback(감정 분석 된 내용)을 반환함.
      */
-    private String getEmotionFeedbackMessage(Member member) {
+    private MainMessageResponseDto getEmotionFeedbackMessage(Member member) {
         return diaryRepository.findByRecordDate(member.getId(), LocalDate.now())
                 .map(Diary::getFeedback)
-                .orElse("오늘은 어떤 하루였나요?");
+                .map(MainMessageResponseDto::of)
+                .orElse(MainMessageResponseDto.of("오늘은 어떤 하루였나요?"));
     }
 
     /**
@@ -98,8 +99,7 @@ public class MainMessageServiceImpl implements MainMessageService {
      * 3. 오늘의 일기 미작성? -> 오늘은 어떤 하루였어~? 등의 일기 작성하라고 재촉하는 느낌의 멘트 랜덤 반환
      * 4. 일기 작성 -> 리워드 수령할 수 있는 상황 아니고? 불씨 알람 다 읽었거나 없고? 일기 썻으면? 일기에 대한 피드백이 디폴트 메시지가 됩니다.
      */
-    public String getMainMessage() {
-        Member member = memberLoader.getMemberByContextHolder();
+    public MainMessageResponseDto getMainMessage(Member member) {
 
         //if (isRewardAvailable(member)) {    ->
            // return getRewardMessage(member);
@@ -115,9 +115,6 @@ public class MainMessageServiceImpl implements MainMessageService {
 
         return getEmotionFeedbackMessage(member);
     }
-
-
-
 
 
 
