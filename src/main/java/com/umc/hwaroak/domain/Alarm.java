@@ -42,9 +42,9 @@ public class Alarm extends BaseEntity {
     private String content;
 
     @Column(name = "is_read", nullable = false)
-    private boolean isRead = false;
+    private boolean read = false;
 
     public void markAsRead() {
-        this.isRead = true;
+        this.read = true;
     }
 }

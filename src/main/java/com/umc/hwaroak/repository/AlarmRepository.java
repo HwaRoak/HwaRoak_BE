@@ -30,4 +30,8 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     """)
     List<Alarm> findAllIncludingNotifications(@Param("receiver") Member receiver);
 
+    /**
+     * 사용자가 받은 알람중 알람 타입에 따라 읽기 전인게 있나 없나? Boolean 반환.
+     */
+    Boolean existsByReceiverAndAlarmTypeAndReadFalse(Member receiver, AlarmType alarmType);
 }

@@ -126,7 +126,7 @@ public class AlarmServiceImpl implements AlarmService {
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .message(requestDto.getMessage())
-                .isRead(false)
+                .read(false)
                 .build();
 
         alarmRepository.save(alarm);
