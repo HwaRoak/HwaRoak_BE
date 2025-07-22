@@ -1,5 +1,6 @@
 package com.umc.hwaroak.domain;
 
+import com.umc.hwaroak.domain.common.MainMessageType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
