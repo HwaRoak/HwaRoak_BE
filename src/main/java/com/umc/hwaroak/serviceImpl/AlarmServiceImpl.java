@@ -92,4 +92,22 @@ public class AlarmServiceImpl implements AlarmService {
                 .toList();
     }
 
+    /**
+     *  불씨 보냈을시 알람 생성하기
+     */
+    @Override
+    public void sendFireAlarm(Member sender, Member receiver) {
+        String nickname = sender.getNickname();
+
+        Alarm alarm = Alarm.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .alarmType(AlarmType.FIRE)
+                .title("불 키우기")
+                .content(nickname + "님께서 불씨를 지폈어요!")
+                .build();
+
+        alarmRepository.save(alarm);
+    }
+
 }

@@ -26,4 +26,8 @@ public interface AlarmService {
      */
     List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member member);
 
+    /**
+     *  불씨 보냈을시 알람 생성하기
+     */
+    void sendFireAlarm(Member sender, Member receiver);
 }

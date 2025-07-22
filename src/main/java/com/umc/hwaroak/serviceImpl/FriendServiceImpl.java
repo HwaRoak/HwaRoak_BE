@@ -4,6 +4,7 @@ import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.FriendStatus;
+import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -204,6 +206,38 @@ public class FriendServiceImpl implements FriendService {
 
         // [3] BLOCKED 상태로 변경 (soft delete)
         relationship.updateStatus(FriendStatus.BLOCKED);
+    }
+
+    @Override
+    @Transactional
+    public FireAlarmResponseDto fireFriend(Long friendId) {
+        Member sender = memberLoader.getMemberByContextHolder();
+        Member receiver = memberRepository.findById(friendId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 친구 관계인지 확인 (직접 구현하거나 FriendService 내 메서드 활용)
+        if (!isFriend(sender, receiver)) {
+            throw new GeneralException(ErrorCode.NOT_FRIEND);
+        }
+
+        alarmService.sendFireAlarm(sender, receiver);
+
+        return FireAlarmResponseDto.builder()
+                .notifiedAt(LocalDateTime.now().toString())
+                .message("다음 알림은 59분 후에 전송돼요!")
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isFriend(Member member1, Member member2) {
+        // member1 → member2 관계에 ACCEPTED 상태가 있는지
+        boolean direct = friendRepository.existsBySenderAndReceiver(member1, member2);
+
+        // member2 → member1 관계에 ACCEPTED 상태가 있는지
+        boolean reverse = friendRepository.existsBySenderAndReceiver(member2, member1);
+
+        return direct || reverse;
     }
 
 }
