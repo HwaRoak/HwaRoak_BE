@@ -15,5 +15,5 @@ public interface MainMessageService {
      *
      * @return 메인 메시지 문자열
      */
-    MainMessageResponseDto getMainMessage(Member member);
+    MainMessageResponseDto getMainMessage();
 }

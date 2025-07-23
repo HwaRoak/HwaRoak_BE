@@ -17,13 +17,11 @@ import org.springframework.web.bind.annotation.*;
 public class MainMessageController {
 
     private final MainMessageService mainMessageService;
-    private final MemberLoader memberLoader;
 
     @Operation(summary = "메인 메시지 조회", description = "조건 우선순위에 따라 사용자에게 보여줄 메인 메시지를 반환합니다.")
     @ApiResponse(responseCode = "200", description = "메시지 조회 성공")
     @GetMapping
     public MainMessageResponseDto getMainMessage() {
-        Member member = memberLoader.getMemberByContextHolder();
-        return mainMessageService.getMainMessage(member);
+        return mainMessageService.getMainMessage();
     }
 }

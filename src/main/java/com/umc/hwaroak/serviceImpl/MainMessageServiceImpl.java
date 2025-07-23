@@ -1,5 +1,6 @@
 package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
@@ -22,6 +23,7 @@ public class MainMessageServiceImpl implements MainMessageService {
     private final MainMessageRepository mainMessageRepository;
     private final DiaryRepository diaryRepository;
     private final AlarmRepository alarmRepository;
+    private final MemberLoader memberLoader;
     //private final RewardRepository rewardRepository; -> 유연님이 해주신다고 함.
 
 
@@ -99,7 +101,9 @@ public class MainMessageServiceImpl implements MainMessageService {
      * 3. 오늘의 일기 미작성? -> 오늘은 어떤 하루였어~? 등의 일기 작성하라고 재촉하는 느낌의 멘트 랜덤 반환
      * 4. 일기 작성 -> 리워드 수령할 수 있는 상황 아니고? 불씨 알람 다 읽었거나 없고? 일기 썻으면? 일기에 대한 피드백이 디폴트 메시지가 됩니다.
      */
-    public MainMessageResponseDto getMainMessage(Member member) {
+    public MainMessageResponseDto getMainMessage() {
+
+        Member member = memberLoader.getMemberByContextHolder();
 
         //if (isRewardAvailable(member)) {    ->
            // return getRewardMessage(member);
