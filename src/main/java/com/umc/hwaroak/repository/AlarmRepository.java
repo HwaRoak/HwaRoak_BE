@@ -7,6 +7,9 @@ import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import org.springframework.data.repository.query.Param;
+
+
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +21,17 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     // 공지 상세 -> 이것도 현재 이름만 공지 상세지 타입과 이름으로 조회하는 것이기에 활용가능 합니다!
     Optional<Alarm> findByIdAndAlarmType(Long id, AlarmType alarmType);
 
-    // 모든 알람 조회 -> 알람함 누르면 최신순으로 쫘라락 뜨게끔.
-    List<Alarm> findAllByReceiverOrderByCreatedAtDesc(Member receiver);
+    /**
+     * 알람함 최신순 전체 조회
+     * receiverId로 조회 or (receiverId=NULL && 공지)
+     */
+    @Query("""
+        SELECT a FROM Alarm a
+        WHERE a.receiver = :receiver
+           OR (a.receiver IS NULL AND a.alarmType = 'NOTIFICATION')
+        ORDER BY a.createdAt DESC
+    """)
+    List<Alarm> findAllIncludingNotifications(@Param("receiver") Member receiver);
 
     // 불씨 알람 중 특정 sender -> receiver 조합의 가장 최신 알림
     @Query("SELECT a FROM Alarm a " +
