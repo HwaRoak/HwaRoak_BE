@@ -31,8 +31,10 @@ public enum ErrorCode implements BaseCode{
     // UID
     FAILED_UUID(HttpStatus.BAD_REQUEST, "UE4001", "UUID 생성에 실패하였습니다."),
 
-    // Notice 관련
-    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NO4041", "해당 공지를 찾을 수 없습니다."),
+    // ALARM 관련
+    ALARM_NOT_FOUND(HttpStatus.NOT_FOUND, "AL4041", "해당 알람을 찾을 수 없습니다."),
+    FORBIDDEN_ALARM_ACCESS(HttpStatus.FORBIDDEN,"AL4031", "본인의 알림만 읽을 수 있습니다."),
+
 
 
     // JWT token
