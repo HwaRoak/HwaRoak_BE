@@ -38,20 +38,20 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createAccessToken(Long userId) {
-        return createToken(userId, accessTokenValidity, "ACCESS");
+    public String createAccessToken(Long memberId) {
+        return createToken(memberId, accessTokenValidity, "ACCESS");
     }
 
-    public String createRefreshToken(Long userId) {
-        return createToken(userId, refreshTokenValidity, "REFRESH");
+    public String createRefreshToken(Long memberId) {
+        return createToken(memberId, refreshTokenValidity, "REFRESH");
     }
 
-    private String createToken(Long userId, long validity, String tokenType) {
+    private String createToken(Long memberId, long validity, String tokenType) {
         Date now = new Date();
         Key key = getSigningKey();
 
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))
+                .setSubject(String.valueOf(memberId))
                 .claim("authority", "ROLE_USER")
                 .claim("tokenType", tokenType)  // 🔥 추가
                 .setIssuedAt(now)
@@ -59,64 +59,16 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-//
-//    // 토큰에서 사용자 id 추출
-//    public Long getUserId(String token) {
-//        Key key = getSigningKey();
-//        Claims claims = Jwts.parser()
-//                .setSigningKey(key)
-//                .parseClaimsJws(token)
-//                .getBody();
-//        return Long.parseLong(claims.getSubject());
-//    }
-//
-//    // 토큰 유효성 검증
-//    public boolean validateToken(String token) {
-//        try {
-//            Jwts.parser()
-//                    .setSigningKey(getSigningKey())
-//                    .parseClaimsJws(token);
-//            return true;
-//        } catch (ExpiredJwtException e) {
-//            log.warn("JWT expired: {}", e.getMessage());
-//        } catch (UnsupportedJwtException e) {
-//            log.warn("Unsupported JWT: {}", e.getMessage());
-//        } catch (MalformedJwtException e) {
-//            log.warn("Malformed JWT: {}", e.getMessage());
-//        } catch (SignatureException e) {
-//            log.warn("Invalid signature: {}", e.getMessage());
-//        } catch (IllegalArgumentException e) {
-//            log.warn("Illegal token: {}", e.getMessage());
-//        }
-//        return false;
-//    }
-//
-//    public Authentication getAuthentication(String token) {
-//        Key key = getSigningKey();
-//
-//        Claims claims = Jwts.parser()
-//                .setSigningKey(key)
-//                .parseClaimsJws(token)
-//                .getBody();
-//
-//        if (!claims.get("authority").equals("ROLE_USER")) {
-//            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
-//        }
-//
-//        Collection<? extends GrantedAuthority> authorities =
-//                Arrays.stream(claims.get("authority").toString().split(","))
-//                        .map(SimpleGrantedAuthority::new)
-//                        .collect(Collectors.toList());
-//
-//        return new UsernamePasswordAuthenticationToken(String.valueOf(getUserId(token)), null, authorities);
-//    }
 
-    // 사용자 ID 추출
-    public Long getUserId(String token) {
-        Claims claims = parseClaims(token);
-        return Long.parseLong(claims.getSubject());
+    // 토큰에서 사용자 id 추출
+    public String getMemberId(String token) {
+        Key key = getSigningKey();
+        Claims claims = Jwts.parser()
+                .setSigningKey(key)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getSubject();
     }
-
 
     // 토큰 파싱 및 유효성 검증
     private Claims parseClaims(String token) {
@@ -167,11 +119,6 @@ public class JwtTokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        return new UsernamePasswordAuthenticationToken(
-                String.valueOf(getUserId(token)),
-                null,
-                authorities
-        );
+        return new UsernamePasswordAuthenticationToken(getMemberId(token), null, authorities);
     }
 }
-

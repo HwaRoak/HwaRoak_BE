@@ -18,6 +18,7 @@ import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.authentication.JwtTokenProvider;
 import com.umc.hwaroak.service.KakaoAuthService;
+import com.umc.hwaroak.util.UidGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
+    private final UidGenerator uidGenerator;
     private final WebClient.Builder webClientBuilder;  // WebClient는 Builder로 주입받음
     private final ItemRepository itemRepository;
     private final MemberItemRepository memberItemRepository;
@@ -49,7 +51,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
 
         KakaoUserInfoDto kakaoUser = getUserInfoFromKakao(kakaoAccessToken);
 
-        String kakaoId = String.valueOf(kakaoUser.getId());
+        String uid = uidGenerator.generateShortUid(String.valueOf(kakaoUser.getId()));
         KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
 
         if (account == null || account.getProfile() == null) {
@@ -58,19 +60,19 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
 
         String nickname = account.getProfile().getNickname();
         String profileImage = account.getProfile().getProfile_image_url();
-        log.info("카카오 유저 정보 조회 완료 - kakaoId: {}, nickname: {}", kakaoId, nickname);
+        log.info("카카오 유저 정보 조회 완료 - kakaoId: {}, nickname: {}", kakaoUser.getId(), nickname);
 
-        Member member = memberRepository.findByUserId(kakaoId)
+        Member member = memberRepository.findByUserId(uid)
                 .orElseGet(() -> {
 
                     // 신규 가입
-                    Member newMember = new Member(kakaoId, nickname, profileImage);
-                    log.info("신규 회원 가입 - userId: {}", kakaoId);
+                    Member newMember = new Member(uid, nickname, profileImage);
+                    log.info("신규 회원 가입 - userId: {}", uid);
                     Member savedNewMember = memberRepository.save(newMember);
 
                     // 기본 아이템 설정
-                    Item defaultItem = itemRepository.findByLevel(1);
-
+                    Item defaultItem = itemRepository.findByLevel(1)
+                            .orElseThrow(() -> new GeneralException(ErrorCode.ITEM_NOT_FOUND));
                     MemberItem newMemberItem = MemberItem.builder()
                             .member(savedNewMember)
                             .item(defaultItem)
@@ -120,14 +122,14 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        Long userId = jwtProvider.getUserId(refreshToken);
-        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + userId);
+        String memberId = jwtProvider.getMemberId(refreshToken);
+        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + memberId);
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        String newAccessToken = jwtProvider.createAccessToken(userId);
+        String newAccessToken = jwtProvider.createAccessToken(Long.parseLong(memberId));
         return new TokenDto(newAccessToken, refreshToken);
     }
 
@@ -147,7 +149,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     .block();  // 동기식 처리
 
         } catch (Exception e) {
-            throw new RuntimeException("카카오 유저 정보를 불러오지 못했습니다.", e);
+            throw new GeneralException(ErrorCode.FAILED_KAKAO_PROFILE);
         }
     }
 }
