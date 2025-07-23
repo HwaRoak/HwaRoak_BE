@@ -81,5 +81,4 @@ public class FriendController {
     public FireAlarmResponseDto fireFriend(@PathVariable Long friendId) {
         return friendService.fireFriend(friendId);
     }
-
 }
