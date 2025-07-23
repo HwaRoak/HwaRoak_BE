@@ -10,6 +10,7 @@ import com.umc.hwaroak.dto.response.EmotionSummaryResponseDto;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.EmotionSummaryRepository;
 import com.umc.hwaroak.service.EmotionSummaryService;
+import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +28,11 @@ import java.util.Map;
 public class EmotionSummaryServiceImpl implements EmotionSummaryService {
 
     private final MemberLoader memberLoader;
+
     private final EmotionSummaryRepository emotionSummaryRepository;
     private final DiaryRepository diaryRepository;
+
+    private final OpenAiUtil openAiUtil;
 
     @Override
     @Transactional(readOnly=true)
@@ -114,8 +117,9 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
             }
         }
 
-        String gptMessage = "아직 구현 안 함";
-//        String gptMessage = gptMessageService.generateSummaryMessage(categoryCounts);
+        // ai 기반 감정분석 멘트 생성
+        int targetMonth = targetDate.getMonthValue();
+        String gptMessage = openAiUtil.analysisEmotions(targetMonth, categoryCounts, diaries);
 
         EmotionSummary summary = emotionSummaryRepository
                 .findByMemberIdAndSummaryMonth(memberId, summaryMonth)
