@@ -71,7 +71,8 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     Member savedNewMember = memberRepository.save(newMember);
 
                     // 기본 아이템 설정
-                    Item defaultItem = itemRepository.findByLevel(1);
+                    Item defaultItem = itemRepository.findByLevel(1)
+                            .orElseThrow(() -> new GeneralException(ErrorCode.ITEM_NOT_FOUND));
                     MemberItem newMemberItem = MemberItem.builder()
                             .member(savedNewMember)
                             .item(defaultItem)

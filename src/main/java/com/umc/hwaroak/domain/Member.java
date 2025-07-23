@@ -3,10 +3,7 @@ package com.umc.hwaroak.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +28,7 @@ public class Member extends BaseEntity {
     @Column(name = "nickname")
     private String nickname;
 
+    @Setter
     @Column(name = "reward")
     private Integer reward;
 
@@ -69,7 +67,7 @@ public class Member extends BaseEntity {
     private List<Friend> sendFriend = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberItem> memberItems = new ArrayList<>();
+    private List<MemberItem> memberItemList = new ArrayList<>();
 
     public void update(String nickname, String profileImage, String introduction){
         if (nickname != null) {
@@ -92,7 +90,7 @@ public class Member extends BaseEntity {
         this.name = name;
         this.nickname = nickname;
         this.profileImage = profileImage;
-        this.reward = 0;
+        this.reward = 7;
         this.feeling = "default";
     }
 
