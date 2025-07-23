@@ -34,4 +34,16 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
                 .map(DiaryConverter::toThumbnailDto)
                 .toList();
     }
+
+    @Override
+    public List<Diary> findAllDiariesByYearMonth(Long memberId, int year, int month) {
+        return jpaQueryFactory
+                .selectFrom(diary)
+                .where(
+                        diary.member.id.eq(memberId),
+                        diary.recordDate.year().eq(year),
+                        diary.recordDate.month().eq(month)
+                )
+                .fetch();
+    }
 }

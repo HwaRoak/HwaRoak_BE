@@ -3,12 +3,14 @@ package com.umc.hwaroak.domain;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "emotion_summary")
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmotionSummary extends BaseEntity {

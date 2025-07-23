@@ -15,6 +15,7 @@ import com.umc.hwaroak.repository.ItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.DiaryService;
+import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class DiaryServiceImpl implements DiaryService {
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
+    private final EmotionSummaryService emotionSummaryService;
 
     @Transactional
     public DiaryResponseDto.CreateDto createDiary(DiaryRequestDto requestDto) {
@@ -60,6 +62,7 @@ public class DiaryServiceImpl implements DiaryService {
         log.info("작성 일기 내용: " + requestDto.getContent());
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
         diaryRepository.save(diary);
+        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
 
         String nextItemName = upgradeNextItem();
         return DiaryConverter.toCreateDto(diary, nextItemName);
@@ -105,6 +108,7 @@ public class DiaryServiceImpl implements DiaryService {
         diary.update(requestDto.getContent(), emotionList);
         diary.setFeedback(openAiUtil.reviewDiary(requestDto.getContent()));
         diaryRepository.save(diary);
+        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
 
         String nextItemName = getNextItemName(member);
         return DiaryConverter.toCreateDto(diary, nextItemName);
@@ -129,6 +133,7 @@ public class DiaryServiceImpl implements DiaryService {
 
         // TODO: 삭제 후에 아이템 관련 처리 필요
         diaryRepository.delete(diary);
+        emotionSummaryService.updateMonthlyEmotionSummary(diary.getRecordDate());  // 감정 통계 업데이트
     }
 
     // 다음 보상 아이템 이름 반환

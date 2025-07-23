@@ -1,9 +1,13 @@
 package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.EmotionSummary;
+import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.EmotionCategory;
 import com.umc.hwaroak.dto.response.EmotionSummaryResponseDto;
+import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.EmotionSummaryRepository;
 import com.umc.hwaroak.service.EmotionSummaryService;
 import lombok.RequiredArgsConstructor;
@@ -11,15 +15,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EmotionSummaryServiceImpl implements EmotionSummaryService {
+
     private final MemberLoader memberLoader;
     private final EmotionSummaryRepository emotionSummaryRepository;
+    private final DiaryRepository diaryRepository;
 
     @Override
     @Transactional(readOnly=true)
@@ -82,6 +92,48 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
                 .emotionSummary(createPreviewFromSummary(summary))
                 .message(summary.getSummaryMessage())
                 .build();
+    }
+
+    @Override
+    public void updateMonthlyEmotionSummary(LocalDate targetDate) {
+
+        Member member = memberLoader.getMemberByContextHolder();
+        Long memberId = member.getId();
+        String summaryMonth = YearMonth.from(targetDate).toString();
+
+        // 멤버ID와 업데이트 하려는 달의 정보로 해당 월의 모든 일기를 가져옴
+        List<Diary> diaries = diaryRepository.findAllDiariesByYearMonth(memberId, targetDate.getYear(), targetDate.getMonthValue());
+        int diaryCount = diaries.size();    // 전체 일기 개수
+
+
+        Map<EmotionCategory, Integer> categoryCounts = new EnumMap<>(EmotionCategory.class);
+
+        for (Diary diary : diaries) {
+            for (Emotion emotion : diary.getEmotionList()) {
+                categoryCounts.merge(emotion.getCategory(), 1, Integer::sum);
+            }
+        }
+
+        String gptMessage = "아직 구현 안 함";
+//        String gptMessage = gptMessageService.generateSummaryMessage(categoryCounts);
+
+        EmotionSummary summary = emotionSummaryRepository
+                .findByMemberIdAndSummaryMonth(memberId, summaryMonth)
+                .orElse(EmotionSummary.builder()
+                        .member(member)
+                        .summaryMonth(summaryMonth)
+                        .build());
+
+        summary.updateCounts(
+                diaryCount,
+                categoryCounts.getOrDefault(EmotionCategory.CALM, 0),
+                categoryCounts.getOrDefault(EmotionCategory.HAPPY, 0),
+                categoryCounts.getOrDefault(EmotionCategory.SAD, 0),
+                categoryCounts.getOrDefault(EmotionCategory.ANGRY, 0),
+                gptMessage
+        );
+
+        emotionSummaryRepository.save(summary);
     }
 
 
