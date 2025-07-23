@@ -9,7 +9,6 @@ import com.umc.hwaroak.dto.response.DiaryResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -20,7 +19,7 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
     private final QDiary diary = QDiary.diary;
 
     @Override
-    public List<DiaryResponseDto> findDiaryByMonth(Long memberId, Integer year, Integer month) {
+    public List<DiaryResponseDto.ThumbnailDto> findDiaryByMonth(Long memberId, Integer year, Integer month) {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(diary.member.id.eq(memberId));
@@ -32,7 +31,7 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
                 .where(builder)
                 .fetch();
         return results.stream()
-                .map(DiaryConverter::toDto)
+                .map(DiaryConverter::toThumbnailDto)
                 .toList();
     }
 }
