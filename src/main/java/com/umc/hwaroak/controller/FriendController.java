@@ -78,9 +78,8 @@ public class FriendController {
     @ApiResponse(responseCode = "200", description = "불 지피기 성공")
     @ApiResponse(responseCode = "403", description = "해당 사용자와 친구 관계가 아닙니다")
     @PostMapping("/{friendId}/fire")
-    public ResponseEntity<com.umc.hwaroak.response.ApiResponse<FireAlarmResponseDto>> fireFriend(@PathVariable Long friendId) {
-        FireAlarmResponseDto data = friendService.fireFriend(friendId);
-        return ResponseEntity.ok(com.umc.hwaroak.response.ApiResponse.success(SuccessCode.OK, data));
+    public FireAlarmResponseDto fireFriend(@PathVariable Long friendId) {
+        return friendService.fireFriend(friendId);
     }
 
 }
