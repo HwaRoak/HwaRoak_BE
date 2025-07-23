@@ -4,6 +4,7 @@ import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
+import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
@@ -11,6 +12,7 @@ import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -49,7 +51,7 @@ public class AlarmServiceImpl implements AlarmService {
         memberLoader.getMemberByContextHolder();
 
         Alarm alarm = alarmRepository.findByIdAndAlarmType(id, AlarmType.NOTIFICATION)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOTICE_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
 
         return AlarmResponseDto.InfoDto.builder()
                 .id(alarm.getId())
@@ -77,9 +79,13 @@ public class AlarmServiceImpl implements AlarmService {
         alarmRepository.save(alarm);
     }
 
+    /**
+     * 알람함 최신순 전체 조회
+     * receiverId로 조회 or (receiverId=NULL && 공지)
+     */
     @Override
     public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member receiver) {
-        List<Alarm> alarms = alarmRepository.findAllByReceiverOrderByCreatedAtDesc(receiver);
+        List<Alarm> alarms = alarmRepository.findAllIncludingNotifications(receiver);
 
         return alarms.stream()
                 .map(alarm -> AlarmResponseDto.InfoDto.builder()
@@ -90,6 +96,40 @@ public class AlarmServiceImpl implements AlarmService {
                         .createdAt(alarm.getCreatedAt())
                         .build())
                 .toList();
+    }
+
+    /**
+     *  알람 읽기 api
+     */
+    @Transactional
+    public void markAsRead(Long alarmId, Member member) {
+        Alarm alarm = alarmRepository.findById(alarmId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
+
+        // alarm.getReceiver() != null -> 공지는 receiverId NULL이기 때문에 필수!
+        if (alarm.getReceiver() != null && !alarm.getReceiver().getId().equals(member.getId())) {
+            throw new GeneralException(ErrorCode.FORBIDDEN_ALARM_ACCESS);
+        }
+
+        alarm.markAsRead(); // 엔티티 메서드
+    }
+
+     /**
+     *  공지 수동 등록
+     */
+    @Transactional
+    public void createNotice(AlarmRequestDto.CreateNoticeDto requestDto) {
+        Alarm alarm = Alarm.builder()
+                .alarmType(AlarmType.NOTIFICATION)
+                .receiver(null)
+                .sender(null) // 필요 시 admin 계정 넣을 수도 있음
+                .title(requestDto.getTitle())
+                .content(requestDto.getContent())
+                .message(requestDto.getMessage())
+                .isRead(false)
+                .build();
+
+        alarmRepository.save(alarm);
     }
 
 }

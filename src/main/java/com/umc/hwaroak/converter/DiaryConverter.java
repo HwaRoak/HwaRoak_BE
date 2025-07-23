@@ -21,14 +21,27 @@ public class DiaryConverter {
                 .build();
     }
 
-    public static DiaryResponseDto toDto(Diary diary) {
-        return DiaryResponseDto.builder()
+    public static DiaryResponseDto.CreateDto toCreateDto(Diary diary, String nextItemName) {
+        return DiaryResponseDto.CreateDto.builder()
                 .id(diary.getId())
+                .recordDate(diary.getRecordDate())
                 .emotionList(diary.getEmotionList().stream()
                         .map(Emotion::getDisplayName)
                         .collect(Collectors.toList()))
                 .feedback(diary.getFeedback())
                 .reward(diary.getMember().getReward())
+                .memberItemName(nextItemName)
+                .build();
+    }
+
+    public static DiaryResponseDto.ThumbnailDto toThumbnailDto(Diary diary) {
+        return DiaryResponseDto.ThumbnailDto.builder()
+                .id(diary.getId())
+                .recordDate(diary.getRecordDate())
+                .emotionList(diary.getEmotionList().stream()
+                        .map(Emotion::getDisplayName)
+                        .collect(Collectors.toList()))
+                .feedback(diary.getFeedback())
                 .build();
     }
 
