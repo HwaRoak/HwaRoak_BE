@@ -3,16 +3,19 @@ package com.umc.hwaroak.serviceImpl;
 import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.dto.response.MainMessageResponseDto;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.MainMessageRepository;
+import com.umc.hwaroak.service.DiaryService;
 import com.umc.hwaroak.service.MainMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static com.umc.hwaroak.domain.common.MainMessageType.*;
 
@@ -22,24 +25,17 @@ public class MainMessageServiceImpl implements MainMessageService {
 
     private final MainMessageRepository mainMessageRepository;
     private final DiaryRepository diaryRepository;
+    private final DiaryService diaryService;
     private final AlarmRepository alarmRepository;
     private final MemberLoader memberLoader;
 
-    // 일기
-   // private boolean isRewardAvailable(Member member) {
-        //return member.getReward()==0;
-   // }
 
 
-    /*private String getRewardMessage(Member member) {
-        if (!member.isRewardReceived()) {
-            return "보상을 받아봐!";
-        }
-        int level = member.리워드하려는 아이템의 멘트가져와야함(); -> memberService.findSelectedItem()
-        return mainMessageRepository.findByTypeAndItemLevel(REWARD_BY_LEVEL, level)
-                .map(MainMessage::getContent)
-                .orElse("보상을 축하해!"); // fallback
-    } */
+    private MainMessageResponseDto getRewardMessage(Member member) {
+        return mainMessageRepository.findRandomByType(REWARD_HINT)
+                .map(m -> MainMessageResponseDto.of(m.getContent()))
+                .orElse(MainMessageResponseDto.of("보상을 받을 수 있어요!"));
+    }
 
     /**
      * 사용자가 받은 불씨 알람중 읽지 않은 것이 있나?
@@ -57,7 +53,7 @@ public class MainMessageServiceImpl implements MainMessageService {
     private MainMessageResponseDto getFireMessage() {
         return mainMessageRepository.findRandomByType(FIRE_ALERT)
                 .map(m -> MainMessageResponseDto.of(m.getContent()))
-                .orElse(MainMessageResponseDto.of("🔥 친구가 응원했어요!")); // fallback
+                .orElse(MainMessageResponseDto.of("친구가 응원했어요!")); // fallback
     }
 
     /**
@@ -97,9 +93,9 @@ public class MainMessageServiceImpl implements MainMessageService {
 
         Member member = memberLoader.getMemberByContextHolder();
 
-       // if (isRewardAvailable(member)) {
-           // return getRewardMessage(member);
-        //}
+        if (diaryService.isRewardAvailable(member)) {
+            return getRewardMessage(member); // 보상을 받을 수 있어요(REWARD_HINT)만 출력!
+        }
 
         if (hasUnreadFireAlarm(member)) {
             return getFireMessage();

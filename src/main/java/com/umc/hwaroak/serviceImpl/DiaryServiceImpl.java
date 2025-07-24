@@ -2,16 +2,14 @@ package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.converter.DiaryConverter;
-import com.umc.hwaroak.domain.Diary;
-import com.umc.hwaroak.domain.Item;
-import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.domain.*;
 import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.ItemRepository;
+import com.umc.hwaroak.repository.MainMessageRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.DiaryService;
@@ -26,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.umc.hwaroak.domain.common.MainMessageType.REWARD_BY_LEVEL;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -37,6 +37,7 @@ public class DiaryServiceImpl implements DiaryService {
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
+    private final MainMessageRepository mainMessageRepository;
 
     @Transactional
     public DiaryResponseDto.CreateDto createDiary(DiaryRequestDto requestDto) {
@@ -198,12 +199,14 @@ public class DiaryServiceImpl implements DiaryService {
         member.setReward(7); // 보상 받았으므로 D-Day 초기화
         memberRepository.save(member);
 
-        // 보상 받은 아이템의 이름 리턴중
-        return item.getName();
+        // 아이템 지급 완료 후 아이템 레벨별 메시지 반환!
+        return mainMessageRepository.findByTypeAndItemLevel(REWARD_BY_LEVEL, item.getLevel())
+                .map(MainMessage::getContent)
+                .orElse(item.getName() + " 아이템을 획득했어요!");
     }
 
 
-    private boolean isRewardAvailable(Member member) {
+    public boolean isRewardAvailable(Member member) {
         long diaryCount = diaryRepository.countByMemberId(member.getId());
         return diaryCount > 0 && diaryCount % 7 == 0;
     }

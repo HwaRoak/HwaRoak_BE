@@ -12,14 +12,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MainMessage {
+
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "message_type")
     private MainMessageType type;
 
-    private int itemLevel; // REWARD_BY_LEVEL에서 사용
+    @Column(name = "item_level")
+    private int itemLevel;
 
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 }
