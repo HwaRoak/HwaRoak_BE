@@ -1,6 +1,6 @@
 services:
-  hwaroak-api:
-    image: ghcr.io/${ORG_NAME}/hwaroak-api:latest
+  blue:
+    image: ghcr.io/${ORG_NAME}/hwaroak-api:${IMAGE_TAG}
     ports:
       - "8080:8080"
     env_file:
@@ -9,6 +9,19 @@ services:
       - redis
     networks:
       - my-network
+    container_name: app-blue
+
+  green:
+    image: ghcr.io/${ORG_NAME}/hwaroak-api:${IMAGE_TAG}
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - my-network
+    container_name: app-green
 
   redis:
     image: redis:7.4.1

@@ -18,6 +18,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # Check Image
+      - name: Detect running container and set IMAGE_TAG
+        id: detect
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
+          chmod 600 id_rsa
+
+          IMAGE_TAG=$(ssh -o StrictHostKeyChecking=no -i id_rsa ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} \
+            'if docker ps --filter "name=dearbelly-api-blue" --format "{{.Names}}" | grep -q dearbelly-api-blue; then echo green; else echo blue; fi')
+
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
       - name: Create .env file from secret
         run: echo "${{ secrets.ENV_FILE_CONTENTS }}" > .env
 
@@ -31,13 +44,11 @@ jobs:
       - name: Docker Login to GHCR
         run: echo ${{ secrets.YOUYEON_GITHUB_PAT }} | docker login ghcr.io -u ${{ secrets.YOUYEON_GITHUB_USERNAME }} --password-stdin
 
-      # Image Build
-      - name: Build Docker Image
-        run: docker build -t ghcr.io/${{ secrets.ORG_NAME }}/hwaroak-api:latest .
-
-      # Docker container push
-      - name: Push Docker Image
-        run: docker push ghcr.io/${{ secrets.ORG_NAME }}/hwaroak-api:latest
+      # Image Build and Push
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ghcr.io/${{ secrets.ORG_NAME }}/hwaroak-api:${{ env.IMAGE_TAG }} .
+          docker push ghcr.io/${{ secrets.ORG_NAME }}/hwaroak-api:${{ env.IMAGE_TAG }}
 
   transfer:
     name: Transfer
@@ -53,7 +64,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: ./docker-compose.yml
+          source: "./docker-compose.yml ./deploy.sh"
           target: /home/ubuntu/hwaroak-api/
 
       - name: Transfer nginx directory file to ec2
@@ -89,13 +100,11 @@ jobs:
             echo "${{ secrets.YOUYEON_GITHUB_PAT }}" | docker login ghcr.io -u ${{ secrets.YOUYEON_GITHUB_USERNAME }} --password-stdin
             
             # 4. pull image:latest
-            docker pull ghcr.io/${{ secrets.ORG_NAME }}/hwaroak-api:latest
+            docker pull ${{ secrets.ECR_URI }}/dearbelly-api:${{ env.IMAGE_TAG }}
             
             # 5. 환경변수 설정
             export ORG_NAME=${{ secrets.ORG_NAME }}
             
-            # 6. restart container
-            docker compose up -d --no-deps --force-recreate hwaroak-api
-            
-            # 7. remove oldest image
-            docker image prune -a -f
+            # 6. 스크립트 실행
+            chmod +x deploy.sh
+            source deploy.sh
