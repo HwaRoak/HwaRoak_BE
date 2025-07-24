@@ -6,6 +6,7 @@ import com.umc.hwaroak.domain.*;
 import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
+import com.umc.hwaroak.dto.response.MainMessageResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.ItemRepository;
@@ -151,10 +152,8 @@ public class DiaryServiceImpl implements DiaryService {
         Optional<Item> nextItem = itemRepository.findByLevel(nextLevel);
 
         // 보상 지급은 하지 않고 상태만 갱신
-        if (!(diaryCnt > 0 && diaryCnt % 7 == 0)) {
             int currentDday = member.getReward();
             member.setReward(Math.max(0, currentDday - 1));
-        }
 
         memberRepository.save(member);
 
@@ -178,7 +177,7 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Transactional
-    public String claimReward() {
+    public MainMessageResponseDto claimReward() {
         Member member = memberLoader.getMemberByContextHolder();
         long diaryCnt = diaryRepository.countByMemberId(member.getId());
 
@@ -200,14 +199,16 @@ public class DiaryServiceImpl implements DiaryService {
         memberRepository.save(member);
 
         // 아이템 지급 완료 후 아이템 레벨별 메시지 반환!
-        return mainMessageRepository.findByTypeAndItemLevel(REWARD_BY_LEVEL, item.getLevel())
+        String message =  mainMessageRepository.findByTypeAndItemLevel(REWARD_BY_LEVEL, item.getLevel())
                 .map(MainMessage::getContent)
                 .orElse(item.getName() + " 아이템을 획득했어요!");
+
+        return MainMessageResponseDto.of(message);
     }
 
 
     public boolean isRewardAvailable(Member member) {
         long diaryCount = diaryRepository.countByMemberId(member.getId());
-        return diaryCount > 0 && diaryCount % 7 == 0;
+        return (diaryCount > 0) && (diaryCount % 7 == 0) && (member.getReward() == 0);
     }
 }

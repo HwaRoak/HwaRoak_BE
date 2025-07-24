@@ -12,6 +12,7 @@ import com.umc.hwaroak.repository.MainMessageRepository;
 import com.umc.hwaroak.service.DiaryService;
 import com.umc.hwaroak.service.MainMessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ import static com.umc.hwaroak.domain.common.MainMessageType.*;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class MainMessageServiceImpl implements MainMessageService {
 
     private final MainMessageRepository mainMessageRepository;
