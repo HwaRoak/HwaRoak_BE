@@ -64,7 +64,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./docker-compose.yml ./deploy.sh"
+          source: ./docker-compose.yml,./deploy.sh
           target: /home/ubuntu/hwaroak-api/
 
       - name: Transfer nginx directory file to ec2
