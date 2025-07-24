@@ -31,6 +31,8 @@ public class DiaryResponseDto {
         private Integer reward;
         @Schema(description = "다음 아이템 이름")
         private String memberItemName;
+        @Schema(description = "리워드 받을 수 있는지 여부")
+        private boolean isRewardAvailable;
     }
 
     @Builder

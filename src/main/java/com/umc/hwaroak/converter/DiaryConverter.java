@@ -21,7 +21,7 @@ public class DiaryConverter {
                 .build();
     }
 
-    public static DiaryResponseDto.CreateDto toCreateDto(Diary diary, String nextItemName) {
+    public static DiaryResponseDto.CreateDto toCreateDto(Diary diary, String nextItemName, boolean isRewardAvailable) {
         return DiaryResponseDto.CreateDto.builder()
                 .id(diary.getId())
                 .recordDate(diary.getRecordDate())
@@ -31,6 +31,7 @@ public class DiaryConverter {
                 .feedback(diary.getFeedback())
                 .reward(diary.getMember().getReward())
                 .memberItemName(nextItemName)
+                .isRewardAvailable(isRewardAvailable)
                 .build();
     }
 

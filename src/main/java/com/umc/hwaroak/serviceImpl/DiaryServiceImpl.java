@@ -61,8 +61,11 @@ public class DiaryServiceImpl implements DiaryService {
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
         diaryRepository.save(diary);
 
-        String nextItemName = upgradeNextItem();
-        return DiaryConverter.toCreateDto(diary, nextItemName);
+        String nextItemName = upgradeNextItem(); // 리워드 차감 및 다음 아이템 이름
+
+        boolean isRewardAvailable = isRewardAvailable(member); // 현재 리워드 수령 가능 상태 판단
+
+        return DiaryConverter.toCreateDto(diary, nextItemName, isRewardAvailable);
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +110,8 @@ public class DiaryServiceImpl implements DiaryService {
         diaryRepository.save(diary);
 
         String nextItemName = getNextItemName(member);
-        return DiaryConverter.toCreateDto(diary, nextItemName);
+        boolean isRewardAvailable = isRewardAvailable(member);
+        return DiaryConverter.toCreateDto(diary, nextItemName, isRewardAvailable);
     }
 
     // 월별 일기 전체 조회하기
@@ -131,16 +135,12 @@ public class DiaryServiceImpl implements DiaryService {
         diaryRepository.delete(diary);
     }
 
-    // 다음 보상 아이템 이름 반환
     private String upgradeNextItem() {
-
         Member member = memberLoader.getMemberByContextHolder();
 
-        // 현재 회원의 일기 수 계산
         long diaryCnt = diaryRepository.countByMemberId(member.getId());
 
         List<MemberItem> memberItemList = member.getMemberItemList();
-
         int lastItemLevel = memberItemList.stream()
                 .map(memberItem -> memberItem.getItem().getLevel())
                 .max(Integer::compareTo)
@@ -149,28 +149,18 @@ public class DiaryServiceImpl implements DiaryService {
         int nextLevel = lastItemLevel + 1;
         Optional<Item> nextItem = itemRepository.findByLevel(nextLevel);
 
-        if (diaryCnt > 0 && diaryCnt%7 == 0) {
-            if (nextItem.isPresent()) {
-                MemberItem newMemberItem = new MemberItem(member, nextItem.get());
-                memberItemList.add(newMemberItem);
-                // 남은 D-Day 7로 초기화
-                member.setReward(7);
-            } else {
-                return "다음 업데이트를 기다려주세요.";
-            }
-
-        } else {
+        // 보상 지급은 하지 않고 상태만 갱신
+        if (!(diaryCnt > 0 && diaryCnt % 7 == 0)) {
             int currentDday = member.getReward();
-            member.setReward(Math.max(0, currentDday -1));
-            return nextItem.map(Item::getName).orElse("다음 업데이트를 기다려주세요.");
+            member.setReward(Math.max(0, currentDday - 1));
         }
 
         memberRepository.save(member);
 
-        Optional<Item> calculatedItem = itemRepository.findByLevel(nextLevel + 1);
-        return calculatedItem.map(Item::getName)
-                .orElse("다음 업데이트를 기다려주세요");
+        // 보상 받을 아이템의 이름 리턴중
+        return nextItem.map(Item::getName).orElse("다음 업데이트를 기다려주세요.");
     }
+
 
     // 현재 보유 아이템 기준으로 다음 아이템 이름 조회
     private String getNextItemName(Member member) {
@@ -184,5 +174,36 @@ public class DiaryServiceImpl implements DiaryService {
         return itemRepository.findByLevel(lastItemLevel + 1)
                 .map(Item::getName)
                 .orElse("다음 업데이트를 기다려주세요.");
+    }
+
+    @Transactional
+    public String claimReward(Member member) {
+        long diaryCnt = diaryRepository.countByMemberId(member.getId());
+
+        if (diaryCnt == 0 || diaryCnt % 7 != 0) {
+            throw new GeneralException(ErrorCode.REWARD_NOT_AVAILABLE);
+        }
+
+        List<MemberItem> memberItemList = member.getMemberItemList();
+        int lastItemLevel = memberItemList.stream()
+                .map(mi -> mi.getItem().getLevel())
+                .max(Integer::compareTo)
+                .orElse(1);
+
+        Item item = itemRepository.findByLevel(lastItemLevel + 1)
+                .orElseThrow(() -> new GeneralException(ErrorCode.ITEM_NOT_FOUND));
+
+        memberItemList.add(new MemberItem(member, item));
+        member.setReward(7); // 보상 받았으므로 D-Day 초기화
+        memberRepository.save(member);
+
+        // 보상 받은 아이템의 이름 리턴중
+        return item.getName();
+    }
+
+
+    private boolean isRewardAvailable(Member member) {
+        long diaryCount = diaryRepository.countByMemberId(member.getId());
+        return diaryCount > 0 && diaryCount % 7 == 0;
     }
 }

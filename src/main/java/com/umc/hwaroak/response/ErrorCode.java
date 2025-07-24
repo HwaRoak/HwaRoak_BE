@@ -61,6 +61,9 @@ public enum ErrorCode implements BaseCode{
     // Alarm
     SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "ALARM4041", "알림 설정을 찾을 수 없습니다."),
 
+    // Reward
+    REWARD_NOT_AVAILABLE(HttpStatus.UNAUTHORIZED, "RE_4001", "보상을 받을 수 없습니다"),
+
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
     ;
