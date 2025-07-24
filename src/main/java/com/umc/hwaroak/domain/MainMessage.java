@@ -1,5 +1,6 @@
 package com.umc.hwaroak.domain;
 
+import com.umc.hwaroak.domain.common.BaseEntity;
 import com.umc.hwaroak.domain.common.MainMessageType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MainMessage {
+public class MainMessage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
