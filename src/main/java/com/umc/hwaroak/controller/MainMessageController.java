@@ -1,7 +1,5 @@
 package com.umc.hwaroak.controller;
 
-import com.umc.hwaroak.authentication.MemberLoader;
-import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.response.MainMessageResponseDto;
 import com.umc.hwaroak.service.MainMessageService;
 import io.swagger.v3.oas.annotations.Operation;

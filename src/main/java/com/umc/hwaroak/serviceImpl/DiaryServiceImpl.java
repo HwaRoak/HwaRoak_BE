@@ -177,7 +177,8 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Transactional
-    public String claimReward(Member member) {
+    public String claimReward() {
+        Member member = memberLoader.getMemberByContextHolder();
         long diaryCnt = diaryRepository.countByMemberId(member.getId());
 
         if (diaryCnt == 0 || diaryCnt % 7 != 0) {

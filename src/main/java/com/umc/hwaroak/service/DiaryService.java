@@ -14,4 +14,5 @@ public interface DiaryService {
     List<DiaryResponseDto.ThumbnailDto> readMonthDiary(Integer year, Integer month);
     void deleteDiary(Long diaryId);
     DiaryResponseDto.DetailDto readDiaryWithDetail(Long diaryId);
+    String claimReward();
 }
