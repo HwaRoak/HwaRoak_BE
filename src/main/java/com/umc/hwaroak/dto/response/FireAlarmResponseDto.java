@@ -13,4 +13,7 @@ public class FireAlarmResponseDto {
 
     @Schema(description = "알림 메시지", example = "다음 알림은 59분 후에 전송돼요!")
     private String message;
+
+    @Schema(description = "다음알림까지 남은 시간(분)", example = "59")
+    private long minutesLeft;
 }

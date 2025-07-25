@@ -236,6 +236,7 @@ public class FriendServiceImpl implements FriendService {
                 return FireAlarmResponseDto.builder()
                         .notifiedAt(null)
                         .message("다음 알림은 " + minutesLeft + "분 후에 전송돼요!")
+                        .minutesLeft(minutesLeft)
                         .build();
             }
         }
@@ -244,6 +245,7 @@ public class FriendServiceImpl implements FriendService {
         return FireAlarmResponseDto.builder()
                 .notifiedAt(now().toString())
                 .message("불씨를 지폈어요!")
+                .minutesLeft(60)
                 .build();
     }
 
