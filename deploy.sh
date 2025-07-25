@@ -21,10 +21,10 @@ docker compose -p app-${AFTER_COMPOSE_COLOR} -f docker-compose.yml up -d
 
 sleep 10
 
-echo "The $STOP_TARGET version is currently running on the server. Starting the $RUN_TARGET version."
+echo "The $BEFORE_COMPOSE_COLOR version is currently running on the server. Starting the $AFTER_COMPOSE_COLOR version."
 
 # 새로운 컨테이너가 제대로 떴는지 확인
-EXIST_AFTER=$(docker compose -p app-${AFTER_COMPOSE_COLOR} -f docker-compose.${AFTER_COMPOSE_COLOR}.yml ps | grep Up)
+EXIST_AFTER=$(docker compose -p app-${AFTER_COMPOSE_COLOR} -f docker-compose.yml ps | grep Up)
 if [ -n "$EXIST_AFTER" ]; then
   # reload nginx
   NGINX_ID=$(sudo docker ps --filter "name=nginx" --quiet)

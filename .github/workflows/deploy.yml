@@ -26,7 +26,7 @@ jobs:
           chmod 600 id_rsa
 
           IMAGE_TAG=$(ssh -o StrictHostKeyChecking=no -i id_rsa ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} \
-            'if docker ps --filter "name=dearbelly-api-blue" --format "{{.Names}}" | grep -q dearbelly-api-blue; then echo green; else echo blue; fi')
+            'if docker ps --filter "name=app-blue" --format "{{.Names}}" | grep -q app-blue; then echo green; else echo blue; fi')
 
           echo "IMAGE_TAG=$IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
@@ -104,7 +104,6 @@ jobs:
             
             # 5. 환경변수 설정
             export ORG_NAME=${{ secrets.ORG_NAME }}
-            export IMAGE_TAG=${{ env.IMAGE_TAG }}
             
             # 6. 스크립트 실행
             chmod +x deploy.sh
