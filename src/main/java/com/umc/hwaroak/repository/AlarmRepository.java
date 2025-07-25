@@ -3,9 +3,11 @@ package com.umc.hwaroak.repository;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
+
 
 import java.util.List;
 import java.util.Optional;
@@ -30,4 +32,12 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     """)
     List<Alarm> findAllIncludingNotifications(@Param("receiver") Member receiver);
 
+
+
+    // sender + receiver + alarmType 기준 최신 알람 (여러 개 가능)
+    List<Alarm> findBySenderAndReceiverAndAlarmTypeOrderByCreatedAtDesc(
+            Member sender,
+            Member receiver,
+            AlarmType alarmType
+    );
 }

@@ -69,6 +69,9 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberItem> memberItemList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmotionSummary> emotionSummaryList = new ArrayList<>();
+
     public void update(String nickname, String profileImage, String introduction){
         if (nickname != null) {
             this.nickname = nickname;
