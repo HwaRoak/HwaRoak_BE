@@ -40,7 +40,7 @@ public class EmotionSummaryController {
     @Operation(summary = "감정분석 상세 조회", description = "특정달 감정분석을 조회합니다.")
     @ApiResponse(content = @Content(schema = @Schema(implementation = EmotionSummaryResponseDto.DetailDto.class)))
     public EmotionSummaryResponseDto.DetailDto getDetailEmotionSummary(
-            @Parameter(description = "조회할 연월", example = "2025-07")
+            @Schema(description = "조회할 연월", example = "2025-07")
             @PathVariable String summaryMonth
     ) {
         return emotionSummaryService.getDetailEmotionSummary(summaryMonth);
