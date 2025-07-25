@@ -1,6 +1,6 @@
 services:
   blue:
-    image: ghcr.io/${ORG_NAME}/hwaroak-api:${IMAGE_TAG}
+    image: ghcr.io/${ORG_NAME}/hwaroak-api:blue
     ports:
       - "8080:8080"
     env_file:
@@ -12,7 +12,7 @@ services:
     container_name: app-blue
 
   green:
-    image: ghcr.io/${ORG_NAME}/hwaroak-api:${IMAGE_TAG}
+    image: ghcr.io/${ORG_NAME}/hwaroak-api:green
     ports:
       - "8081:8080"
     env_file:
