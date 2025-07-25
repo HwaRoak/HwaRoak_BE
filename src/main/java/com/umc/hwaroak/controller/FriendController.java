@@ -1,14 +1,21 @@
 package com.umc.hwaroak.controller;
 
+import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.request.FriendRequestDto;
+import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
+import com.umc.hwaroak.response.ErrorCode;
+import com.umc.hwaroak.response.SuccessCode;
 import com.umc.hwaroak.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Friend", description = "친구 기능 관련 API")
@@ -67,5 +74,11 @@ public class FriendController {
         friendService.deleteFriend(friendId);
     }
 
-
+    @Operation(summary = "친구에게 불씨 보내기", description = "친구에게 ‘불 키우기’ 알림을 전송합니다.")
+    @ApiResponse(responseCode = "200", description = "불 지피기 성공")
+    @ApiResponse(responseCode = "403", description = "해당 사용자와 친구 관계가 아닙니다")
+    @PostMapping("/{friendId}/fire")
+    public FireAlarmResponseDto fireFriend(@PathVariable Long friendId) {
+        return friendService.fireFriend(friendId);
+    }
 }

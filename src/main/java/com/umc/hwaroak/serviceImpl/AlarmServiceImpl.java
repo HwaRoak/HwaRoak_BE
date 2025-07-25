@@ -1,8 +1,10 @@
 package com.umc.hwaroak.serviceImpl;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.QAlarm;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
@@ -14,7 +16,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -24,6 +29,8 @@ public class AlarmServiceImpl implements AlarmService {
 
     private final MemberLoader memberLoader;
     private final AlarmRepository alarmRepository;
+
+    private final JPAQueryFactory queryFactory;  // 주입!
 
     /**
      * 공지(NOTIFIACTION) 최신순 정렬 가져오기
@@ -99,7 +106,23 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     /**
-     *  알람 읽기 api
+     *  불씨 보냈을시 알람 생성하기
+     */
+    @Override
+    public void sendFireAlarm(Member sender, Member receiver) {
+        String nickname = sender.getNickname();
+
+        Alarm alarm = Alarm.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .alarmType(AlarmType.FIRE)
+                .title("불 키우기")
+                .content(nickname + "님께서 불씨를 지폈어요!")
+                .build();
+        alarmRepository.save(alarm); // ✅ 이거 꼭 있어야 함!
+    }
+
+     /*  알람 읽기 api
      */
     @Transactional
     public void markAsRead(Long alarmId, Member member) {
@@ -131,5 +154,20 @@ public class AlarmServiceImpl implements AlarmService {
 
         alarmRepository.save(alarm);
     }
+      
+    // 마지막 불씨 보낸 시각
+    @Override
+    public Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver){
+        List<Alarm> alarms = alarmRepository.findBySenderAndReceiverAndAlarmTypeOrderByCreatedAtDesc(
+                sender, receiver, AlarmType.FIRE
+        );
+
+        if (alarms.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(alarms.get(0).getCreatedAt()); // 또는 getFiredAt()
+    }
+
 
 }
