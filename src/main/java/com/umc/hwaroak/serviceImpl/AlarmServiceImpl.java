@@ -155,31 +155,7 @@ public class AlarmServiceImpl implements AlarmService {
         alarmRepository.save(alarm);
     }
       
-//      // 마지막 불씨 보낸 시각
-//    @Override
-//    public Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver){
-//        QAlarm alarm = QAlarm.alarm;
-//
-//        Alarm result = queryFactory
-//                .selectFrom(alarm)
-//                .where(
-//                        alarm.sender.eq(sender),
-//                        alarm.receiver.eq(receiver),
-//                        alarm.alarmType.eq(AlarmType.FIRE)
-//                )
-//                .orderBy(alarm.createdAt.desc())
-//                .fetchFirst();
-//        List<Alarm> alarms = alarmRepository.findTopBySenderAndReceiverAndAlarmTypeOrderBy(
-//                sender, receiver, AlarmType.FIRE
-//        );
-//
-//        if (alarms.isEmpty()) {
-//            return Optional.empty();
-//        }
-//
-//        return Optional.of(alarms.get(0).getCreatedAt());
-//    }
-
+    // 마지막 불씨 보낸 시각
     @Override
     public Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver){
         List<Alarm> alarms = alarmRepository.findBySenderAndReceiverAndAlarmTypeOrderByCreatedAtDesc(
