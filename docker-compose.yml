@@ -1,5 +1,5 @@
 services:
-  blue:
+  app-blue:
     image: ghcr.io/${ORG_NAME}/hwaroak-api:blue
     ports:
       - "8080:8080"
@@ -11,7 +11,7 @@ services:
       - my-network
     container_name: app-blue
 
-  green:
+  app-green:
     image: ghcr.io/${ORG_NAME}/hwaroak-api:green
     ports:
       - "8081:8080"
@@ -41,6 +41,9 @@ services:
       - "80:80"
     volumes:
       - /home/ubuntu/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app-blue
+      - app-green
     networks:
       - my-network
     restart: always

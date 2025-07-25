@@ -6,28 +6,32 @@ import lombok.Getter;
 
 @Getter
 public enum Emotion {
-    CALM("차분한"),
-    PROUD("뿌듯한"),
-    HAPPY("행복한"),
-    EXPECTED("기대됨"),
-    HEART_FLUTTER("설렘"),
-    THANKFUL("감사함"),
-    EXCITING("신나는"),
-    SADNESS("슬픈"),
-    ANGRY("화나는"),
-    BORED("무료함"),
-    TIRED("피곤함"),
-    ANNOYED("짜증남"),
-    LONELY("외로움"),
-    GLOOMY("우울함"),
-    STRESSFUL("스트레스"),;
+    CALM("차분한", EmotionCategory.CALM),
+    PROUD("뿌듯한", EmotionCategory.CALM),
+    THANKFUL("감사함", EmotionCategory.CALM),
+
+    HAPPY("행복한", EmotionCategory.HAPPY),
+    EXPECTED("기대됨", EmotionCategory.HAPPY),
+    HEART_FLUTTER("설렘", EmotionCategory.HAPPY),
+    EXCITING("신나는", EmotionCategory.HAPPY),
+
+    BORED("무료함", EmotionCategory.SAD),
+    LONELY("외로움", EmotionCategory.SAD),
+    GLOOMY("우울함", EmotionCategory.SAD),
+    SADNESS("슬픈", EmotionCategory.SAD),
+
+    ANGRY("화나는", EmotionCategory.ANGRY),
+    ANNOYED("짜증남", EmotionCategory.ANGRY),
+    STRESSFUL("스트레스", EmotionCategory.ANGRY),
+    TIRED("피곤함", EmotionCategory.ANGRY);
 
     private final String displayName;
+    private final EmotionCategory category;
 
-    Emotion(String displayName) {
+    Emotion(String displayName, EmotionCategory category) {
         this.displayName = displayName;
+        this.category = category;
     }
-
     // 한글 이름 찾기
     public static Emotion fromDisplayName(String displayName) {
         for (Emotion emotion: Emotion.values()) {
