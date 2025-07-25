@@ -14,4 +14,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
 
     @Query("SELECT d FROM Diary d WHERE d.recordDate = :recordDate and d.member.id = :memberId")
     Optional<Diary> findByRecordDate(@Param("memberId") Long memberId, @Param("recordDate") LocalDate recordDate);
+
+    @Query("SELECT count(d.id) FROM Diary d where d.member.id = :memberId")
+    long countByMemberId(@Param("memberId") Long memberId);
 }
