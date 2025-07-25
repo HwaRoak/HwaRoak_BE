@@ -1,8 +1,10 @@
 package com.umc.hwaroak.serviceImpl;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.umc.hwaroak.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.QAlarm;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
@@ -27,6 +29,8 @@ public class AlarmServiceImpl implements AlarmService {
 
     private final MemberLoader memberLoader;
     private final AlarmRepository alarmRepository;
+
+    private final JPAQueryFactory queryFactory;  // 주입!
 
     /**
      * 공지(NOTIFIACTION) 최신순 정렬 가져오기
@@ -115,6 +119,7 @@ public class AlarmServiceImpl implements AlarmService {
                 .title("불 키우기")
                 .content(nickname + "님께서 불씨를 지폈어요!")
                 .build();
+        alarmRepository.save(alarm); // ✅ 이거 꼭 있어야 함!
     }
 
      /*  알람 읽기 api
@@ -150,10 +155,34 @@ public class AlarmServiceImpl implements AlarmService {
         alarmRepository.save(alarm);
     }
       
-      // 마지막 불씨 보낸 시각
+//      // 마지막 불씨 보낸 시각
+//    @Override
+//    public Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver){
+//        QAlarm alarm = QAlarm.alarm;
+//
+//        Alarm result = queryFactory
+//                .selectFrom(alarm)
+//                .where(
+//                        alarm.sender.eq(sender),
+//                        alarm.receiver.eq(receiver),
+//                        alarm.alarmType.eq(AlarmType.FIRE)
+//                )
+//                .orderBy(alarm.createdAt.desc())
+//                .fetchFirst();
+//        List<Alarm> alarms = alarmRepository.findTopBySenderAndReceiverAndAlarmTypeOrderBy(
+//                sender, receiver, AlarmType.FIRE
+//        );
+//
+//        if (alarms.isEmpty()) {
+//            return Optional.empty();
+//        }
+//
+//        return Optional.of(alarms.get(0).getCreatedAt());
+//    }
+
     @Override
     public Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver){
-        List<Alarm> alarms = alarmRepository.findTopBySenderAndReceiverAndAlarmTypeOrderBy(
+        List<Alarm> alarms = alarmRepository.findBySenderAndReceiverAndAlarmTypeOrderByCreatedAtDesc(
                 sender, receiver, AlarmType.FIRE
         );
 
@@ -161,7 +190,7 @@ public class AlarmServiceImpl implements AlarmService {
             return Optional.empty();
         }
 
-        return Optional.of(alarms.get(0).getCreatedAt());
+        return Optional.ofNullable(alarms.get(0).getCreatedAt()); // 또는 getFiredAt()
     }
 
 

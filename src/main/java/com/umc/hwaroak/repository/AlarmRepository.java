@@ -33,10 +33,16 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     List<Alarm> findAllIncludingNotifications(@Param("receiver") Member receiver);
 
     // 불씨 알람 중 특정 sender -> receiver 조합의 가장 최신 알림
-    @Query("SELECT a FROM Alarm a " +
-            "WHERE a.alarmType = :alarmType AND a.sender = :sender AND a.receiver = :receiver " +
-            "ORDER BY a.createdAt DESC")
-    List<Alarm> findTopBySenderAndReceiverAndAlarmTypeOrderBy(
+//    @Query("SELECT a FROM Alarm a " +
+//            "WHERE a.alarmType = :alarmType AND a.sender = :sender AND a.receiver = :receiver " +
+//            "ORDER BY a.createdAt ASC")
+//    List<Alarm> findTopBySenderAndReceiverAndAlarmTypeOrderBy(
+//            Member sender,
+//            Member receiver,
+//            AlarmType alarmType
+//    );
+    // sender + receiver + alarmType 기준 최신 알람 (여러 개 가능)
+    List<Alarm> findBySenderAndReceiverAndAlarmTypeOrderByCreatedAtDesc(
             Member sender,
             Member receiver,
             AlarmType alarmType
