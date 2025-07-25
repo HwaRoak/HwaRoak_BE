@@ -47,10 +47,6 @@ public class Alarm extends BaseEntity {
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
-    // 알람 발송시각 분초까지 추가
-    @Column(name = "fired_at")
-    private LocalDateTime fired_at;
-
     public void markAsRead() {
         this.isRead = true;
     }

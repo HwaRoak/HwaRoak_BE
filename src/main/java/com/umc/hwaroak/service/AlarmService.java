@@ -37,11 +37,11 @@ public interface AlarmService {
     Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver);
 
 
-     *  알람 읽음 처리 하기
+     /*  알람 읽음 처리 하기
      */
     void markAsRead(Long alarmId, Member member);
 
-     *  공지 수동 등록
+     /*  공지 수동 등록
      */
     void createNotice(AlarmRequestDto.CreateNoticeDto requestDto);
 }

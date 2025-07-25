@@ -7,7 +7,6 @@ import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import org.springframework.data.repository.query.Param;
 
 
 import java.util.List;
@@ -36,7 +35,7 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     // 불씨 알람 중 특정 sender -> receiver 조합의 가장 최신 알림
     @Query("SELECT a FROM Alarm a " +
             "WHERE a.alarmType = :alarmType AND a.sender = :sender AND a.receiver = :receiver " +
-            "ORDER BY a.fired_at DESC")
+            "ORDER BY a.createdAt DESC")
     List<Alarm> findTopBySenderAndReceiverAndAlarmTypeOrderBy(
             Member sender,
             Member receiver,

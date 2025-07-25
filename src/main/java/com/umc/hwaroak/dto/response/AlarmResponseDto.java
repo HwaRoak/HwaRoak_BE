@@ -6,8 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Schema(name = "알람 응답 DTO")
 public class AlarmResponseDto {
@@ -28,7 +29,7 @@ public class AlarmResponseDto {
         private String title;
 
         @Schema(description = "알람 생성일", example = "2025-07-14")
-        private LocalDate createdAt; // 프론트에서 언제 올라온 공지인지 정렬 및 표시용
+        private LocalDateTime createdAt; // 프론트에서 언제 올라온 공지인지 정렬 및 표시용
     }
 
     /**
@@ -53,6 +54,7 @@ public class AlarmResponseDto {
         private AlarmType alarmType;
 
         @Schema(description = "알람 생성일", example = "2025-07-14")
-        private LocalDate createdAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        private LocalDateTime createdAt;
     }
 }

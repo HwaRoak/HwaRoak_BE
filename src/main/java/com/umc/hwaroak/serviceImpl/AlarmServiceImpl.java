@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -113,9 +114,10 @@ public class AlarmServiceImpl implements AlarmService {
                 .alarmType(AlarmType.FIRE)
                 .title("불 키우기")
                 .content(nickname + "님께서 불씨를 지폈어요!")
-                .fired_at(LocalDateTime.now())
+                .build();
+    }
 
-     *  알람 읽기 api
+     /*  알람 읽기 api
      */
     @Transactional
     public void markAsRead(Long alarmId, Member member) {
@@ -159,7 +161,7 @@ public class AlarmServiceImpl implements AlarmService {
             return Optional.empty();
         }
 
-        return Optional.of(alarms.get(0).getFired_at());
+        return Optional.of(alarms.get(0).getCreatedAt());
     }
 
 
