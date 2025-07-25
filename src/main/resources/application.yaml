@@ -14,6 +14,8 @@ spring:
     hibernate:
       ddl-auto: update
 
+  jackson:
+    time-zone: Asia/Seoul
 
   jackson:
     time-zone: Asia/Seoul
