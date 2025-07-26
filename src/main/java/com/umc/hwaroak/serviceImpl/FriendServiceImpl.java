@@ -42,16 +42,16 @@ public class FriendServiceImpl implements FriendService {
      * - 이미 요청했거나 친구 상태인 경우 ❌
      * 조건을 만족하면 Friend 엔티티를 저장합니다.
      *
-     * @param receiverId 친구 요청을 받을 Member의 ID
+     * @param receiverUserId 친구 요청을 받을 Member의 ID
      */
     @Override
     @Transactional
-    public void requestFriend(Long receiverId) {
-        // [1] 현재 로그인된 유저를 가져옵니다. (나중에 인증 시스템으로 교체 필요)
+    public void requestFriend(String receiverUserId) {
+        // [1] 현재 로그인된 유저를 가져옵니다.
         Member sender = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청받을 유저가 존재하는지 확인
-        Member receiver = memberRepository.findById(receiverId)
+        // [2] 요청받을 유저를 userId 기준으로 조회
+        Member receiver = memberRepository.findByUserId(receiverUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
         // [3] 자기 자신에게 친구 요청하는 경우 예외 처리
@@ -65,27 +65,23 @@ public class FriendServiceImpl implements FriendService {
         if (existingFriend.isPresent()) {
             Friend friend = existingFriend.get();
 
-            // [4-1] 기존 상태가 BLOCKED 또는 REJECTED 이면 상태를 REQUESTED로 바꿔 재요청 처리
             if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
                 friend.updateStatus(FriendStatus.REQUESTED);
                 return;
             }
 
-            // [4-2] 그 외 상태라면 중복 요청 예외 처리
             throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [5] 기존 단방향 요청이 없을 경우, 역방향(receiver → sender) 중복 여부도 검사
+        // [5] 역방향 중복 검사
         boolean reverseExists = friendRepository.existsBySenderAndReceiver(receiver, sender);
         if (reverseExists) {
             throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [6] 친구 요청 엔티티 생성 및 저장
+        // [6] 저장 및 알림 전송
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
-
-        // 👉 알람 전송
         alarmService.sendFriendRequestAlarm(sender, receiver);
     }
 
@@ -93,48 +89,39 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     @Transactional
-    public void acceptFriendRequest(Long senderId) {
-        // [1] 현재 로그인한 유저 (친구 요청을 받은 사람 = receiver)
+    public void acceptFriendRequest(String senderUserId) {
         Member receiver = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청 보낸 sender 유저가 존재하는지 확인
-        Member sender = memberRepository.findById(senderId)
+        Member sender = memberRepository.findByUserId(senderUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [3] sender → receiver로 상태가 REQUESTED인 친구 요청 찾기
         Friend friendRequest = friendRepository.findBySenderAndReceiver(sender, receiver)
                 .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
-        // [4] 이미 수락되었거나 거절된 요청인 경우 수락 불가
         if (friendRequest.getStatus() != FriendStatus.REQUESTED) {
             throw new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_PENDING);
         }
 
-        // [5] 요청 상태를 ACCEPTED로 변경
         friendRequest.updateStatus(FriendStatus.ACCEPTED);
     }
 
 
+
     @Override
     @Transactional
-    public void rejectFriendRequest(Long senderId) {
-        // [1] 로그인한 유저 (receiver)
+    public void rejectFriendRequest(String senderUserId) {
         Member receiver = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청 보낸 유저(sender) 존재 여부 확인
-        Member sender = memberRepository.findById(senderId)
+        Member sender = memberRepository.findByUserId(senderUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [3] sender → receiver 요청 존재 확인
         Friend friendRequest = friendRepository.findBySenderAndReceiver(sender, receiver)
                 .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
-        // [4] 상태가 REQUESTED 인지 확인
         if (friendRequest.getStatus() != FriendStatus.REQUESTED) {
             throw new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_PENDING);
         }
 
-        // [5] 상태를 REJECTED 로 변경
         friendRequest.updateStatus(FriendStatus.REJECTED);
     }
 
@@ -142,24 +129,18 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional(readOnly = true)
     public List<FriendResponseDto.FriendInfo> getFriendList() {
-        // [1] 현재 로그인된 사용자 (나)
         Member me = memberLoader.getMemberByContextHolder();
 
-        // [2] 내가 sender 또는 receiver로 포함된 친구 관계 중, 상태가 ACCEPTED인 것들 모두 조회
-        // → 단방향으로 저장되어 있기 때문에 sender 또는 receiver 둘 다 체크 필요
         List<Friend> acceptedFriends = friendRepository.findAllAcceptedFriends(me);
 
-        // [3] 각 친구 관계에서 "나"와 반대쪽에 있는 Member만 추출
-        // → 그게 진짜 '친구'임
         return acceptedFriends.stream()
                 .map(friend -> {
                     Member friendMember = friend.getSender().equals(me)
-                            ? friend.getReceiver()  // 내가 sender일 경우 → 친구는 receiver
-                            : friend.getSender();  // 내가 receiver일 경우 → 친구는 sender
+                            ? friend.getReceiver()
+                            : friend.getSender();
 
-                    // [4] 친구 정보를 응답 DTO로 변환
                     return FriendResponseDto.FriendInfo.builder()
-                            .memberId(friendMember.getId())
+                            .userId(friendMember.getUserId())
                             .nickname(friendMember.getNickname())
                             .introduction(friendMember.getIntroduction())
                             .build();
@@ -172,17 +153,15 @@ public class FriendServiceImpl implements FriendService {
     public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
         Member me = memberLoader.getMemberByContextHolder();
 
-        // [1] 상태가 REQUESTED이고, 내가 받은 요청만 최신순 정렬로 조회
         List<Friend> requests = friendRepository.findAllByReceiverAndStatusOrderByCreatedAtDesc(
                 me, FriendStatus.REQUESTED
         );
 
-        // [2] 요청 보낸 사람 정보를 DTO로 변환
         return requests.stream()
                 .map(friend -> {
                     Member sender = friend.getSender();
                     return FriendResponseDto.ReceivedRequestInfo.builder()
-                            .memberId(sender.getId())
+                            .userId(sender.getUserId())
                             .nickname(sender.getNickname())
                             .introduction(sender.getIntroduction())
                             .build();
@@ -190,35 +169,53 @@ public class FriendServiceImpl implements FriendService {
                 .collect(Collectors.toList());
     }
 
+
     @Override
     @Transactional
-    public void deleteFriend(Long friendMemberId) {
+    public void deleteFriend(String friendUserId) {
         Member me = memberLoader.getMemberByContextHolder();
-        Member friend = memberRepository.findById(friendMemberId)
+        Member friend = memberRepository.findByUserId(friendUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [1] 나 ↔ 친구 관계에서 상태가 ACCEPTED 인 친구 관계 조회
         Friend relationship = friendRepository.findBySenderAndReceiverAndStatus(me, friend, FriendStatus.ACCEPTED)
                 .or(() -> friendRepository.findBySenderAndReceiverAndStatus(friend, me, FriendStatus.ACCEPTED))
                 .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_NOT_FOUND));
 
-        // [2] 관계 상태가 ACCEPTED가 아닌 경우 삭제 불가 (예외 상황 대비용, 안전하게)
         if (relationship.getStatus() != FriendStatus.ACCEPTED) {
             throw new GeneralException(ErrorCode.FRIEND_CANNOT_BE_DELETED);
         }
 
-        // [3] BLOCKED 상태로 변경 (soft delete)
         relationship.updateStatus(FriendStatus.BLOCKED);
     }
 
+
     @Override
-    @Transactional
-    public FireAlarmResponseDto fireFriend(Long friendId) {
-        Member sender = memberLoader.getMemberByContextHolder();
-        Member receiver = memberRepository.findById(friendId)
+    @Transactional(readOnly = true)
+    public FriendResponseDto.SearchResultDto searchFriendByUserId(String userId) {
+        Member currentMember = memberLoader.getMemberByContextHolder();
+
+        Member target = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 친구 관계인지 확인 (직접 구현하거나 FriendService 내 메서드 활용)
+        if (currentMember.getId().equals(target.getId())) {
+            throw new GeneralException(ErrorCode.CANNOT_SEARCH_SELF);
+        }
+
+        return FriendResponseDto.SearchResultDto.builder()
+                .userId(target.getUserId())
+                .nickname(target.getNickname())
+                .introduction(target.getIntroduction())
+                .build();
+    }
+
+
+    @Override
+    @Transactional
+    public FireAlarmResponseDto fireFriend(String friendUserId) {
+        Member sender = memberLoader.getMemberByContextHolder();
+        Member receiver = memberRepository.findByUserId(friendUserId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
         if (!isFriend(sender, receiver)) {
             throw new GeneralException(ErrorCode.NOT_FRIEND);
         }
@@ -226,11 +223,8 @@ public class FriendServiceImpl implements FriendService {
         Optional<LocalDateTime> lastFireTimeOpt = alarmService.getLastFireTime(sender, receiver);
         LocalDateTime now = LocalDateTime.now();
 
-        // 60분 쿨타임
         if (lastFireTimeOpt.isPresent()) {
-            LocalDateTime lastFireTime = lastFireTimeOpt.get();
-            long minutesPassed = Duration.between(lastFireTime, now).toMinutes();
-
+            long minutesPassed = Duration.between(lastFireTimeOpt.get(), now).toMinutes();
             if (minutesPassed < 60) {
                 long minutesLeft = 60 - minutesPassed;
                 return FireAlarmResponseDto.builder()
@@ -240,6 +234,7 @@ public class FriendServiceImpl implements FriendService {
                         .build();
             }
         }
+
         alarmService.sendFireAlarm(sender, receiver);
 
         return FireAlarmResponseDto.builder()
