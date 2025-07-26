@@ -85,4 +85,10 @@ public class FriendController {
     public FireAlarmResponseDto fireFriend(@RequestParam String userId) {
         return friendService.fireFriend(userId);
     }
+
+    @Operation(summary = "친구 페이지 방문하기", description = "친구 페이지를 방문합니다.")
+    @GetMapping("/{userId}")
+    public FriendResponseDto.FriendPageInfo getFriendPage(@RequestParam String userId) {
+        return friendService.getFriendPage(userId);
+    }
 }
