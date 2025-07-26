@@ -10,8 +10,8 @@ public class FriendRequestDto {
     @NoArgsConstructor
     public static class Request {
 
-        @Schema(description = "요청받을 친구의 member ID", example = "2")
-        private Long receiverId;
+        @Schema(description = "요청받을 친구의 member UserId", example = "dwdwaf##!@")
+        private String receiverUserId;
     }
 
     @Getter

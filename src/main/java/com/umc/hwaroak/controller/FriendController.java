@@ -31,7 +31,7 @@ public class FriendController {
     @ApiResponse(responseCode = "400", description = "존재하지 않는 사용자 (MEMBER_NOT_FOUND) 또는 자기 자신에게 요청 (CANNOT_ADD_SELF) 또는 중복 요청 (FRIEND_ALREADY_EXISTS_OR_REQUESTED)")
     @PostMapping("/request")
     public void requestFriend(@RequestBody FriendRequestDto.Request requestDto) {
-        friendService.requestFriend(requestDto.getReceiverId());
+        friendService.requestFriend(requestDto.getReceiverUserId());
     }
 
     @Operation(summary = "친구 요청 수락", description = "상대방이 보낸 친구 요청을 수락합니다.")

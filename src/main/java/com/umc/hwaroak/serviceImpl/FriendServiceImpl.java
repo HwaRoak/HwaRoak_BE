@@ -42,16 +42,16 @@ public class FriendServiceImpl implements FriendService {
      * - 이미 요청했거나 친구 상태인 경우 ❌
      * 조건을 만족하면 Friend 엔티티를 저장합니다.
      *
-     * @param receiverId 친구 요청을 받을 Member의 ID
+     * @param receiverUserId 친구 요청을 받을 Member의 ID
      */
     @Override
     @Transactional
-    public void requestFriend(Long receiverId) {
-        // [1] 현재 로그인된 유저를 가져옵니다. (나중에 인증 시스템으로 교체 필요)
+    public void requestFriend(String receiverUserId) {
+        // [1] 현재 로그인된 유저를 가져옵니다.
         Member sender = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청받을 유저가 존재하는지 확인
-        Member receiver = memberRepository.findById(receiverId)
+        // [2] 요청받을 유저를 userId 기준으로 조회
+        Member receiver = memberRepository.findByUserId(receiverUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
         // [3] 자기 자신에게 친구 요청하는 경우 예외 처리
@@ -65,36 +65,33 @@ public class FriendServiceImpl implements FriendService {
         if (existingFriend.isPresent()) {
             Friend friend = existingFriend.get();
 
-            // [4-1] 기존 상태가 BLOCKED 또는 REJECTED 이면 상태를 REQUESTED로 바꿔 재요청 처리
             if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
                 friend.updateStatus(FriendStatus.REQUESTED);
                 return;
             }
 
-            // [4-2] 그 외 상태라면 중복 요청 예외 처리
             throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [5] 기존 단방향 요청이 없을 경우, 역방향(receiver → sender) 중복 여부도 검사
+        // [5] 역방향 중복 검사
         boolean reverseExists = friendRepository.existsBySenderAndReceiver(receiver, sender);
         if (reverseExists) {
             throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [6] 친구 요청 엔티티 생성 및 저장
+        // [6] 저장 및 알림 전송
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
-
-        // 👉 알람 전송
         alarmService.sendFriendRequestAlarm(sender, receiver);
     }
+
 
 
 
     @Override
     @Transactional
     public void acceptFriendRequest(Long senderId) {
-        // [1] 현재 로그인한 유저 (친구 요청을 받은 사람 = receiver)
+        // [1] 현재 로그인한 유저
         Member receiver = memberLoader.getMemberByContextHolder();
 
         // [2] 요청 보낸 sender 유저가 존재하는지 확인
@@ -118,7 +115,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void rejectFriendRequest(Long senderId) {
-        // [1] 로그인한 유저 (receiver)
+        // [1] 로그인한 유저
         Member receiver = memberLoader.getMemberByContextHolder();
 
         // [2] 요청 보낸 유저(sender) 존재 여부 확인
