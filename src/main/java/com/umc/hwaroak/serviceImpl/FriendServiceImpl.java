@@ -87,51 +87,41 @@ public class FriendServiceImpl implements FriendService {
 
 
 
-
     @Override
     @Transactional
-    public void acceptFriendRequest(Long senderId) {
-        // [1] 현재 로그인한 유저
+    public void acceptFriendRequest(String senderUserId) {
         Member receiver = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청 보낸 sender 유저가 존재하는지 확인
-        Member sender = memberRepository.findById(senderId)
+        Member sender = memberRepository.findByUserId(senderUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [3] sender → receiver로 상태가 REQUESTED인 친구 요청 찾기
         Friend friendRequest = friendRepository.findBySenderAndReceiver(sender, receiver)
                 .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
-        // [4] 이미 수락되었거나 거절된 요청인 경우 수락 불가
         if (friendRequest.getStatus() != FriendStatus.REQUESTED) {
             throw new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_PENDING);
         }
 
-        // [5] 요청 상태를 ACCEPTED로 변경
         friendRequest.updateStatus(FriendStatus.ACCEPTED);
     }
 
 
+
     @Override
     @Transactional
-    public void rejectFriendRequest(Long senderId) {
-        // [1] 로그인한 유저
+    public void rejectFriendRequest(String senderUserId) {
         Member receiver = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청 보낸 유저(sender) 존재 여부 확인
-        Member sender = memberRepository.findById(senderId)
+        Member sender = memberRepository.findByUserId(senderUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [3] sender → receiver 요청 존재 확인
         Friend friendRequest = friendRepository.findBySenderAndReceiver(sender, receiver)
                 .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
-        // [4] 상태가 REQUESTED 인지 확인
         if (friendRequest.getStatus() != FriendStatus.REQUESTED) {
             throw new GeneralException(ErrorCode.FRIEND_REQUEST_NOT_PENDING);
         }
 
-        // [5] 상태를 REJECTED 로 변경
         friendRequest.updateStatus(FriendStatus.REJECTED);
     }
 
@@ -189,24 +179,22 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     @Transactional
-    public void deleteFriend(Long friendMemberId) {
+    public void deleteFriend(String friendUserId) {
         Member me = memberLoader.getMemberByContextHolder();
-        Member friend = memberRepository.findById(friendMemberId)
+        Member friend = memberRepository.findByUserId(friendUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [1] 나 ↔ 친구 관계에서 상태가 ACCEPTED 인 친구 관계 조회
         Friend relationship = friendRepository.findBySenderAndReceiverAndStatus(me, friend, FriendStatus.ACCEPTED)
                 .or(() -> friendRepository.findBySenderAndReceiverAndStatus(friend, me, FriendStatus.ACCEPTED))
                 .orElseThrow(() -> new GeneralException(ErrorCode.FRIEND_NOT_FOUND));
 
-        // [2] 관계 상태가 ACCEPTED가 아닌 경우 삭제 불가 (예외 상황 대비용, 안전하게)
         if (relationship.getStatus() != FriendStatus.ACCEPTED) {
             throw new GeneralException(ErrorCode.FRIEND_CANNOT_BE_DELETED);
         }
 
-        // [3] BLOCKED 상태로 변경 (soft delete)
         relationship.updateStatus(FriendStatus.BLOCKED);
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -231,12 +219,11 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     @Transactional
-    public FireAlarmResponseDto fireFriend(Long friendId) {
+    public FireAlarmResponseDto fireFriend(String friendUserId) {
         Member sender = memberLoader.getMemberByContextHolder();
-        Member receiver = memberRepository.findById(friendId)
+        Member receiver = memberRepository.findByUserId(friendUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 친구 관계인지 확인 (직접 구현하거나 FriendService 내 메서드 활용)
         if (!isFriend(sender, receiver)) {
             throw new GeneralException(ErrorCode.NOT_FRIEND);
         }
@@ -244,11 +231,8 @@ public class FriendServiceImpl implements FriendService {
         Optional<LocalDateTime> lastFireTimeOpt = alarmService.getLastFireTime(sender, receiver);
         LocalDateTime now = LocalDateTime.now();
 
-        // 60분 쿨타임
         if (lastFireTimeOpt.isPresent()) {
-            LocalDateTime lastFireTime = lastFireTimeOpt.get();
-            long minutesPassed = Duration.between(lastFireTime, now).toMinutes();
-
+            long minutesPassed = Duration.between(lastFireTimeOpt.get(), now).toMinutes();
             if (minutesPassed < 60) {
                 long minutesLeft = 60 - minutesPassed;
                 return FireAlarmResponseDto.builder()
@@ -258,6 +242,7 @@ public class FriendServiceImpl implements FriendService {
                         .build();
             }
         }
+
         alarmService.sendFireAlarm(sender, receiver);
 
         return FireAlarmResponseDto.builder()
