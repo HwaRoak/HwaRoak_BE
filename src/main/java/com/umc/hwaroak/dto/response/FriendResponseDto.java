@@ -39,4 +39,15 @@ public class FriendResponseDto {
         @Schema(description = "요청 보낸 사용자의 자기소개", example = "함께 친구해요 :)")
         private String introduction;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class SearchResultDto {
+        private Long memberId;     // DB PK
+        private String userId;     // 유저 ID (공개용)
+        private String nickname;
+        private String introduction;
+
+    }
 }

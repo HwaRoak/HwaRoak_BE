@@ -209,6 +209,27 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public FriendResponseDto.SearchResultDto searchFriendByUserId(String userId) {
+        Member currentMember = memberLoader.getMemberByContextHolder();
+
+        Member target = memberRepository.findByUserId(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (currentMember.getId().equals(target.getId())) {
+            throw new GeneralException(ErrorCode.CANNOT_SEARCH_SELF);
+        }
+
+        return FriendResponseDto.SearchResultDto.builder()
+                .memberId(target.getId())
+                .userId(target.getUserId())
+                .nickname(target.getNickname())
+                .introduction(target.getIntroduction())
+                .build();
+    }
+
+
+    @Override
     @Transactional
     public FireAlarmResponseDto fireFriend(Long friendId) {
         Member sender = memberLoader.getMemberByContextHolder();

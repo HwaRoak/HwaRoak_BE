@@ -8,6 +8,8 @@ import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.response.SuccessCode;
 import com.umc.hwaroak.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +75,15 @@ public class FriendController {
     public void deleteFriend(@PathVariable Long friendId) {
         friendService.deleteFriend(friendId);
     }
+
+    @GetMapping("/search")
+    @Operation(summary = "userId로 사용자 검색", description = "입력한 userId를 가진 사용자를 검색합니다.")
+    @ApiResponse(responseCode = "200", description = "검색 성공", content = @Content(schema = @Schema(implementation = FriendResponseDto.SearchResultDto.class)))
+    @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음 (MEMBER_NOT_FOUND)")
+    public FriendResponseDto.SearchResultDto searchFriend(@RequestParam String userId) {
+        return friendService.searchFriendByUserId(userId);
+    }
+
 
     @Operation(summary = "친구에게 불씨 보내기", description = "친구에게 ‘불 키우기’ 알림을 전송합니다.")
     @ApiResponse(responseCode = "200", description = "불 지피기 성공")

@@ -18,6 +18,9 @@ public interface FriendService {
     List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests();
 
     void deleteFriend(Long friendMemberId);
+
+    FriendResponseDto.SearchResultDto searchFriendByUserId(String userId);
+
     FireAlarmResponseDto fireFriend(Long friendId);
 
     boolean isFriend(Member member1, Member member2);
