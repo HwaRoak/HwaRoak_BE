@@ -18,7 +18,7 @@ import java.time.YearMonth;
 
 @Tag(name = "EmotionSummary API", description = "감정분석 관련 API")
 @RestController
-@RequestMapping("/api/v1/members/emotion-summary")
+@RequestMapping("/api/v1/members/emotion")
 @RequiredArgsConstructor
 public class EmotionSummaryController {
 
