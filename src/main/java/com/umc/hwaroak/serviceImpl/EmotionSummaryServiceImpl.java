@@ -37,7 +37,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
 
     @Override
     @Transactional(readOnly=true)
-    public MemberResponseDto.PreviewDto getPreviewEmotionSummary(String yearMonth) {
+    public Map<EmotionCategory, MemberResponseDto.EmotionCount> getPreviewEmotionSummary(String yearMonth) {
 
         // 멤버ID 받아와서 감정분석 데이터 조회
         Long memberId = memberLoader.getCurrentMemberId();
@@ -47,14 +47,14 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
 
         if (summary == null) {
             log.info("감정 요약이 존재하지 않습니다. memberId = {}, yearMonth = {}", memberId, yearMonth);
-            return new MemberResponseDto.PreviewDto(); // 비어 있는 감정 통계 응답
+            return new EnumMap<>(EmotionCategory.class); // 비어 있는 감정 통계 응답
         }
 
         return createPreviewFromSummary(summary);
     }
 
     // 감정 카테고리별 통계 정보 PreviewDto에 담아 반환
-    private MemberResponseDto.PreviewDto createPreviewFromSummary(EmotionSummary summary) {
+    private Map<EmotionCategory, MemberResponseDto.EmotionCount> createPreviewFromSummary(EmotionSummary summary) {
 
         // 감정 전체 개수 카운트
         int total = summary.getCalmCount() + summary.getHappyCount()
@@ -65,13 +65,13 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         }
 
         // 개수 기반으로 비율 계산하고 두 필드 모두 리턴
-        Map<EmotionCategory, MemberResponseDto.EmotionCount> map = new EnumMap<>(EmotionCategory.class);
-        map.put(EmotionCategory.CALM, new MemberResponseDto.EmotionCount(summary.getCalmCount(), calculatePercent(summary.getCalmCount(), total)));
-        map.put(EmotionCategory.HAPPY, new MemberResponseDto.EmotionCount(summary.getHappyCount(), calculatePercent(summary.getHappyCount(), total)));
-        map.put(EmotionCategory.SAD, new MemberResponseDto.EmotionCount(summary.getSadCount(), calculatePercent(summary.getSadCount(), total)));
-        map.put(EmotionCategory.ANGRY, new MemberResponseDto.EmotionCount(summary.getAngryCount(), calculatePercent(summary.getAngryCount(), total)));
+        Map<EmotionCategory, MemberResponseDto.EmotionCount> emotionMap = new EnumMap<>(EmotionCategory.class);
+        emotionMap.put(EmotionCategory.CALM, new MemberResponseDto.EmotionCount(summary.getCalmCount(), calculatePercent(summary.getCalmCount(), total)));
+        emotionMap.put(EmotionCategory.HAPPY, new MemberResponseDto.EmotionCount(summary.getHappyCount(), calculatePercent(summary.getHappyCount(), total)));
+        emotionMap.put(EmotionCategory.SAD, new MemberResponseDto.EmotionCount(summary.getSadCount(), calculatePercent(summary.getSadCount(), total)));
+        emotionMap.put(EmotionCategory.ANGRY, new MemberResponseDto.EmotionCount(summary.getAngryCount(), calculatePercent(summary.getAngryCount(), total)));
 
-        return new MemberResponseDto.PreviewDto(map);
+        return emotionMap;
     }
 
     // 비율 계산 메소드 - 소수점 첫째 자리까지 반올림
