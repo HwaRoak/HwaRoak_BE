@@ -17,5 +17,5 @@ public interface MemberService {
 
     MemberResponseDto.ItemDto findSelectedItem();
 
-
+    MemberResponseDto.PreviewDto getMyPagePreview();
 }
