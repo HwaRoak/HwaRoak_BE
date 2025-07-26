@@ -3,6 +3,7 @@ package com.umc.hwaroak.service;
 import com.umc.hwaroak.dto.response.EmotionSummaryResponseDto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface EmotionSummaryService {
 
@@ -13,5 +14,5 @@ public interface EmotionSummaryService {
     EmotionSummaryResponseDto.DetailDto getDetailEmotionSummary(String yearMonth);
 
     // 감정 통계를 업데이트하고, 이를 기반으로 분석 멘트도 함께 업데이트
-    void updateMonthlyEmotionSummary(LocalDate targetDate);
+    void updateMonthlyEmotionSummary(LocalDateTime targetDate);
 }

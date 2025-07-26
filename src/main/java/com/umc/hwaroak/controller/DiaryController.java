@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -42,7 +43,7 @@ public class DiaryController {
     """)
     @GetMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
-    public DiaryResponseDto.ThumbnailDto get(@RequestParam("date")LocalDate date) {
+    public DiaryResponseDto.ThumbnailDto get(@RequestParam("date") LocalDateTime date) {
         return diaryService.readDiary(date);
     }
 

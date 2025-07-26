@@ -258,7 +258,7 @@ public class FriendServiceImpl implements FriendService {
         LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
 
         Optional<Diary> diaryOpt = diaryRepository
-                .findTop1ByMemberAndCreatedAtAfterOrderByCreatedAtDesc(friend, threeDaysAgo);
+                .findTop1ByMemberAndRecordDateAfterOrderByRecordDateDesc(friend, threeDaysAgo);
 
         String message = diaryOpt
                 .map(diary -> openAiUtil.extractDiaryFeelingSummary(diary.getContent()))
