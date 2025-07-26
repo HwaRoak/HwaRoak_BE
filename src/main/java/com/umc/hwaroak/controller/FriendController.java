@@ -1,21 +1,16 @@
 package com.umc.hwaroak.controller;
 
-import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.dto.request.FriendRequestDto;
 import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
-import com.umc.hwaroak.response.ErrorCode;
-import com.umc.hwaroak.response.SuccessCode;
 import com.umc.hwaroak.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Friend", description = "친구 기능 관련 API")
@@ -30,8 +25,8 @@ public class FriendController {
     @ApiResponse(responseCode = "200", description = "친구 요청 성공")
     @ApiResponse(responseCode = "400", description = "존재하지 않는 사용자 (MEMBER_NOT_FOUND) 또는 자기 자신에게 요청 (CANNOT_ADD_SELF) 또는 중복 요청 (FRIEND_ALREADY_EXISTS_OR_REQUESTED)")
     @PostMapping("/request")
-    public void requestFriend(@RequestBody FriendRequestDto.Request requestDto) {
-        friendService.requestFriend(requestDto.getReceiverId());
+    public void requestFriend(@RequestParam String userId) {
+        friendService.requestFriend(userId);
     }
 
     @Operation(summary = "친구 요청 수락", description = "상대방이 보낸 친구 요청을 수락합니다.")
@@ -39,8 +34,8 @@ public class FriendController {
     @ApiResponse(responseCode = "400", description = "이미 처리된 요청 (FRIEND_REQUEST_NOT_PENDING)")
     @ApiResponse(responseCode = "404", description = "요청 보낸 사용자 없음 (MEMBER_NOT_FOUND) 또는 친구 요청 없음 (FRIEND_REQUEST_NOT_FOUND)")
     @PostMapping("/{friendId}/accept")
-    public void acceptFriendRequest(@PathVariable Long friendId) {
-        friendService.acceptFriendRequest(friendId);
+    public void acceptFriendRequest(@RequestParam String userId) {
+        friendService.acceptFriendRequest(userId);
     }
 
     @Operation(summary = "친구 요청 거절", description = "상대방이 보낸 친구 요청을 거절합니다.")
@@ -48,8 +43,8 @@ public class FriendController {
     @ApiResponse(responseCode = "400", description = "이미 처리된 요청 (FRIEND_REQUEST_NOT_PENDING)")
     @ApiResponse(responseCode = "404", description = "요청 보낸 사용자 없음 (MEMBER_NOT_FOUND) 또는 친구 요청 없음 (FRIEND_REQUEST_NOT_FOUND)")
     @PostMapping("/{friendId}/reject")
-    public void rejectFriendRequest(@PathVariable Long friendId) {
-        friendService.rejectFriendRequest(friendId);
+    public void rejectFriendRequest(@RequestParam String userId) {
+        friendService.rejectFriendRequest(userId);
     }
 
     @Operation(summary = "친구 목록 조회", description = "현재 로그인한 유저의 친구 목록을 조회합니다.")
@@ -70,15 +65,24 @@ public class FriendController {
     @ApiResponse(responseCode = "200", description = "친구 삭제 성공")
     @ApiResponse(responseCode = "404", description = "친구 관계가 존재하지 않음 (FRIEND_NOT_FOUND)")
     @DeleteMapping("/{friendId}")
-    public void deleteFriend(@PathVariable Long friendId) {
-        friendService.deleteFriend(friendId);
+    public void deleteFriend(@RequestParam String userId) {
+        friendService.deleteFriend(userId);
     }
+
+    @GetMapping("/search")
+    @Operation(summary = "userId로 회원 검색", description = "입력한 userId를 가진 회원을 검색합니다.")
+    @ApiResponse(responseCode = "200", description = "검색 성공", content = @Content(schema = @Schema(implementation = FriendResponseDto.SearchResultDto.class)))
+    @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음 (MEMBER_NOT_FOUND)")
+    public FriendResponseDto.SearchResultDto searchFriend(@RequestParam String userId) {
+        return friendService.searchFriendByUserId(userId);
+    }
+
 
     @Operation(summary = "친구에게 불씨 보내기", description = "친구에게 ‘불 키우기’ 알림을 전송합니다.")
     @ApiResponse(responseCode = "200", description = "불 지피기 성공")
     @ApiResponse(responseCode = "403", description = "해당 사용자와 친구 관계가 아닙니다")
     @PostMapping("/{friendId}/fire")
-    public FireAlarmResponseDto fireFriend(@PathVariable Long friendId) {
-        return friendService.fireFriend(friendId);
+    public FireAlarmResponseDto fireFriend(@RequestParam String userId) {
+        return friendService.fireFriend(userId);
     }
 }
