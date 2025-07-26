@@ -4,6 +4,7 @@ import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DiaryService {

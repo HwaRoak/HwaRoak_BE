@@ -3,6 +3,7 @@ package com.umc.hwaroak.service;
 import com.umc.hwaroak.dto.response.EmotionSummaryResponseDto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface EmotionSummaryService {
 

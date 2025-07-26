@@ -1,6 +1,7 @@
 package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.FriendStatus;
@@ -8,16 +9,19 @@ import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
+import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.FriendRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmService;
 import com.umc.hwaroak.service.FriendService;
+import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +36,9 @@ public class FriendServiceImpl implements FriendService {
     private final MemberLoader memberLoader;
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+    private final DiaryRepository diaryRepository;
     private final AlarmService alarmService;
+    private final OpenAiUtil openAiUtil;
 
     /**
      * 친구 요청을 보냅니다.
@@ -244,6 +250,31 @@ public class FriendServiceImpl implements FriendService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId) {
+        Member friend = memberRepository.findByUserId(friendUserId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // LocalDateTime → LocalDate
+        LocalDate threeDaysAgo = LocalDateTime.now().minusDays(3).toLocalDate();
+
+        // 날짜 기준으로 최신 다이어리 하나 조회
+        Optional<Diary> diaryOpt = diaryRepository
+                .findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(friend, threeDaysAgo);
+
+        String message = diaryOpt
+                .map(diary -> openAiUtil.extractDiaryFeelingSummary(diary.getContent()))
+                .orElse("불씨를 지펴보세요!");
+
+        return FriendResponseDto.FriendPageInfo.builder()
+                .userId(friend.getUserId())
+                .nickname(friend.getNickname())
+                .message(message)
+                .build();
+    }
+
+
+
     @Override
     @Transactional(readOnly = true)
     public boolean isFriend(Member member1, Member member2) {
@@ -255,5 +286,7 @@ public class FriendServiceImpl implements FriendService {
 
         return direct || reverse;
     }
+
+
 
 }
