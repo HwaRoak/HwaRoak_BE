@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -249,16 +250,17 @@ public class FriendServiceImpl implements FriendService {
                 .build();
     }
 
-    @Override
     @Transactional(readOnly = true)
     public FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId) {
         Member friend = memberRepository.findByUserId(friendUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+        // LocalDateTime → LocalDate
+        LocalDate threeDaysAgo = LocalDateTime.now().minusDays(3).toLocalDate();
 
+        // 날짜 기준으로 최신 다이어리 하나 조회
         Optional<Diary> diaryOpt = diaryRepository
-                .findTop1ByMemberAndRecordDateAfterOrderByRecordDateDesc(friend, threeDaysAgo);
+                .findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(friend, threeDaysAgo);
 
         String message = diaryOpt
                 .map(diary -> openAiUtil.extractDiaryFeelingSummary(diary.getContent()))
@@ -270,6 +272,7 @@ public class FriendServiceImpl implements FriendService {
                 .message(message)
                 .build();
     }
+
 
 
     @Override

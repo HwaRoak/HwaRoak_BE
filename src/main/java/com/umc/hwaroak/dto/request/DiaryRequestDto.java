@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -13,7 +12,7 @@ public class DiaryRequestDto {
 
     @Schema(description = "기록 날짜",
     example = "2025-07-13")
-    private LocalDateTime recordDate;
+    private LocalDate recordDate;
     @Schema(description = "기록 내용")
     private String content;
     @Schema(description = "기록할 감정(최대 3개 작성)",

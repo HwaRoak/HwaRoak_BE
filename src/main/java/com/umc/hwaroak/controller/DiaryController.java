@@ -43,7 +43,7 @@ public class DiaryController {
     """)
     @GetMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
-    public DiaryResponseDto.ThumbnailDto get(@RequestParam("date") LocalDateTime date) {
+    public DiaryResponseDto.ThumbnailDto get(@RequestParam("date") LocalDate date) {
         return diaryService.readDiary(date);
     }
 

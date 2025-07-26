@@ -10,7 +10,7 @@ import java.util.List;
 public interface DiaryService {
 
     DiaryResponseDto.CreateDto createDiary(DiaryRequestDto requestDto);
-    DiaryResponseDto.ThumbnailDto readDiary(LocalDateTime date);
+    DiaryResponseDto.ThumbnailDto readDiary(LocalDate date);
     DiaryResponseDto.CreateDto updateDiary(Long diaryId, DiaryRequestDto requestDto);
     List<DiaryResponseDto.ThumbnailDto> readMonthDiary(Integer year, Integer month);
     void deleteDiary(Long diaryId);

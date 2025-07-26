@@ -70,7 +70,7 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public DiaryResponseDto.ThumbnailDto readDiary(LocalDateTime date) {
+    public DiaryResponseDto.ThumbnailDto readDiary(LocalDate date) {
 
         Member member = memberLoader.getMemberByContextHolder();
 

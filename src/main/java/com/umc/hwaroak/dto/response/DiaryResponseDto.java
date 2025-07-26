@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Schema(name = "일기 DTO")
@@ -22,7 +21,7 @@ public class DiaryResponseDto {
         @Schema(description = "일기 ID")
         private Long id;
         @Schema(description = "일기 작성 날짜")
-        private LocalDateTime recordDate;
+        private LocalDate recordDate;
         @Schema(description = "기록한 감정")
         private List<String> emotionList;
         @Schema(description = "감정 피드백",
@@ -43,7 +42,7 @@ public class DiaryResponseDto {
         @Schema(description = "일기 ID")
         private Long id;
         @Schema(description = "일기 작성 날짜")
-        private LocalDateTime recordDate;
+        private LocalDate recordDate;
         @Schema(description = "기록한 감정")
         private List<String> emotionList;
         @Schema(description = "감정 피드백",
@@ -61,7 +60,7 @@ public class DiaryResponseDto {
         @Schema(description = "일기 ID")
         private Long id;
         @Schema(description = "일기 작성 날짜")
-        private LocalDateTime recordDate;
+        private LocalDate recordDate;
         @Schema(description = "기록한 감정")
         private List<String> emotionList;
         @Schema(description = "일기 본문")

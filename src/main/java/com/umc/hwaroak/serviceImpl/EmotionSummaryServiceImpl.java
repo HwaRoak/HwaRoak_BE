@@ -101,7 +101,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
     }
 
     @Override
-    public void updateMonthlyEmotionSummary(LocalDateTime targetDate) {
+    public void updateMonthlyEmotionSummary(LocalDate targetDate) {
 
         Member member = memberLoader.getMemberByContextHolder();
         Long memberId = member.getId();
