@@ -7,18 +7,21 @@ import com.umc.hwaroak.dto.response.FriendResponseDto;
 import java.util.List;
 
 public interface FriendService {
-    void requestFriend(Long receiverId);
+    void requestFriend(String receiverUserId);
 
-    void acceptFriendRequest(Long senderId);
+    void acceptFriendRequest(String senderUserId);
 
-    void rejectFriendRequest(Long senderId);
+    void rejectFriendRequest(String senderUserId);
 
     List<FriendResponseDto.FriendInfo> getFriendList();
 
     List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests();
 
-    void deleteFriend(Long friendMemberId);
-    FireAlarmResponseDto fireFriend(Long friendId);
+    void deleteFriend(String friendMemberUserId);
+
+    FriendResponseDto.SearchResultDto searchFriendByUserId(String userId);
+
+    FireAlarmResponseDto fireFriend(String friendUserId);
 
     boolean isFriend(Member member1, Member member2);
 }
