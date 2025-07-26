@@ -70,7 +70,7 @@ public class FriendController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "userId로 사용자 검색", description = "입력한 userId를 가진 사용자를 검색합니다.")
+    @Operation(summary = "userId로 회원 검색", description = "입력한 userId를 가진 회원을 검색합니다.")
     @ApiResponse(responseCode = "200", description = "검색 성공", content = @Content(schema = @Schema(implementation = FriendResponseDto.SearchResultDto.class)))
     @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음 (MEMBER_NOT_FOUND)")
     public FriendResponseDto.SearchResultDto searchFriend(@RequestParam String userId) {

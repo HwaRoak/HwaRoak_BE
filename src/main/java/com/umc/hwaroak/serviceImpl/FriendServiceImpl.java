@@ -129,24 +129,18 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional(readOnly = true)
     public List<FriendResponseDto.FriendInfo> getFriendList() {
-        // [1] 현재 로그인된 사용자 (나)
         Member me = memberLoader.getMemberByContextHolder();
 
-        // [2] 내가 sender 또는 receiver로 포함된 친구 관계 중, 상태가 ACCEPTED인 것들 모두 조회
-        // → 단방향으로 저장되어 있기 때문에 sender 또는 receiver 둘 다 체크 필요
         List<Friend> acceptedFriends = friendRepository.findAllAcceptedFriends(me);
 
-        // [3] 각 친구 관계에서 "나"와 반대쪽에 있는 Member만 추출
-        // → 그게 진짜 '친구'임
         return acceptedFriends.stream()
                 .map(friend -> {
                     Member friendMember = friend.getSender().equals(me)
-                            ? friend.getReceiver()  // 내가 sender일 경우 → 친구는 receiver
-                            : friend.getSender();  // 내가 receiver일 경우 → 친구는 sender
+                            ? friend.getReceiver()
+                            : friend.getSender();
 
-                    // [4] 친구 정보를 응답 DTO로 변환
                     return FriendResponseDto.FriendInfo.builder()
-                            .memberId(friendMember.getId())
+                            .userId(friendMember.getUserId())
                             .nickname(friendMember.getNickname())
                             .introduction(friendMember.getIntroduction())
                             .build();
@@ -159,23 +153,22 @@ public class FriendServiceImpl implements FriendService {
     public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
         Member me = memberLoader.getMemberByContextHolder();
 
-        // [1] 상태가 REQUESTED이고, 내가 받은 요청만 최신순 정렬로 조회
         List<Friend> requests = friendRepository.findAllByReceiverAndStatusOrderByCreatedAtDesc(
                 me, FriendStatus.REQUESTED
         );
 
-        // [2] 요청 보낸 사람 정보를 DTO로 변환
         return requests.stream()
                 .map(friend -> {
                     Member sender = friend.getSender();
                     return FriendResponseDto.ReceivedRequestInfo.builder()
-                            .memberId(sender.getId())
+                            .userId(sender.getUserId())
                             .nickname(sender.getNickname())
                             .introduction(sender.getIntroduction())
                             .build();
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional
@@ -209,7 +202,6 @@ public class FriendServiceImpl implements FriendService {
         }
 
         return FriendResponseDto.SearchResultDto.builder()
-                .memberId(target.getId())
                 .userId(target.getUserId())
                 .nickname(target.getNickname())
                 .introduction(target.getIntroduction())
