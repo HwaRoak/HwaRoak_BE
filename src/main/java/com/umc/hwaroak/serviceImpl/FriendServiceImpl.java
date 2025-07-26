@@ -261,7 +261,7 @@ public class FriendServiceImpl implements FriendService {
                 .findTop1ByMemberAndCreatedAtAfterOrderByCreatedAtDesc(friend, threeDaysAgo);
 
         String message = diaryOpt
-                .map(diary -> openAiUtil.reviewDiary(diary.getContent()))
+                .map(diary -> openAiUtil.extractDiaryFeelingSummary(diary.getContent()))
                 .orElse("불씨를 지펴보세요!");
 
         return FriendResponseDto.FriendPageInfo.builder()
