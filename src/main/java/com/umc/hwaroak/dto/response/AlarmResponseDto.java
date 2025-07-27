@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Schema(name = "알람 응답 DTO")
 public class AlarmResponseDto {
@@ -27,8 +27,8 @@ public class AlarmResponseDto {
         @Schema(description = "알람 제목", example = "서버 점검 안내")
         private String title;
 
-        @Schema(description = "알람 생성일", example = "2025-07-14")
-        private LocalDate createdAt; // 프론트에서 언제 올라온 공지인지 정렬 및 표시용
+        @Schema(description = "알람 생성일")
+        private LocalDateTime createdAt; // 프론트에서 언제 올라온 공지인지 정렬 및 표시용
     }
 
     /**
@@ -52,7 +52,7 @@ public class AlarmResponseDto {
         @Schema(description = "알람 종류", example = "친구요청")
         private AlarmType alarmType;
 
-        @Schema(description = "알람 생성일", example = "2025-07-14")
-        private LocalDate createdAt;
+        @Schema(description = "알람 생성일")
+        private LocalDateTime createdAt;
     }
 }
