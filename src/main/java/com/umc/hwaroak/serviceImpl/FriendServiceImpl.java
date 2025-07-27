@@ -65,11 +65,12 @@ public class FriendServiceImpl implements FriendService {
             throw new GeneralException(ErrorCode.CANNOT_ADD_SELF);
         }
 
-        // [4] 기존 친구 요청/관계가 존재하는지 조회 (단방향 sender → receiver 기준)
-        Optional<Friend> existingFriend = friendRepository.findBySenderAndReceiver(sender, receiver);
+        // [4] 기존 친구 요청/관계가 존재하는지 조회 (양방향 모두 확인)
+        Optional<Friend> direct = friendRepository.findBySenderAndReceiver(sender, receiver);
+        Optional<Friend> reverse = friendRepository.findBySenderAndReceiver(receiver, sender);
 
-        if (existingFriend.isPresent()) {
-            Friend friend = existingFriend.get();
+        if (direct.isPresent()) {
+            Friend friend = direct.get();
 
             if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
                 friend.updateStatus(FriendStatus.REQUESTED);
@@ -79,17 +80,26 @@ public class FriendServiceImpl implements FriendService {
             throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [5] 역방향 중복 검사
-        boolean reverseExists = friendRepository.existsBySenderAndReceiver(receiver, sender);
-        if (reverseExists) {
+        if (reverse.isPresent()) {
+            Friend friend = reverse.get();
+
+            if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
+                // 방향 반전 및 상태 변경
+                friend.setSender(sender); 
+                friend.setReceiver(receiver);
+                friend.updateStatus(FriendStatus.REQUESTED);
+                return;
+            }
+
             throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [6] 저장 및 알림 전송
+        // [5] 새 요청 저장 및 알림 전송
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
         alarmService.sendFriendRequestAlarm(sender, receiver);
     }
+
 
 
 
