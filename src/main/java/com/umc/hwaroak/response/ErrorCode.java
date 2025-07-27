@@ -35,7 +35,8 @@ public enum ErrorCode implements BaseCode{
     ALARM_NOT_FOUND(HttpStatus.NOT_FOUND, "AL4041", "해당 알람을 찾을 수 없습니다."),
     FORBIDDEN_ALARM_ACCESS(HttpStatus.FORBIDDEN,"AL4031", "본인의 알림만 읽을 수 있습니다."),
 
-
+    SSE_CONNECTION_ERROR(HttpStatus.BAD_REQUEST, "SE4001", "SSE 연결에 실패하였습니다."),
+    SSE_KEY_ERROR(HttpStatus.BAD_REQUEST, "SE4002", "SSE에서 메시지 처리 중 오류가 발생하였습니다."),
 
     // JWT token
     INVALID_JWT_SIGNATURE(HttpStatus.UNAUTHORIZED, "JWT_001", "서명이 유효하지 않습니다."),
