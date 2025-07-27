@@ -1,5 +1,6 @@
 package com.umc.hwaroak.config;
 
+import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.event.RedisSubscriber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +22,10 @@ public class RedisPubSubConfig {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory);
 
-        container.addMessageListener(redisSubscriber, new ChannelTopic("notification"));
+        container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.NOTIFICATION.getValue()));
+        container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.REMINDER.getValue()));
+        container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.FRIEND_REQUEST.getValue()));
+        container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.FIRE.getValue()));
 
         return container;
     }
