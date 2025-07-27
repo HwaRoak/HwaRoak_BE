@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -29,7 +30,7 @@ public class DiaryController {
     """)
     @PostMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
-    public DiaryResponseDto create(
+    public DiaryResponseDto.CreateDto create(
             @io.swagger.v3.oas.annotations.parameters.RequestBody @RequestBody DiaryRequestDto requestDto
             ) {
         return diaryService.createDiary(requestDto);
@@ -42,7 +43,7 @@ public class DiaryController {
     """)
     @GetMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
-    public DiaryResponseDto get(@RequestParam("date")LocalDate date) {
+    public DiaryResponseDto.ThumbnailDto get(@RequestParam("date") LocalDate date) {
         return diaryService.readDiary(date);
     }
 
@@ -61,7 +62,7 @@ public class DiaryController {
             """)
     @PatchMapping("/{diaryId}")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
-    public DiaryResponseDto update(@PathVariable Long diaryId, @RequestBody DiaryRequestDto requestDto) {
+    public DiaryResponseDto.CreateDto update(@PathVariable Long diaryId, @RequestBody DiaryRequestDto requestDto) {
         return diaryService.updateDiary(diaryId, requestDto);
     }
 
@@ -70,7 +71,7 @@ public class DiaryController {
             Parameter에 조회하려는 일기의 년도와 달을 작성해주세요.
             """)
     @GetMapping("/monthly")
-    public List<DiaryResponseDto> getAllDiaries(
+    public List<DiaryResponseDto.ThumbnailDto> getAllDiaries(
             @RequestParam("year") Integer year,
             @RequestParam("month") Integer month
     ) {

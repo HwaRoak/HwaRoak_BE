@@ -4,7 +4,9 @@ import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface AlarmService {
     /**
@@ -28,7 +30,14 @@ public interface AlarmService {
     List<AlarmResponseDto.InfoDto> getAllAlarmsForMember();
 
     /**
-     *  알람 읽음 처리 하기
+
+     *  불씨 보냈을시 알람 생성하기
+     */
+    void sendFireAlarm(Member sender, Member receiver);
+    Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver);
+
+
+     /*  알람 읽음 처리 하기
      */
     void markAsRead(Long alarmId);
 

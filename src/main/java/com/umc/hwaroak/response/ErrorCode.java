@@ -53,6 +53,9 @@ public enum ErrorCode implements BaseCode{
     FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4004", "이미 친구이거나 요청을 보낸 상태입니다."),
     FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4005", "해당 친구 상태에서는 삭제할 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4042", "해당 친구 관계를 찾을 수 없습니다."),
+    NOT_FRIEND(HttpStatus.FORBIDDEN,"FRIEND4043", "해당 사용자와 친구 관계가 아닙니다."),
+    CANNOT_SEARCH_SELF(HttpStatus.FORBIDDEN,"FRIEND4044", "자기 자신은 찾을 수 없습니다."),
+
 
     // Item
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),

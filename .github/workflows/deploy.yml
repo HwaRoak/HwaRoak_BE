@@ -26,7 +26,7 @@ jobs:
           chmod 600 id_rsa
 
           IMAGE_TAG=$(ssh -o StrictHostKeyChecking=no -i id_rsa ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} \
-            'if docker ps --filter "name=dearbelly-api-blue" --format "{{.Names}}" | grep -q dearbelly-api-blue; then echo green; else echo blue; fi')
+            'if docker ps --filter "name=app-blue" --format "{{.Names}}" | grep -q app-blue; then echo green; else echo blue; fi')
 
           echo "IMAGE_TAG=$IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
@@ -64,7 +64,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./docker-compose.yml ./deploy.sh"
+          source: ./docker-compose.yml,./deploy.sh
           target: /home/ubuntu/hwaroak-api/
 
       - name: Transfer nginx directory file to ec2
@@ -100,7 +100,7 @@ jobs:
             echo "${{ secrets.YOUYEON_GITHUB_PAT }}" | docker login ghcr.io -u ${{ secrets.YOUYEON_GITHUB_USERNAME }} --password-stdin
             
             # 4. pull image:latest
-            docker pull ${{ secrets.ECR_URI }}/dearbelly-api:${{ env.IMAGE_TAG }}
+            docker pull ghcr.io/${{ secrets.ORG_NAME }}/hwaroak-api:${{ env.IMAGE_TAG }}
             
             # 5. 환경변수 설정
             export ORG_NAME=${{ secrets.ORG_NAME }}
