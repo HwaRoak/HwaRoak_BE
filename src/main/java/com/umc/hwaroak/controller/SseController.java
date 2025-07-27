@@ -2,6 +2,7 @@ package com.umc.hwaroak.controller;
 
 import com.umc.hwaroak.service.EmitterService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/v1/sse")
+@Tag(name = "SSE 연결 API Controller", description = "SSE 연결을 위한 API입니다.")
 @RequiredArgsConstructor
 public class SseController {
 
@@ -28,9 +30,4 @@ public class SseController {
     ) {
         return emitterService.subscribe(lastEventId);
     }
-
-    //    @PostMapping("/test/notice")
-//    public void createNoticeTest(@RequestBody AlarmRequestDto.SendDto requestDto) {
-//        alarmService.send(requestDto);
-//    }
 }
