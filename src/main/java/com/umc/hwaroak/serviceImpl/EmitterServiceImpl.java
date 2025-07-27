@@ -1,8 +1,9 @@
 package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.authentication.MemberLoader;
-import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.common.AlarmType;
+import com.umc.hwaroak.dto.response.AlarmResponseDto;
+import com.umc.hwaroak.event.RedisPublisher;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.EmitterRepository;
 import com.umc.hwaroak.response.ErrorCode;
@@ -10,6 +11,7 @@ import com.umc.hwaroak.service.EmitterService;
 import com.umc.hwaroak.util.SseRepositoryKeyGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -29,6 +31,7 @@ public class EmitterServiceImpl implements EmitterService {
 
     private final EmitterRepository emitterRepository;
     private final MemberLoader memberLoader;
+    private final RedisPublisher redisPublisher;
 
     @Override
     public SseEmitter subscribe(String lastEventId) {
@@ -59,6 +62,7 @@ public class EmitterServiceImpl implements EmitterService {
         // 새로 등록 저장
         emitterRepository.put(key, sse);
         try {
+            redisPublisher.publish("subscribe", "subscribe");
             sse.send(SseEmitter.event()
                     .name(AlarmType.CONNECTED.getValue())
                     .id(getEventId(memberId, now, AlarmType.CONNECTED))
@@ -72,65 +76,55 @@ public class EmitterServiceImpl implements EmitterService {
         return sse;
     }
 
-
-    @Override
-    public void send(Long memberId, Alarm alarm) {
-
-        String key = new SseRepositoryKeyGenerator(memberId, alarm.getAlarmType(), alarm.getCreatedAt())
-                .toCompleteKeyWhichSpecifyOnlyOneValue();
-
-        Map<String, List<SseEmitter>> memberEmittersMap = emitterRepository.findAllEmittersStartWithByMemberId(
-                String.valueOf(memberId)
-        );
-
-        if (memberEmittersMap == null || memberEmittersMap.isEmpty()) {
-            log.warn("No emitters found for member: {}", memberId);
-            return;
-        }
-
-        List<SseEmitter> deadEmitters = new ArrayList<>();
-
-        // 모든 emitter 목록 반복
-        memberEmittersMap.forEach((emitterKey, emitterList) -> {
-            for (SseEmitter emitter : emitterList) {
-                try {
-                    emitter.send(SseEmitter.event()
-                            .id(key)
-                            .name(alarm.getAlarmType().getValue())
-                            .data(alarm));
-                    log.info("Sent SSE to member: {} with emitterKey: {}", memberId, emitterKey);
-                } catch (IOException e) {
-                    log.error("Failed to send SSE to member: {} with emitterKey: {}", memberId, emitterKey, e);
-                    deadEmitters.add(emitter);
-                }
-            }
-
-            // 실패한 emitter 삭제
-            if (!deadEmitters.isEmpty()) {
-                emitterList.removeAll(deadEmitters);
-                log.info("Removed {} dead emitters for key: {}", deadEmitters.size(), emitterKey);
-            }
-        });
-    }
-
     private String getEventId(Long memberId, LocalDateTime now, AlarmType eventName) {
         return memberId + "_" + eventName.getValue() + "_" + now;
     }
 
-    public void sendNotification(String redisKey, Alarm alarm) {
-        // 1. 전체 유저의 Emitter 가져오기
-        List<SseEmitter> allEmitters = emitterRepository.getListByKeyPrefix("null_notification");
+    @Async
+    @Override
+    public void send(AlarmResponseDto.PreviewDto responseDto) {
 
-        // 2. 전체 전송
-        for (SseEmitter emitter : allEmitters) {
+        Long receiverId = (responseDto.getReceiverId() != null)
+                ? responseDto.getReceiverId() : null;
+
+        if (receiverId == null) {
+            emitters.forEach((memberId, emitterList) -> {
+                sendToEmitters(emitterList, responseDto);
+            });
+        } else {
+            Map<String, List<SseEmitter>> emitterMap = emitterRepository.findAllEmittersStartWithByMemberId(
+                    String.valueOf(receiverId)
+            );
+
+            if (emitterMap.isEmpty()) {
+                log.warn("[{}]에 대한 연결 발견 불가능. 알림 미전송: {}", receiverId, responseDto);
+                return;
+            }
+
+            emitterMap.forEach((key, emitterList) -> {
+                log.info("[{}]에 대한 Emitter {}개에게 알림 전송 중...", receiverId, emitterList.size());
+                sendToEmitters(emitterList, responseDto);
+            });
+        }
+    }
+
+    private void sendToEmitters(List<SseEmitter> emitterList, AlarmResponseDto.PreviewDto responseDto) {
+
+        if (emitterList == null || emitterList.isEmpty()) {
+            return;
+        }
+
+        List<SseEmitter> deadEmitters = new ArrayList<>();
+        for (SseEmitter emitter : emitterList) {
             try {
                 emitter.send(SseEmitter.event()
-                        .id(getEventId(null, alarm.getCreatedAt(), AlarmType.NOTIFICATION))
-                        .name(alarm.getAlarmType().getValue())
-                        .data(alarm.getTitle()));
+                        .name(responseDto.getAlarmType().getValue())
+                        .data(responseDto)
+                );
             } catch (IOException e) {
-                log.warn("Failed to send broadcast alarm to key: {}", redisKey, e);
+                deadEmitters.add(emitter);
             }
         }
+        emitterList.removeAll(deadEmitters);
     }
 }

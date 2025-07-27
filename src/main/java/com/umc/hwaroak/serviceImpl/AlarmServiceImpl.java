@@ -1,6 +1,7 @@
 package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.converter.AlarmConverter;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
@@ -12,8 +13,6 @@ import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmService;
-import com.umc.hwaroak.service.EmitterService;
-import com.umc.hwaroak.util.SseRepositoryKeyGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 
@@ -32,7 +30,6 @@ public class AlarmServiceImpl implements AlarmService {
 
     private final MemberLoader memberLoader;
     private final AlarmRepository alarmRepository;
-    private final EmitterService emitterService;
 
     private final RedisPublisher redisPublisher;
 
@@ -84,6 +81,7 @@ public class AlarmServiceImpl implements AlarmService {
                 .receiver(receiver)
                 .alarmType(AlarmType.FRIEND_REQUEST)
                 .title("친구 요청")
+                .message(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
                 .content(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
                 .build();
 
@@ -92,13 +90,7 @@ public class AlarmServiceImpl implements AlarmService {
                 new CustomTransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        emitterService.send(receiver.getId(), alarm);
-
-                        String key = new SseRepositoryKeyGenerator(receiver.getId(), alarm.getAlarmType(), alarm.getCreatedAt())
-                                .toCompleteKeyWhichSpecifyOnlyOneValue();
-
-                        redisPublisher.saveAlarmWithTTL(key, alarm, 7, TimeUnit.DAYS);
-                        redisPublisher.publish(key, key);
+                        redisPublisher.publish(alarm.getAlarmType().getValue(), AlarmConverter.toPreviewDto(alarm));
                     }
                 }
         );
@@ -162,9 +154,7 @@ public class AlarmServiceImpl implements AlarmService {
                 new CustomTransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        emitterService.send(null, alarm);
-
-                        redisPublisher.publishGlobalAlarm(alarm, 3, TimeUnit.DAYS);
+                        redisPublisher.publish(alarm.getAlarmType().getValue(), AlarmConverter.toPreviewDto(alarm));
                     }
                 }
         );
