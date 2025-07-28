@@ -23,5 +23,7 @@ public interface FriendService {
 
     FireAlarmResponseDto fireFriend(String friendUserId);
 
+    FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId);
+
     boolean isFriend(Member member1, Member member2);
 }
