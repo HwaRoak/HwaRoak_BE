@@ -11,7 +11,6 @@ import com.umc.hwaroak.service.EmitterService;
 import com.umc.hwaroak.util.SseRepositoryKeyGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -80,7 +79,6 @@ public class EmitterServiceImpl implements EmitterService {
         return memberId + "_" + eventName.getValue() + "_" + now;
     }
 
-    @Async
     @Override
     public void send(AlarmResponseDto.PreviewDto responseDto) {
 
