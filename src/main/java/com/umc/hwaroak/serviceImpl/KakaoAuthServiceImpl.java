@@ -70,24 +70,14 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         String profileImage = account.getProfile().getProfile_image_url();
         String s3ProfileImageUrl = null;
 
-        // 카카오 이미지 -> 다운로드 -> S3업로드 -> url 반환
-        if (profileImage != null && !profileImage.isEmpty()) {
-            try {
-                byte[] imageBytes = downloadImage(profileImage);
-                String s3Key = "users/" + uid + "/profile.png";
-                s3ProfileImageUrl = s3Service.upload(imageBytes, s3Key, "image/png");
-            } catch (Exception e) {
-                log.warn("프로필 이미지 S3 업로드 실패: {}", e.getMessage());
-                // s3ProfileImageUrl을 null로 두고 진행해도 됨
-            }
-        }
+        // 카카오 이미지 -> 다운로드 -> S3업로드 -> url 반환(자동 S3업로드)
 
         // 기존 회원 또는 신규 생성
         Member member = memberRepository.findByUserId(uid)
                 .orElseGet(() -> {
 
                     // 신규 가입
-                    Member newMember = new Member(uid, nickname, profileImage);
+                    Member newMember = new Member(uid, nickname, null); // 처음에는 default이미지
                     log.info("신규 회원 가입 - userId: {}", uid);
                     Member savedNewMember = memberRepository.save(newMember);
 
