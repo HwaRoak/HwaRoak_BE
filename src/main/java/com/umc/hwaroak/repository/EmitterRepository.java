@@ -14,9 +14,5 @@ public interface EmitterRepository {
 
     void remove(String key);
 
-    List<SseEmitter> getListByKeyPrefix(String keyPrefix);
-
-    List<String> getKeyListByKeyPrefix(String keyPrefix);
-
     Map<String, List<SseEmitter>> findAllEmittersStartWithByMemberId(String memberId);
 }

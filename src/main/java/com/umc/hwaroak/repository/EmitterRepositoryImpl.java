@@ -31,25 +31,11 @@ public class EmitterRepositoryImpl implements EmitterRepository {
         }
         return Optional.empty();
     }
-    // 전체 조회(Prefix이용)
-    @Override
-    public List<SseEmitter> getListByKeyPrefix(String keyPrefix) {
-        return emitters.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(keyPrefix))
-                .flatMap(entry -> entry.getValue().stream())
-                .collect(Collectors.toList());
-    }
+
     // 삭제
     @Override
     public void remove(String key) {
         emitters.remove(key);
-    }
-    // key값들 전체 조회
-    @Override
-    public List<String> getKeyListByKeyPrefix(String keyPrefix) {
-        return emitters.keySet().stream()
-                .filter(key -> key.startsWith(keyPrefix))
-                .collect(Collectors.toList());
     }
 
     // MemberId 기반
