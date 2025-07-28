@@ -2,21 +2,24 @@ package com.umc.hwaroak.serviceImpl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.converter.AlarmConverter;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.domain.QAlarm;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
+import com.umc.hwaroak.event.CustomTransactionSynchronization;
+import com.umc.hwaroak.event.RedisPublisher;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,10 +28,14 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AlarmServiceImpl implements AlarmService {
 
     private final MemberLoader memberLoader;
     private final AlarmRepository alarmRepository;
+
+    private final RedisPublisher redisPublisher;
+
 
     private final JPAQueryFactory queryFactory;  // 주입!
 
@@ -80,10 +87,19 @@ public class AlarmServiceImpl implements AlarmService {
                 .receiver(receiver)
                 .alarmType(AlarmType.FRIEND_REQUEST)
                 .title("친구 요청")
-                .content(nickname + "님이 친구 요청을 보냈습니다.")
+                .message(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
+                .content(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
                 .build();
 
         alarmRepository.save(alarm);
+        TransactionSynchronizationManager.registerSynchronization(
+                new CustomTransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        redisPublisher.publish(alarm.getAlarmType().getValue(), AlarmConverter.toPreviewDto(alarm));
+                    }
+                }
+        );
     }
 
     /**
@@ -91,7 +107,8 @@ public class AlarmServiceImpl implements AlarmService {
      * receiverId로 조회 or (receiverId=NULL && 공지)
      */
     @Override
-    public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member receiver) {
+    public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember() {
+        Member receiver = memberLoader.getMemberByContextHolder();
         List<Alarm> alarms = alarmRepository.findAllIncludingNotifications(receiver);
 
         return alarms.stream()
@@ -125,7 +142,9 @@ public class AlarmServiceImpl implements AlarmService {
      /*  알람 읽기 api
      */
     @Transactional
-    public void markAsRead(Long alarmId, Member member) {
+    public void markAsRead(Long alarmId) {
+        Member member = memberLoader.getMemberByContextHolder();
+
         Alarm alarm = alarmRepository.findById(alarmId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
 
@@ -153,8 +172,16 @@ public class AlarmServiceImpl implements AlarmService {
                 .build();
 
         alarmRepository.save(alarm);
+        TransactionSynchronizationManager.registerSynchronization(
+                new CustomTransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        redisPublisher.publish(alarm.getAlarmType().getValue(), AlarmConverter.toPreviewDto(alarm));
+                    }
+                }
+        );
     }
-      
+
     // 마지막 불씨 보낸 시각
     @Override
     public Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver){
