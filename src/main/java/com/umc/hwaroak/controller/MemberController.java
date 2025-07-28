@@ -1,8 +1,8 @@
 package com.umc.hwaroak.controller;
 
-
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
+import com.umc.hwaroak.service.EmotionSummaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,6 +21,7 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+    private final EmotionSummaryService emotionSummaryService;
 
     @GetMapping("")
     @Operation(summary = "회원 정보 조회", description = "회원 정보를 조회합니다.")
@@ -61,6 +62,27 @@ public class MemberController {
             @PathVariable Long itemId
     ){
         return memberService.changeSelectedItem(itemId);
+    }
+
+    @GetMapping("/preview")
+    @Operation(summary = "마이페이지용 preview 조회",
+            description = "마이페이지 preview를 조회합니다. 감정통계에서는 반올림 때문에 비율 총합이 100이 넘을 수도 있습니다. " +
+                    "분석할 데이터가 없는 경우 null이 반환되며, " +
+                    "프로필 이미지 url이 비어있을 경우 빈 문자열(\"\")을 반환하니 기본 이미지로 처리하면 됩니다.)")
+    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.PreviewDto.class)))
+    public MemberResponseDto.PreviewDto getEmotionSummary() {
+
+        return memberService.getMyPagePreview();
+    }
+
+    @GetMapping("emotions/{summaryMonth}")
+    @Operation(summary = "감정분석 상세 조회", description = "특정 달의 감정분석을 조회합니다.")
+    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.DetailDto.class)))
+    public MemberResponseDto.DetailDto getDetailEmotionSummary(
+            @Schema(description = "조회할 연월", example = "2025-07")
+            @PathVariable String summaryMonth
+    ) {
+        return emotionSummaryService.getDetailEmotionSummary(summaryMonth);
     }
 
 }
