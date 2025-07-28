@@ -21,12 +21,16 @@ import com.umc.hwaroak.service.KakaoAuthService;
 import com.umc.hwaroak.util.UidGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -45,6 +49,8 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     @Value("${jwt.refresh-token-validity}")
     private long refreshTokenValidity;
 
+    @Autowired
+    private S3ServiceImpl s3Service;
     @Override
     public KakaoLoginResponseDto kakaoLogin(String kakaoAccessToken) {
         log.info("카카오 로그인 시도 - AccessToken: {}", kakaoAccessToken);
@@ -54,14 +60,29 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         String uid = uidGenerator.generateShortUid(String.valueOf(kakaoUser.getId()));
         KakaoUserInfoDto.KakaoAccount account = kakaoUser.getKakao_account();
 
-        if (account == null || account.getProfile() == null) {
+        if (account == null) {
             throw new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
         String nickname = account.getProfile().getNickname();
-        String profileImage = account.getProfile().getProfile_image_url();
-        log.info("카카오 유저 정보 조회 완료 - kakaoId: {}, nickname: {}", kakaoUser.getId(), nickname);
 
+        // profile_image_url을 HTTP 요청으로 다운로드
+        String profileImage = account.getProfile().getProfile_image_url();
+        String s3ProfileImageUrl = null;
+
+        // 카카오 이미지 -> 다운로드 -> S3업로드 -> url 반환
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                byte[] imageBytes = downloadImage(profileImage);
+                String s3Key = "users/" + uid + "/profile.png";
+                s3ProfileImageUrl = s3Service.upload(imageBytes, s3Key, "image/png");
+            } catch (Exception e) {
+                log.warn("프로필 이미지 S3 업로드 실패: {}", e.getMessage());
+                // s3ProfileImageUrl을 null로 두고 진행해도 됨
+            }
+        }
+
+        // 기존 회원 또는 신규 생성
         Member member = memberRepository.findByUserId(uid)
                 .orElseGet(() -> {
 
@@ -151,4 +172,13 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             throw new GeneralException(ErrorCode.FAILED_KAKAO_PROFILE);
         }
     }
+
+    // 이미지 다운로드 util
+    private byte[] downloadImage(String imageUrl) throws IOException {
+        URL url = new URL(imageUrl);
+        try (InputStream inputStream = url.openStream()) {
+            return inputStream.readAllBytes();
+        }
+    }
+
 }

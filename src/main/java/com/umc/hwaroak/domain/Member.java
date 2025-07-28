@@ -88,7 +88,6 @@ public class Member extends BaseEntity {
     // 로그인 시 사용
     public Member( String userId, String nickname, String profileImage) {
         this.userId = userId;
-        //this.email = email;
         this.name = name;
         this.nickname = nickname;
         this.profileImage = profileImage;
