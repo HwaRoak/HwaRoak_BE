@@ -134,9 +134,18 @@ public class AlarmServiceImpl implements AlarmService {
                 .receiver(receiver)
                 .alarmType(AlarmType.FIRE)
                 .title("불 키우기")
+                .message(nickname + "님께서 불씨를 지폈어요!")
                 .content(nickname + "님께서 불씨를 지폈어요!")
                 .build();
-        alarmRepository.save(alarm); // ✅ 이거 꼭 있어야 함!
+        alarmRepository.save(alarm);
+        TransactionSynchronizationManager.registerSynchronization(
+                new CustomTransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        redisPublisher.publish(alarm.getAlarmType().getValue(), AlarmConverter.toPreviewDto(alarm));
+                    }
+                }
+        );
     }
 
      /*  알람 읽기 api

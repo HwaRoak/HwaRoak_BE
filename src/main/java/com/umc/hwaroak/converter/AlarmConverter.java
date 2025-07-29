@@ -12,6 +12,7 @@ public class AlarmConverter {
                 .alarmType(alarm.getAlarmType())
                 .title(alarm.getTitle())
                 .message(alarm.getMessage())
+                .createdAt(alarm.getCreatedAt())
                 .build();
     }
 }
