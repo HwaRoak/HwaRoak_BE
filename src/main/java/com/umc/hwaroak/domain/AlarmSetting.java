@@ -2,6 +2,7 @@ package com.umc.hwaroak.domain;
 
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "alarm_setting")
 @Getter
+@Builder
 public class AlarmSetting extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
