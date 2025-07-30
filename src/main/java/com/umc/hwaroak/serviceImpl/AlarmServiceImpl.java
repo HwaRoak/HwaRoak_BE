@@ -71,6 +71,7 @@ public class AlarmServiceImpl implements AlarmService {
                 .id(alarm.getId())
                 .title(alarm.getTitle())
                 .content(alarm.getContent())
+                .isRead(alarm.isRead())
                 .createdAt(alarm.getCreatedAt())
                 .build();
     }
@@ -117,6 +118,7 @@ public class AlarmServiceImpl implements AlarmService {
                         .title(alarm.getTitle())
                         .content(alarm.getContent())
                         .alarmType(alarm.getAlarmType())
+                        .isRead(alarm.isRead())
                         .createdAt(alarm.getCreatedAt())
                         .build())
                 .toList();
