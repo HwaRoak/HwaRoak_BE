@@ -8,12 +8,15 @@ import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.EmotionCategory;
 import com.umc.hwaroak.dto.response.EmotionSummaryResponseDto;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
+import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.EmotionSummaryRepository;
+import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -128,12 +131,24 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         String gptMessage = openAiUtil.analysisEmotions(targetMonth, categoryCounts, diaries);
         log.info("gpt 감정분석 메시지: {}", gptMessage);
 
-        EmotionSummary summary = emotionSummaryRepository
-                .findByMemberIdAndSummaryMonth(memberId, summaryMonth)
-                .orElse(EmotionSummary.builder()
-                        .member(member)
-                        .summaryMonth(summaryMonth)
-                        .build());
+        EmotionSummary summary;
+        try {
+            // 해당 일기가 속한 달의 분석 데이터를 업데이트 하기 위해 조회
+            summary = emotionSummaryRepository.findByMemberIdAndSummaryMonth(memberId, summaryMonth)
+                    .orElseGet(() -> {
+                        // 없을 경우(그 달의 첫 일기가 작성되지 않은 경우) 새로 생성
+                        EmotionSummary newSummary = EmotionSummary.builder()
+                                .member(member)
+                                .summaryMonth(summaryMonth)
+                                .build();
+                        return emotionSummaryRepository.save(newSummary);
+                    });
+        } catch (DataIntegrityViolationException e) {
+            // 생성 요청 동시 발생 → EmotionSummary 최초 생성 후의 트랜잭션은 롤백, 다시 조회
+            log.warn("중복 생성 감지 - memberId: {}, month: {}. 기존 데이터 재조회 시도.", memberId, summaryMonth);
+            summary = emotionSummaryRepository.findByMemberIdAndSummaryMonth(memberId, summaryMonth)
+                    .orElseThrow(() -> new GeneralException(ErrorCode.DUPLICATE_EMOTION_SUMMARY));
+        }
 
         summary.updateCounts(
                 diaryCount,
