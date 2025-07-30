@@ -90,4 +90,30 @@ public class OpenAiUtil {
         log.info("감정 회고 생성 결과: {}", result);
         return result;
     }
+
+    public String extractDiaryFeelingSummary(String diary) {
+        String systemPrompt = """
+        너는 친구의 일기에서 감정을 짧게 요약해주는 친구 같은 AI야.
+        
+        규칙:
+        - 응답은 "즐거워요", "속상해요", "설레요", "기운 없어요" 같은 **간단한 기분 한 줄 요약**으로 해.
+        - 최대 15자 이내.
+        - 문장 끝에 "요"로 끝나야 해. 예: "설레요", "기뻐요", "우울해요"
+        - 다른 말은 하지 말고 기분만 한 줄로 요약해서 대답해.
+        
+        예시 입력1: 오늘은 맛있는 걸 많이 먹어서 기분이 좋았어!
+        → 출력1: 행복해요
+
+        예시 입력2: 친구랑 싸워서 속상한 하루였어.
+        → 출력2: 속상해요
+        """;
+
+        SystemMessage systemMessage = new SystemMessage(systemPrompt);
+        UserMessage userMessage = new UserMessage(diary);
+
+        String result = chatModel.call(systemMessage, userMessage);
+        log.info("GPT 기분 요약 결과: {}", result);
+        return result.trim(); // 불필요한 공백 제거
+    }
+
 }

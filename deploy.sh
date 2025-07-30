@@ -44,7 +44,7 @@ if docker ps --filter "name=app-${AFTER_COMPOSE_COLOR}" --filter "status=running
     exit 1
   fi
 
-  if ! docker exec $NGINX_ID /bin/bash -c "nginx -s reload"; then
+  if ! docker compose restart nginx; then
     ERR_MSG='Failed to reload Nginx'
     exit 1
   fi

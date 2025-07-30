@@ -53,4 +53,17 @@ public class FriendResponseDto {
         private String introduction;
 
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class FriendPageInfo {
+        @Schema(description = "친구의 userId", example = "#@!3132")
+        private String userId;
+        @Schema(description = "친구의 닉네임", example = "화록이2")
+        private String nickname;
+        @Schema(description = "친구의 그날 감정 분석", example = "화록이2님은 깔끼해요 or 불씨를 지펴보세요!")
+        private String message;  // GPT 응답 or 디폴트 메시지
+    }
+
 }

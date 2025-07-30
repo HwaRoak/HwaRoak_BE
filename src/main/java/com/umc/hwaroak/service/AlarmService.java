@@ -27,7 +27,7 @@ public interface AlarmService {
     /**
      * 로그인한 유저의 알림함 전체를 최신순으로 조회
      */
-    List<AlarmResponseDto.InfoDto> getAllAlarmsForMember(Member member);
+    List<AlarmResponseDto.InfoDto> getAllAlarmsForMember();
 
     /**
 
@@ -39,9 +39,10 @@ public interface AlarmService {
 
      /*  알람 읽음 처리 하기
      */
-    void markAsRead(Long alarmId, Member member);
+    void markAsRead(Long alarmId);
 
-     /*  공지 수동 등록
+    /**
+     *  공지 수동 등록
      */
     void createNotice(AlarmRequestDto.CreateNoticeDto requestDto);
 }
