@@ -14,7 +14,7 @@ public class AlarmSettingResponseDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "알림 설정 조회 응답 DTO")
+    @Schema(name = "AlarmSettingResponseDto", description = "알림 설정 조회 응답 DTO")
     public static class InfoDto{
 
         @Schema(description = "리마인더 알림 허용 여부", example = "true")
