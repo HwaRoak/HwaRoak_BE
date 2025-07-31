@@ -28,7 +28,7 @@ cloud:
     region:
       static: ap-northeast-2
     s3:
-      bucket: hwaroak-github-actions-s3-bucket
+      bucket: hwaroak-user-profile-bucket
 
 
 jwt:

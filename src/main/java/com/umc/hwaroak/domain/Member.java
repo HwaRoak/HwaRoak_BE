@@ -3,10 +3,7 @@ package com.umc.hwaroak.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "member")
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Member extends BaseEntity {
@@ -71,13 +69,9 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberItem> memberItems = new ArrayList<>();
 
-    public void update(String nickname, String profileImage, String introduction){
+    public void update(String nickname, String introduction){
         if (nickname != null) {
             this.nickname = nickname;
-        }
-
-        if (profileImage != null) {
-            this.profileImage = profileImage;
         }
 
         if (introduction != null) {

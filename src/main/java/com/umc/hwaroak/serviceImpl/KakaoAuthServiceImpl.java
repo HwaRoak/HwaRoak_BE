@@ -163,12 +163,4 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         }
     }
 
-    // 이미지 다운로드 util
-    private byte[] downloadImage(String imageUrl) throws IOException {
-        URL url = new URL(imageUrl);
-        try (InputStream inputStream = url.openStream()) {
-            return inputStream.readAllBytes();
-        }
-    }
-
 }

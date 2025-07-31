@@ -15,7 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.multipart.MultipartFile;
+import com.umc.hwaroak.service.S3Service;
 import java.util.List;
 
 @Service
@@ -26,6 +27,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberLoader memberLoader;
     private final MemberRepository memberRepository;
     private final MemberItemRepository memberItemRepository;
+    private final S3Service s3Service;
 
     @Override
     public MemberResponseDto.InfoDto getInfo() {
@@ -53,7 +55,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberLoader.getMemberByContextHolder();
         log.info("회원 정보 수정 요청 - memberId: {}", member.getId());
 
-        member.update(requestDto.getNickname(), requestDto.getProfileImageUrl(), requestDto.getIntroduction());
+        member.update(requestDto.getNickname(), requestDto.getIntroduction());
         memberRepository.save(member);
 
         return MemberConverter.toDto(member);
@@ -140,4 +142,37 @@ public class MemberServiceImpl implements MemberService {
                 .isSelected(currentSelected.getIsSelected())
                 .build();
     }
+
+
+    @Override
+    @Transactional
+    public String uploadProfileImage(MultipartFile file) {
+        Member member = memberLoader.getMemberByContextHolder();
+        String directory = "profiles/" + member.getId();
+
+        // 기존 이미지 삭제 (기본 이미지가 아닐 때만)
+        if (member.getProfileImage() != null) {
+            s3Service.deleteFile(member.getProfileImage());
+        }
+
+        String uploadedUrl = s3Service.uploadProfileImage(file, directory);
+        member.setProfileImage(uploadedUrl);
+        memberRepository.save(member);
+
+        return uploadedUrl;
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteProfileImage() {
+        Member member = memberLoader.getMemberByContextHolder();
+
+        if (member.getProfileImage() != null ) {
+            s3Service.deleteFile(member.getProfileImage());
+        }
+        member.setProfileImage(null);
+        memberRepository.save(member);
+    }
+
 }
