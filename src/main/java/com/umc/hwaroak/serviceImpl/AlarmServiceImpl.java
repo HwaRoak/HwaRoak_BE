@@ -16,6 +16,7 @@ import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -110,7 +111,7 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember() {
         Member receiver = memberLoader.getMemberByContextHolder();
-        List<Alarm> alarms = alarmRepository.findAllIncludingNotifications(receiver);
+        List<Alarm> alarms = alarmRepository.findAllIncludingGlobalAlarms(receiver);
 
         return alarms.stream()
                 .map(alarm -> AlarmResponseDto.InfoDto.builder()
@@ -205,6 +206,22 @@ public class AlarmServiceImpl implements AlarmService {
         }
 
         return Optional.ofNullable(alarms.get(0).getCreatedAt()); // 또는 getFiredAt()
+    }
+
+    @Scheduled(cron = "0 0 0 1 * *") // 매달 1일 00:00
+    @Transactional
+    public void createMonthlyDailyAlarm() {
+        Alarm alarm = Alarm.builder()
+                .alarmType(AlarmType.DAILY)
+                .title("감정 리포트가 반영됐어요!")
+                .content("한 달 동안의 내 감정을 돌아볼 시간이에요.")
+                .message("지금 리포트를 확인해보세요")
+                .receiver(null)
+                .sender(null)
+                .isRead(false)
+                .build();
+
+        alarmRepository.save(alarm);
     }
 
 
