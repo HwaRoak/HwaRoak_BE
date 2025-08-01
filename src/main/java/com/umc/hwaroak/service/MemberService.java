@@ -18,8 +18,8 @@ public interface MemberService {
 
     MemberResponseDto.ItemDto findSelectedItem();
 
-    String uploadProfileImage(MultipartFile image);
+    MemberResponseDto.ProfileImageDto uploadProfileImage(MultipartFile image);
 
-    void deleteProfileImage();
+    MemberResponseDto.ProfileImageDto deleteProfileImage();
 
 }

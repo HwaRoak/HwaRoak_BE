@@ -146,7 +146,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public String uploadProfileImage(MultipartFile file) {
+    public MemberResponseDto.ProfileImageDto uploadProfileImage(MultipartFile file) {
         Member member = memberLoader.getMemberByContextHolder();
         String directory = "profiles/" + member.getId();
 
@@ -159,13 +159,15 @@ public class MemberServiceImpl implements MemberService {
         member.setProfileImage(uploadedUrl);
         memberRepository.save(member);
 
-        return uploadedUrl;
+        return MemberResponseDto.ProfileImageDto.builder()
+                .profileImageUrl(uploadedUrl)
+                .build();
     }
 
 
     @Override
     @Transactional
-    public void deleteProfileImage() {
+    public MemberResponseDto.ProfileImageDto deleteProfileImage() {
         Member member = memberLoader.getMemberByContextHolder();
 
         if (member.getProfileImage() != null ) {
@@ -173,6 +175,10 @@ public class MemberServiceImpl implements MemberService {
         }
         member.setProfileImage(null);
         memberRepository.save(member);
+
+        return MemberResponseDto.ProfileImageDto.builder()
+                .profileImageUrl(null)
+                .build();
     }
 
 }

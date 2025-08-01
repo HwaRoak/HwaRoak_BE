@@ -77,7 +77,7 @@ public class MemberController {
             description = "업로드된 이미지 URL 반환",
             content = @Content(schema = @Schema(implementation = String.class))
     )
-    public String uploadProfileImage(
+    public MemberResponseDto.ProfileImageDto uploadProfileImage(
             @Parameter(description = "업로드할 이미지 파일", required = true)
             @RequestPart("image") MultipartFile image
     ) {
@@ -85,12 +85,10 @@ public class MemberController {
     }
 
 
-
-
     @PatchMapping("/profile-image")
     @Operation(summary = "프로필 이미지 삭제", description = "사용자의 프로필 이미지를 삭제하고 기본 이미지로 변경합니다.")
     @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageDto.class)))
-    public void deleteProfileImage() {
-        memberService.deleteProfileImage();
+    public MemberResponseDto.ProfileImageDto deleteProfileImage() {
+        return memberService.deleteProfileImage();
     }
 }
