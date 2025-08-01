@@ -40,7 +40,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
 
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtProvider;
-    private final StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final UidGenerator uidGenerator;
     private final WebClient.Builder webClientBuilder;  // WebClient는 Builder로 주입받음
     private final ItemRepository itemRepository;
@@ -82,7 +82,8 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     Member savedNewMember = memberRepository.save(newMember);
 
                     // 기본 아이템 설정
-                    Item defaultItem = itemRepository.findByLevel(1);
+                    Item defaultItem = itemRepository.findByLevel(1)
+                            .orElseThrow(() -> new GeneralException(ErrorCode.ITEM_NOT_FOUND));
                     MemberItem newMemberItem = MemberItem.builder()
                             .member(savedNewMember)
                             .item(defaultItem)
@@ -95,7 +96,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                 });
 
         // redis에서 현재 발급된 refresh token확인하기
-        String existingRefreshToken = redisTemplate.opsForValue().get("RT:" + member.getId());
+        String existingRefreshToken = stringRedisTemplate.opsForValue().get("RT:" + member.getId());
         log.debug("기존 Refresh Token 조회 결과 - token: {}", existingRefreshToken);
 
         String accessToken;
@@ -109,7 +110,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
             // 없거나 만료 -> 새로 발급
             log.info("Refresh Token 없음 또는 만료 - 새 발급");
             refreshToken = jwtProvider.createRefreshToken(member.getId());
-            redisTemplate.opsForValue().set(
+            stringRedisTemplate.opsForValue().set(
                     "RT:" + member.getId(), refreshToken,
                     refreshTokenValidity, TimeUnit.MILLISECONDS
             );
@@ -133,7 +134,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         }
 
         String memberId = jwtProvider.getMemberId(refreshToken);
-        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + memberId);
+        String storedRefreshToken = stringRedisTemplate.opsForValue().get("RT:" + memberId);
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
@@ -159,6 +160,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                     .block();  // 동기식 처리
 
         } catch (Exception e) {
+            log.warn("Failed Profile... : {}", e.getMessage());
             throw new GeneralException(ErrorCode.FAILED_KAKAO_PROFILE);
         }
     }

@@ -22,4 +22,5 @@ public interface MemberService {
 
     MemberResponseDto.ProfileImageDto deleteProfileImage();
 
+    MemberResponseDto.PreviewDto getMyPagePreview();
 }

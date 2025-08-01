@@ -29,6 +29,7 @@ public class Member extends BaseEntity {
     @Column(name = "nickname")
     private String nickname;
 
+    @Setter
     @Column(name = "reward")
     private Integer reward;
 
@@ -67,7 +68,10 @@ public class Member extends BaseEntity {
     private List<Friend> sendFriend = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberItem> memberItems = new ArrayList<>();
+    private List<MemberItem> memberItemList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmotionSummary> emotionSummaryList = new ArrayList<>();
 
     public void update(String nickname, String introduction){
         if (nickname != null) {
@@ -85,7 +89,7 @@ public class Member extends BaseEntity {
         this.name = name;
         this.nickname = nickname;
         this.profileImage = profileImage;
-        this.reward = 0;
+        this.reward = 7;
         this.feeling = "default";
     }
 

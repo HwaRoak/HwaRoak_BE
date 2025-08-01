@@ -1,19 +1,29 @@
 package com.umc.hwaroak.service;
 
+import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
 
 import java.util.List;
 
 public interface FriendService {
-    void requestFriend(Long receiverId);
+    void requestFriend(String receiverUserId);
 
-    void acceptFriendRequest(Long senderId);
+    void acceptFriendRequest(String senderUserId);
 
-    void rejectFriendRequest(Long senderId);
+    void rejectFriendRequest(String senderUserId);
 
     List<FriendResponseDto.FriendInfo> getFriendList();
 
     List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests();
 
-    void deleteFriend(Long friendMemberId);
+    void deleteFriend(String friendMemberUserId);
+
+    FriendResponseDto.SearchResultDto searchFriendByUserId(String userId);
+
+    FireAlarmResponseDto fireFriend(String friendUserId);
+
+    FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId);
+
+    boolean isFriend(Member member1, Member member2);
 }

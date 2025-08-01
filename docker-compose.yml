@@ -1,6 +1,6 @@
 services:
-  hwaroak-api:
-    image: ghcr.io/${ORG_NAME}/hwaroak-api:latest
+  app-blue:
+    image: ghcr.io/${ORG_NAME}/hwaroak-api:blue
     ports:
       - "8080:8080"
     env_file:
@@ -9,6 +9,19 @@ services:
       - redis
     networks:
       - my-network
+    container_name: app-blue
+
+  app-green:
+    image: ghcr.io/${ORG_NAME}/hwaroak-api:green
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - my-network
+    container_name: app-green
 
   redis:
     image: redis:7.4.1
@@ -19,6 +32,7 @@ services:
       - "6379:6379"
     networks:
       - my-network
+    container_name: redis
 
   nginx:
     image: nginx:1.27.4
@@ -27,6 +41,9 @@ services:
       - "80:80"
     volumes:
       - /home/ubuntu/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app-blue
+      - app-green
     networks:
       - my-network
     restart: always
