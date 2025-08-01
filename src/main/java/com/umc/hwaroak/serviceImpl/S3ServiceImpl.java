@@ -41,7 +41,14 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public void deleteFile(String fileUrl) {
-        String fileKey = fileUrl.substring(fileUrl.indexOf(bucket) + bucket.length() + 1);
-        amazonS3.deleteObject(bucket, fileKey);
+        try {
+            String fileKey = fileUrl.substring(fileUrl.indexOf(".com/") + 5); // 안전하게 key 추출
+            log.info("S3 삭제 요청: bucket={}, key={}", bucket, fileKey);
+            amazonS3.deleteObject(bucket, fileKey);
+        } catch (Exception e) {
+            log.error("S3 파일 삭제 실패: {}", e.getMessage());
+            throw new GeneralException(ErrorCode.FILE_DELETE_FAILED);
+        }
     }
+
 }

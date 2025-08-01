@@ -46,6 +46,7 @@ public class MemberServiceImpl implements MemberService {
                 .userId(member.getUserId())
                 .nickname(member.getNickname())
                 .introduction(member.getIntroduction())
+                .profileImgUrl(member.getProfileImage())
                 .build();
     }
 
