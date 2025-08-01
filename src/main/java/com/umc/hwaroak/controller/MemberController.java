@@ -4,11 +4,14 @@ package com.umc.hwaroak.controller;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import com.umc.hwaroak.service.MemberService;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,12 +67,25 @@ public class MemberController {
         return memberService.changeSelectedItem(itemId);
     }
 
-    @PostMapping("/profile-image")
-    @Operation(summary = "프로필 이미지 업로드", description = "사용자의 프로필 이미지를 업로드하고 URL을 반환합니다.")
-    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageDto.class)))
-    public String uploadProfileImage(@RequestPart MultipartFile image) {
+    @PostMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "프로필 이미지 업로드",
+            description = "사용자의 프로필 이미지를 업로드하고 URL을 반환합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "업로드된 이미지 URL 반환",
+            content = @Content(schema = @Schema(implementation = String.class))
+    )
+    public String uploadProfileImage(
+            @Parameter(description = "업로드할 이미지 파일", required = true)
+            @RequestPart("image") MultipartFile image
+    ) {
         return memberService.uploadProfileImage(image);
     }
+
+
+
 
     @PatchMapping("/profile-image")
     @Operation(summary = "프로필 이미지 삭제", description = "사용자의 프로필 이미지를 삭제하고 기본 이미지로 변경합니다.")
