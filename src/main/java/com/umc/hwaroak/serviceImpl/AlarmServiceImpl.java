@@ -210,7 +210,7 @@ public class AlarmServiceImpl implements AlarmService {
         return Optional.ofNullable(alarms.get(0).getCreatedAt()); // 또는 getFiredAt()
     }
 
-    @Scheduled(cron = "*/10 * * * * *") // 10초마다 실행
+    @Scheduled(cron = "0 0 0 1 * *") // 매달 1일 00:00
     @Transactional
     public void createMonthlyDailyAlarm() {
         // 전달 월 구하기 (ex. 7월 1일이면 6월)
