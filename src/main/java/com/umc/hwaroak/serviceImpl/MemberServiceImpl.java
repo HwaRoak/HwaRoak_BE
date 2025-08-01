@@ -151,6 +151,12 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberLoader.getMemberByContextHolder();
         String directory = "profiles/" + member.getId();
 
+        // ✅ 이미지 파일 여부 검사
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new GeneralException(ErrorCode.INVALID_FILE_TYPE); // 커스텀 예외
+        }
+
         // 기존 이미지 삭제 (기본 이미지가 아닐 때만)
         if (member.getProfileImage() != null) {
             s3Service.deleteFile(member.getProfileImage());
