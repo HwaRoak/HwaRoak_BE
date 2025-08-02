@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.umc.hwaroak.response.ErrorCode;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 @Service
@@ -24,20 +27,25 @@ public class S3ServiceImpl implements S3Service {
     private String bucket;
 
     @Override
-    public String uploadProfileImage(MultipartFile file, String directoryName) {
-
-        String fileName = directoryName + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+    public String uploadProfileImage(InputStream inputStream, String directoryName) {
+        String fileName = directoryName + "/" + UUID.randomUUID() + "_profile.jpg"; // 확장자 고정
 
         try {
+            byte[] bytes = inputStream.readAllBytes(); // 한 번에 읽어야 ContentLength 정확하게 설정 가능
             ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(file.getSize());
-            amazonS3.putObject(bucket, fileName, file.getInputStream(), metadata);
+            metadata.setContentLength(bytes.length);
+            metadata.setContentType("image/jpeg"); // 또는 image/webp
+
+            ByteArrayInputStream uploadStream = new ByteArrayInputStream(bytes); // 다시 감싸기
+
+            amazonS3.putObject(bucket, fileName, uploadStream, metadata);
         } catch (IOException e) {
             throw new GeneralException(ErrorCode.FILE_UPLOAD_FAILED);
         }
 
         return amazonS3.getUrl(bucket, fileName).toString();
     }
+
 
     @Override
     public void deleteFile(String fileUrl) {

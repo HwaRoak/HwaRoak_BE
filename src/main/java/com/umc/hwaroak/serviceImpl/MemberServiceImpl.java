@@ -14,7 +14,7 @@ import com.umc.hwaroak.repository.ItemRepository;
 import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
-import com.umc.hwaroak.service.DiaryService;
+import com.umc.hwaroak.util.ImageFormatter;
 import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.umc.hwaroak.service.S3Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -165,25 +167,36 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberLoader.getMemberByContextHolder();
         String directory = "profiles/" + member.getId();
 
-        // ✅ 이미지 파일 여부 검사
+        // 이미지 파일 여부 검사
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new GeneralException(ErrorCode.INVALID_FILE_TYPE); // 커스텀 예외
+            throw new GeneralException(ErrorCode.INVALID_FILE_TYPE);
         }
 
-        // 기존 이미지 삭제 (기본 이미지가 아닐 때만)
+        // 기존 이미지 삭제
         if (member.getProfileImage() != null) {
             s3Service.deleteFile(member.getProfileImage());
         }
 
-        String uploadedUrl = s3Service.uploadProfileImage(file, directory);
-        member.setProfileImage(uploadedUrl);
-        memberRepository.save(member);
+        try {
+            // 포맷팅 (리사이즈 + JPEG 변환)
+            ByteArrayInputStream formattedImage = ImageFormatter.convertToWebP(
+                    file.getInputStream(), 300, 300
+            );
 
-        return MemberResponseDto.ProfileImageDto.builder()
-                .profileImageUrl(uploadedUrl)
-                .build();
+            String uploadedUrl = s3Service.uploadProfileImage(formattedImage, directory);
+            member.setProfileImage(uploadedUrl);
+            memberRepository.save(member);
+
+            return MemberResponseDto.ProfileImageDto.builder()
+                    .profileImageUrl(uploadedUrl)
+                    .build();
+        } catch (IOException e) {
+            log.error("프로필 이미지 업로드 중 예외 발생", e);
+            throw new GeneralException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
     }
+
 
 
     @Override
