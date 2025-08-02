@@ -72,10 +72,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     // 수령 가능한 다음 아이템 보기(아직 받을 수 없는 다음 단계)
+    @Override
+    @Transactional(readOnly = true)
     public ItemResponseDto.NextDto getNextItemName() {
         Member member = memberLoader.getMemberByContextHolder();
         // 회원의 현재 받을 수 있는 아이템들 조회
-        List<MemberItem> memberItemList = member.getMemberItemList();
+        List<MemberItem> memberItemList = memberItemRepository.findByMemberIdWithItemOrderedByLevel(member.getId());
 
         // 그 중 가장 레벨이 높은 것
         int lastItemLevel = memberItemList.stream()

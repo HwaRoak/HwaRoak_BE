@@ -9,7 +9,6 @@ import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
-import com.umc.hwaroak.repository.ItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.DiaryService;
@@ -69,15 +68,13 @@ public class DiaryServiceImpl implements DiaryService {
         memberRepository.save(member);
 
 
-        String nextItemName = "";
         if (member.getReward() ==7) {
-            log.info("새로운 아이템 수령 가능 요청...");
-            nextItemName = itemService.upgradeNextItem(member).getName();
-
-        } else {
-            nextItemName = itemService.getNextItemName().getName();
+            log.info("새로운 아이템 수령 가능 대상으로 등록...");
+            itemService.upgradeNextItem(member);
         }
 
+
+        String nextItemName = itemService.getNextItemName().getName();
         emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
 
         return DiaryConverter.toCreateDto(diary, nextItemName);
