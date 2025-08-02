@@ -7,9 +7,12 @@ import com.umc.hwaroak.dto.response.ItemResponseDto;
 import java.util.List;
 
 public interface ItemService {
-    ItemResponseDto.ReceivedDto upgradeNextItem(Member member);
-    void receiveItem();
+    void upgradeNextItem(Member member);
+    ItemResponseDto.ItemDto receiveItem();
     List<MemberItem> findNextAvailableItem();
     ItemResponseDto.NextDto getNextItemName();
     void backToStatus(Member member);
+    ItemResponseDto.ItemDto changeSelectedItem(Long itemId);
+    ItemResponseDto.ItemDto findSelectedItem();
+    List<ItemResponseDto.ItemDto> getMyItems();
 }

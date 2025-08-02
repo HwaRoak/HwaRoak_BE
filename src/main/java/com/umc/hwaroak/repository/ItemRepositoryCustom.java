@@ -10,7 +10,7 @@ public interface ItemRepositoryCustom {
     // 아직 수령하지 않은 아이템 계산하기
     List<MemberItem> getAllNotReceivedItems(Member member);
     // 수령 받기
-    void changeToReceive(Member member);
+    MemberItem changeToReceive(Member member);
     // 수령하지 못한 상태로 변경하기
     void backToStatus(Member member);
 }

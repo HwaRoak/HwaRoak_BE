@@ -7,11 +7,14 @@ import com.umc.hwaroak.dto.response.ItemResponseDto;
 
 public class ItemConverter {
 
-    public static ItemResponseDto.ReceivedDto toReceivedDto(MemberItem item) {
-        return ItemResponseDto.ReceivedDto.builder()
-                .id(item.getId())
-                .name(item.getItem().getName())
-                .dDay(item.getMember().getReward())
+
+    public static ItemResponseDto.ItemDto toItemDto(MemberItem memberItem) {
+        return ItemResponseDto.ItemDto.builder()
+                .itemId(memberItem.getId())
+                .name(memberItem.getItem().getName())
+                .level(memberItem.getItem().getLevel())
+                .isSelected(memberItem.getIsSelected())
+                .isReceived(memberItem.getIsReceived())
                 .build();
     }
 
