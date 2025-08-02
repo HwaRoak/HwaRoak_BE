@@ -96,7 +96,7 @@ public class MemberController {
     @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageDto.class)))
     public MemberResponseDto.ProfileImageDto deleteProfileImage() {
         return memberService.deleteProfileImage();
-
+    }
     @GetMapping("/preview")
     @Operation(summary = "마이페이지용 preview 조회",
             description = "마이페이지 preview를 조회합니다. 감정통계에서는 반올림 때문에 비율 총합이 100이 넘을 수도 있습니다. " +
