@@ -14,14 +14,18 @@ import com.umc.hwaroak.repository.ItemRepository;
 import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
-import com.umc.hwaroak.service.DiaryService;
+import com.umc.hwaroak.util.ImageFormatter;
 import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import com.umc.hwaroak.service.S3Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +39,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberLoader memberLoader;
     private final MemberRepository memberRepository;
     private final MemberItemRepository memberItemRepository;
+    private final S3Service s3Service;
+
     private final ItemRepository itemRepository;
     private final EmotionSummaryService emotionSummaryService;
     private final DiaryRepository diaryRepository;
@@ -57,6 +63,7 @@ public class MemberServiceImpl implements MemberService {
                 .nickname(member.getNickname())
                 .profileImgUrl(member.getProfileImage())
                 .introduction(member.getIntroduction())
+                .profileImgUrl(member.getProfileImage())
                 .build();
     }
 
@@ -66,7 +73,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberLoader.getMemberByContextHolder();
         log.info("회원 정보 수정 요청 - memberId: {}", member.getId());
 
-        member.update(requestDto.getNickname(), requestDto.getProfileImageUrl(), requestDto.getIntroduction());
+        member.update(requestDto.getNickname(), requestDto.getIntroduction());
         memberRepository.save(member);
 
         return MemberConverter.toDto(member);
@@ -151,6 +158,60 @@ public class MemberServiceImpl implements MemberService {
                 .name(currentSelected.getItem().getName())
                 .level(currentSelected.getItem().getLevel())
                 .isSelected(currentSelected.getIsSelected())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public MemberResponseDto.ProfileImageDto uploadProfileImage(MultipartFile file) {
+        Member member = memberLoader.getMemberByContextHolder();
+        String directory = "profiles/" + member.getId();
+
+        // 이미지 파일 여부 검사
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new GeneralException(ErrorCode.INVALID_FILE_TYPE);
+        }
+
+        // 기존 이미지 삭제
+        if (member.getProfileImage() != null) {
+            s3Service.deleteFile(member.getProfileImage());
+        }
+
+        try {
+            // 포맷팅 (리사이즈 + JPEG 변환)
+            ByteArrayInputStream formattedImage = ImageFormatter.convertToWebP(
+                    file.getInputStream(), 300, 300
+            );
+
+            String uploadedUrl = s3Service.uploadProfileImage(formattedImage, directory);
+            member.setProfileImage(uploadedUrl);
+            memberRepository.save(member);
+
+            return MemberResponseDto.ProfileImageDto.builder()
+                    .profileImageUrl(uploadedUrl)
+                    .build();
+        } catch (IOException e) {
+            log.error("프로필 이미지 업로드 중 예외 발생", e);
+            throw new GeneralException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
+
+
+    @Override
+    @Transactional
+    public MemberResponseDto.ProfileImageDto deleteProfileImage() {
+        Member member = memberLoader.getMemberByContextHolder();
+
+        if (member.getProfileImage() != null ) {
+            s3Service.deleteFile(member.getProfileImage());
+        }
+        member.setProfileImage(null);
+        memberRepository.save(member);
+
+        return MemberResponseDto.ProfileImageDto.builder()
+                .profileImageUrl(null)
                 .build();
     }
 

@@ -2,6 +2,7 @@ package com.umc.hwaroak.service;
 
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,6 +17,10 @@ public interface MemberService {
     MemberResponseDto.ItemDto changeSelectedItem(Long itemId);
 
     MemberResponseDto.ItemDto findSelectedItem();
+
+    MemberResponseDto.ProfileImageDto uploadProfileImage(MultipartFile image);
+
+    MemberResponseDto.ProfileImageDto deleteProfileImage();
 
     MemberResponseDto.PreviewDto getMyPagePreview();
 }

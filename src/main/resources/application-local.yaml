@@ -20,6 +20,16 @@ spring:
       host: ${REDIS_LOCAL_HOST}
       port: 6379
 
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: hwaroak-user-profile-bucket
+
 jwt:
   secret : ${JWT_SECRET}
   access-token-validity : 2592000000           # 1시간

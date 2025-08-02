@@ -12,9 +12,6 @@ public class MemberRequestDto {
         @Schema(description = "수정할 닉네임", nullable = true)
         String nickname;
 
-        @Schema(description = "수정할 프로필 사진 url", nullable = true)
-        String profileImageUrl;
-
         @Schema(description = "수정할 소개", nullable = true)
         String introduction;
     }

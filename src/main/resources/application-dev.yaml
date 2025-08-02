@@ -2,6 +2,7 @@ spring:
   config:
     activate:
       on-profile: "dev"
+    import: optional:env[.env]
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,6 +20,17 @@ spring:
     redis:
       host: ${REDIS_DEV_HOST}
       port: 6379
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: hwaroak-user-profile-bucket
+
 
 jwt:
   secret : ${JWT_SECRET}
