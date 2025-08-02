@@ -78,6 +78,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                             .member(savedNewMember)
                             .item(defaultItem)
                             .isSelected(true)
+                            .isReceived(true)
                             .build();
 
                     memberItemRepository.save(newMemberItem);
