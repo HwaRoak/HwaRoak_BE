@@ -28,8 +28,14 @@ public class MemberItem extends BaseEntity {
     @Column(name = "is_selected")
     private Boolean isSelected;     // 대표 아이템 여부
 
+    @Setter
+    @Column(name = "is_received")
+    private Boolean isReceived; // 아이템 수령 여부
+
     public MemberItem(Member member, Item item) {
         this.member = member;
         this.item = item;
+        this.isSelected = false;
+        this.isReceived = false;
     }
 }
