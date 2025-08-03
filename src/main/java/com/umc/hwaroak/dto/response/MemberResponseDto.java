@@ -52,6 +52,16 @@ public class MemberResponseDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(description = "프로필 이미지 업로드 응답 DTO")
+    public static class ProfileImageDto {
+        @Schema(description = "업로드된 프로필 이미지 URL", example = "https://your-bucket.s3.amazonaws.com/user123/profile/filename.jpg")
+        private String profileImageUrl;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class PreviewDto{
 
         @Schema(description = "닉네임")

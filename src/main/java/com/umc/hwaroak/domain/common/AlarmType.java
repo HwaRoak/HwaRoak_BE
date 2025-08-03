@@ -9,6 +9,7 @@ public enum AlarmType {
     FIRE("fire"),
     NOTIFICATION("notification"),
     CONNECTED("connected"),
+    DAILY("daily"),
     HEARTBEAT("heartbeat");
     ;
 
