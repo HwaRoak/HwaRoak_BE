@@ -16,6 +16,4 @@ public class Question extends BaseEntity {
     @Column(name = "content")
     private String content;
 
-    @OneToMany(mappedBy = "question")
-    private List<MemberAnswer> memberAnswerList = new ArrayList<>();
 }
