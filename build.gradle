@@ -19,10 +19,6 @@ configurations {
     }
 }
 
-ext {
-    set('springAiVersion', "1.0.0-M3")
-}
-
 repositories {
     mavenCentral()
     maven {
@@ -66,14 +62,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // Spring AI
-    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-M3")
-    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.1")
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
 
     // QueryDSL
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // AWS S3, Image Resizing
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.696'
+    implementation 'net.coobird:thumbnailator:0.4.20'
 }
 
 tasks.named('test') {

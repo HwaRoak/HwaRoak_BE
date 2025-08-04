@@ -11,6 +11,10 @@ public enum ErrorCode implements BaseCode{
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "ME4001", "회원을 찾을 수 없습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "ME4002","프로필 파일 이미지가 첨부되지 않았습니다."),
+    FILE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "ME4003","프로필 파일 이미지삭제에 실패하였습니다."),
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "ME4004","이미지파일만 업로드 가능합니다."),
+
 
     // Diary
     DIARY_ALREADY_RECORDED(HttpStatus.BAD_REQUEST, "DE4001", "일기는 하루만 기록할 수 있습니다."),
@@ -20,6 +24,7 @@ public enum ErrorCode implements BaseCode{
     TOO_MANY_EMOTIONS(HttpStatus.BAD_REQUEST, "DE4003", "저장할 수 있는 감정의 최대 개수는 3개입니다."),
     EMOTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "DE4004", "해당 감정을 찾을 수 없습니다."),
     FAILED_EMOTION_PARSING(HttpStatus.BAD_REQUEST, "DE4005", "감정 저장 처리에 실패하였습니다."),
+    DUPLICATE_EMOTION_SUMMARY(HttpStatus.CONFLICT, "DE4091", "해당 월의 감정 요약이 이미 존재합니다."),
 
     // kakao login
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"AUTH_002","유효하지 않은 refresh token입니다."),
@@ -61,6 +66,8 @@ public enum ErrorCode implements BaseCode{
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),
     SELECTED_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4002", "대표 아이템을 찾을 수 없습니다"),
     ALREADY_SELECTED_ITEM(HttpStatus.BAD_REQUEST, "ITEM4003", "해당 아이템은 이미 대표 아이템입니다"),
+    NOT_FOUND_AVAILABLE_ITEMS(HttpStatus.NOT_FOUND, "ITEM4004", "더이상 수령 가능한 아이템이 존재하지 않습니다."),
+    FAILED_RECEIVE_ITEM(HttpStatus.BAD_REQUEST, "ITEM4005", "아이템 수령에 실패하였습니다."),
 
     // Alarm
     SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "ALARM4041", "알림 설정을 찾을 수 없습니다."),

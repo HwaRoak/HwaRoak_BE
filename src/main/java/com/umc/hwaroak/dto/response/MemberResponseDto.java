@@ -18,13 +18,13 @@ public class MemberResponseDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "회원 정보 조회 응답 DTO")
+    @Schema(name = "MemberResponseDto", description = "회원 정보 조회 응답 DTO")
     public static class InfoDto {
 
-        @Schema(name = "회원ID", description = "파싱 처리 위한 회원 ID")
+        @Schema(description = "파싱 처리 위한 회원 ID")
         private Long memberId;
 
-        @Schema(description = "유저 아이디", example = "a123456789")
+        @Schema(description = "유저 아이디", example = "a1b2c3d4e5f6g7h8")
         String userId;
 
         @Schema(description = "닉네임", example = "테스트 닉네임")
@@ -39,29 +39,6 @@ public class MemberResponseDto {
     }
 
     /*
-    * 보유 아이템 조회 응답
-    * */
-    @Builder
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "보유 아이템 조회 응답 DTO")
-    public static class ItemDto {
-
-        @Schema(description = "item_id", example = "1")
-        Long item_id;
-
-        @Schema(description = "아이템 이름", example = "두루마리 휴지")
-        String name;
-
-        @Schema(description = "아이템 레벨", example = "1")
-        Integer level;
-
-        @Schema(description = "선택 여부", example = "false")
-        Boolean isSelected;
-    }
-
-    /*
     * 마이페이지 렌더링 데이터 조회 응답
     * */
     @Getter
@@ -69,6 +46,16 @@ public class MemberResponseDto {
     public static class EmotionCount {
         private int number;
         private double percent;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "프로필 이미지 업로드 응답 DTO")
+    public static class ProfileImageDto {
+        @Schema(description = "업로드된 프로필 이미지 URL", example = "https://your-bucket.s3.amazonaws.com/user123/profile/filename.jpg")
+        private String profileImageUrl;
     }
 
     @Builder

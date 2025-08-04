@@ -40,6 +40,16 @@ public class OpenAiUtil {
 
     // ai 기반 감정분석 멘트 생성
     public String analysisEmotions(int month, Map<EmotionCategory, Integer> emotionCounts, List<Diary> diaries){
+        if (diaries == null || diaries.isEmpty()) {
+            log.warn("일기 데이터가 없습니다. 감정 분석 메시지를 생성하지 않습니다.");
+            return "작성된 일기가 없어 감정 분석을 할 수 없습니다.";
+        }
+
+        if (emotionCounts == null || emotionCounts.isEmpty()) {
+            log.warn("감정 통계가 비어 있습니다. 감정 분석 메시지를 생성하지 않습니다.");
+            return "감정 분석 가능한 데이터가 없습니다.";
+        }
+
         String systemPrompt = """
             너는 감정 통계를 바탕으로 그 달을 정리해주는 친구 같은 AI야.
             
@@ -86,9 +96,16 @@ public class OpenAiUtil {
         SystemMessage systemMessage = new SystemMessage(systemPrompt);
         UserMessage userMessage = new UserMessage(inputMessage);
 
-        String result = chatModel.call(systemMessage, userMessage);
-        log.info("감정 회고 생성 결과: {}", result);
-        return result;
+        String result;
+        try {
+            result = chatModel.call(systemMessage, userMessage);
+            log.info("감정 회고 생성 결과: {}", result);
+            return result;
+        } catch (Exception e) {
+            log.error("감정 회고 생성 실패: {}", e.getMessage());
+            return "감정 회고 생성 중 오류가 발생했습니다.";
+        }
+
     }
 
     public String extractDiaryFeelingSummary(String diary) {
