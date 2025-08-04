@@ -56,7 +56,7 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
 
         Long memberId = memberLoader.getCurrentMemberId();
 
-        AlarmSetting setting = alarmSettingRepository.findById(memberId)
+        AlarmSetting setting = alarmSettingRepository.findByMemberId(memberId)
                 .orElseThrow(() -> {
                     log.warn("알람 설정을 찾을 수 없습니다. memberId = {}", memberId);
                     return new GeneralException(ErrorCode.SETTING_NOT_FOUND);
