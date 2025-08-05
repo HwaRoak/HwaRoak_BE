@@ -40,4 +40,7 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
             Member receiver,
             AlarmType alarmType
     );
+
+    // 읽지 않은 FIRE 알람이 존재하는지 여부 확인
+    boolean existsByReceiverAndAlarmTypeAndIsReadFalse(Member receiver, AlarmType alarmType);
 }

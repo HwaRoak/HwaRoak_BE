@@ -72,6 +72,9 @@ public enum ErrorCode implements BaseCode{
     // Alarm
     SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "ALARM4041", "알림 설정을 찾을 수 없습니다."),
 
+    // Tag
+    INVALID_TAG(HttpStatus.NOT_FOUND, "TAG4041", "해당 태그와 일치하는 멘트가 없습니다"),
+
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
     ;

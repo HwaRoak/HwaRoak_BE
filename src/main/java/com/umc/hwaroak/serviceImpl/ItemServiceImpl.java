@@ -96,6 +96,7 @@ public class ItemServiceImpl implements ItemService {
         return memberItemRepository.getAllNotReceivedItems(member);
     }
 
+
     // 수령 가능한 다음 아이템 보기(아직 받을 수 없는 다음 단계)
     @Override
     @Transactional(readOnly = true)
@@ -196,4 +197,14 @@ public class ItemServiceImpl implements ItemService {
                 .map(ItemConverter::toItemDto)
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MemberItem> findNotReceivedItem() {
+
+        Member member = memberLoader.getMemberByContextHolder();
+
+        return memberItemRepository.findUnreceivedItems(member);
+    }
+
 }
