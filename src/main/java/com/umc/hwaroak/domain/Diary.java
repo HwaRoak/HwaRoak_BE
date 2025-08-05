@@ -10,18 +10,20 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "diary")
+@Table(name = "diary", uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "record_date"}))
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Diary extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "diary_id", nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
     @Column(name = "record_date", nullable = false)

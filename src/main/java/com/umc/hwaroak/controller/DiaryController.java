@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -31,7 +30,7 @@ public class DiaryController {
     @PostMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
     public DiaryResponseDto.CreateDto create(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody @RequestBody DiaryRequestDto requestDto
+            @io.swagger.v3.oas.annotations.parameters.RequestBody @RequestBody DiaryRequestDto.CreateDto requestDto
             ) {
         return diaryService.createDiary(requestDto);
     }
@@ -62,7 +61,7 @@ public class DiaryController {
             """)
     @PatchMapping("/{diaryId}")
     @ApiResponse(content = @Content(schema = @Schema(implementation = DiaryResponseDto.class)))
-    public DiaryResponseDto.CreateDto update(@PathVariable Long diaryId, @RequestBody DiaryRequestDto requestDto) {
+    public DiaryResponseDto.CreateDto update(@PathVariable Long diaryId, @RequestBody DiaryRequestDto.CreateDto requestDto) {
         return diaryService.updateDiary(diaryId, requestDto);
     }
 

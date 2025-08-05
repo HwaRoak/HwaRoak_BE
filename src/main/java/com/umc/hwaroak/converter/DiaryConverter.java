@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class DiaryConverter {
 
-    public static Diary toDiary(Member member, DiaryRequestDto requestDto) {
+    public static Diary toDiary(Member member, DiaryRequestDto.CreateDto requestDto) {
         return Diary.builder()
                 .member(member)
                 .recordDate(requestDto.getRecordDate())
