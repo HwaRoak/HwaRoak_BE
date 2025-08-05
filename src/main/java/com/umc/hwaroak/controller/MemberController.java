@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import com.umc.hwaroak.service.MemberService;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @Tag(name = "Member API", description = "사용자 관련 API")
 @RestController
 @RequestMapping("api/v1/members")
@@ -48,30 +46,6 @@ public class MemberController {
         return memberService.editInfo(requestDto);
     }
 
-    @GetMapping("/items")
-    @Operation(summary = "보유 아이템 리스트 조회", description = "사용자의 아이템 목록을 조회합니다.")
-    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ItemDto.class)))
-    public List<MemberResponseDto.ItemDto> getMyItems(){
-        return memberService.getMyItems();
-    }
-
-    @GetMapping("/items/selected")
-    @Operation(summary = "대표 아이템 조회", description = "사용자의 대표 아이템을 조회합니다.")
-    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ItemDto.class)))
-    public MemberResponseDto.ItemDto getMySelectedItem(){
-        return memberService.findSelectedItem();
-    }
-
-    @PatchMapping("/items/{itemId}/selected")
-    @Operation(summary = "대표 아이템 변경", description = "대표 아이템을 선택한 아이템으로 변경합니다.")
-    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ItemDto.class)))
-    public MemberResponseDto.ItemDto changeSelectedItem(
-            @Schema(description = "변경하려는 아이템의 id", example = "1")
-            @PathVariable Long itemId
-    ){
-        return memberService.changeSelectedItem(itemId);
-    }
-
 
     @PostMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
@@ -97,6 +71,7 @@ public class MemberController {
     public MemberResponseDto.ProfileImageDto deleteProfileImage() {
         return memberService.deleteProfileImage();
     }
+
     @GetMapping("/preview")
     @Operation(summary = "마이페이지용 preview 조회",
             description = "마이페이지 preview를 조회합니다. 감정통계에서는 반올림 때문에 비율 총합이 100이 넘을 수도 있습니다. " +
