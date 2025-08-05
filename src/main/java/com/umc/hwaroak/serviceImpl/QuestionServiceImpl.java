@@ -8,9 +8,11 @@ import com.umc.hwaroak.domain.Question;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.dto.response.QuestionResponseDto;
+import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.QuestionRepository;
+import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.ItemService;
 import com.umc.hwaroak.service.QuestionService;
 import jakarta.transaction.Transactional;
@@ -69,6 +71,9 @@ public class QuestionServiceImpl implements QuestionService {
 
     private QuestionResponseDto getRandomQuestionByTag(String tag) {
         log.info("태그 기반 메시지 조회 시도 - tag: {}", tag);
+        if (!questionRepository.existsByTag(tag)) {
+            throw new GeneralException(ErrorCode.INVALID_TAG); // ← 커스텀 예외 던지기
+        }
 
         Pageable limitOne = PageRequest.of(0, 1);
         List<Question> questions = questionRepository.findRandomOneByTag(tag, limitOne);
@@ -138,5 +143,7 @@ public class QuestionServiceImpl implements QuestionService {
         log.info("오늘 일기 작성 여부: {}", result);
         return result;
     }
+
+
 }
 
