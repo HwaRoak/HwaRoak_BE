@@ -10,6 +10,7 @@ import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.lock.DiaryLockTemplate;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.ItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
@@ -23,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,22 +37,19 @@ public class DiaryServiceImpl implements DiaryService {
 
     private final MemberLoader memberLoader;
     private final DiaryRepository diaryRepository;
+    private final DiaryLockTemplate diaryLockTemplate;
+
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
     private final EmotionSummaryService emotionSummaryService;
 
     @Transactional
-    public DiaryResponseDto.CreateDto createDiary(DiaryRequestDto requestDto) {
+    public DiaryResponseDto.CreateDto createDiary(DiaryRequestDto.CreateDto requestDto) {
 
         Long memberId = memberLoader.getCurrentMemberId();
         log.info(requestDto.getContent());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
-
-        if (diaryRepository.findByRecordDate(memberId, requestDto.getRecordDate()).isPresent()) {
-            log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
-            throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
-        }
 
         // 요청 감정의 개수 확인하기
         if (requestDto.getEmotionList().size() > 3) {
@@ -61,8 +58,20 @@ public class DiaryServiceImpl implements DiaryService {
 
         Diary diary = DiaryConverter.toDiary(member, requestDto);
         log.info("작성 일기 내용: " + requestDto.getContent());
+
+        String lockName = "diary:" + member.getId() + ":" + requestDto.getRecordDate();
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
-        diaryRepository.save(diary);
+
+        diaryLockTemplate.executeWithLock(lockName, () -> {
+            if (diaryRepository.findByRecordDate(memberId, requestDto.getRecordDate()).isPresent()) {
+                log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
+                throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
+            }
+
+            // 저장 (Lock 내에서)
+            diaryRepository.save(diary);
+        });
+
         emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
 
         String nextItemName = upgradeNextItem();
@@ -90,7 +99,7 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Transactional
-    public DiaryResponseDto.CreateDto updateDiary(Long diaryId, DiaryRequestDto requestDto) {
+    public DiaryResponseDto.CreateDto updateDiary(Long diaryId, DiaryRequestDto.CreateDto requestDto) {
 
         Member member = memberLoader.getMemberByContextHolder();
 
@@ -109,7 +118,7 @@ public class DiaryServiceImpl implements DiaryService {
         diary.update(requestDto.getContent(), emotionList);
         diary.setFeedback(openAiUtil.reviewDiary(requestDto.getContent()));
         diaryRepository.save(diary);
-        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
+        //emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
 
         String nextItemName = getNextItemName(member);
         return DiaryConverter.toCreateDto(diary, nextItemName);
@@ -132,7 +141,6 @@ public class DiaryServiceImpl implements DiaryService {
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
         member.setReward(member.getReward() + 1);
 
-        // TODO: 삭제 후에 아이템 관련 처리 필요
         diaryRepository.delete(diary);
         emotionSummaryService.updateMonthlyEmotionSummary(diary.getRecordDate());  // 감정 통계 업데이트
     }
