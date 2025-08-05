@@ -1,0 +1,142 @@
+package com.umc.hwaroak.serviceImpl;
+
+import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.domain.Diary;
+import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.domain.Question;
+import com.umc.hwaroak.domain.common.AlarmType;
+import com.umc.hwaroak.domain.common.Emotion;
+import com.umc.hwaroak.dto.response.QuestionResponseDto;
+import com.umc.hwaroak.repository.AlarmRepository;
+import com.umc.hwaroak.repository.DiaryRepository;
+import com.umc.hwaroak.repository.QuestionRepository;
+import com.umc.hwaroak.service.ItemService;
+import com.umc.hwaroak.service.QuestionService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+
+@RequiredArgsConstructor
+@Service
+@Slf4j
+public class QuestionServiceImpl implements QuestionService {
+
+    private final MemberLoader memberLoader;
+    private final DiaryRepository diaryRepository;
+    private final AlarmRepository alarmRepository;
+    private final QuestionRepository questionRepository;
+    private final ItemService itemService;
+
+    private final Random random = new Random();
+
+    /**
+     * 홈 화면에서 보여줄 Question 메시지 조회
+     * 우선순위에 따라 적절한 tag의 Question을 랜덤으로 반환합니다.
+     */
+    @Override
+    @Transactional
+    public QuestionResponseDto getMainMessage() {
+        Member member = memberLoader.getMemberByContextHolder();
+        log.info("메인 메시지 조회 시작 - memberId: {}", member.getId());
+
+        if (isRewardReceivable()) {
+            log.info("[1순위] 보상 수령 가능 상태 감지 → REWARD 메시지 노출");
+            return getRandomQuestionByTag("REWARD");
+        }
+
+        if (hasUnreadFireAlarm(member)) {
+            log.info("[2순위] 읽지 않은 불씨 알람 감지 → FIRE 메시지 노출");
+            return getRandomQuestionByTag("FIRE");
+        }
+
+        if (!hasWrittenToday(member)) {
+            log.info("[3순위] 오늘 일기 미작성 상태 감지 → DIARY_EMPTY 메시지 노출");
+            return getRandomQuestionByTag("DIARY_EMPTY");
+        }
+
+        log.info("[4순위] 오늘 일기 작성됨 → 감정 기반 메시지 노출 시도");
+        return getEmotionBasedQuestion(member);
+    }
+
+    private QuestionResponseDto getRandomQuestionByTag(String tag) {
+        log.info("태그 기반 메시지 조회 시도 - tag: {}", tag);
+
+        Pageable limitOne = PageRequest.of(0, 1);
+        List<Question> questions = questionRepository.findRandomOneByTag(tag, limitOne);
+
+        if (questions.isEmpty()) {
+            log.warn("해당 태그에 해당하는 메시지가 존재하지 않음 - fallback 반환");
+            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?");
+        }
+
+        Question q = questions.get(0);
+        log.info("메시지 선택 완료 - content: {}", q.getContent());
+        return QuestionResponseDto.of(q.getContent());
+    }
+
+
+    private QuestionResponseDto getEmotionBasedQuestion(Member member) {
+        Optional<Diary> diaryOpt = diaryRepository.findByMemberIdAndRecordDate(member.getId(), LocalDate.now());
+
+        if (diaryOpt.isEmpty()) {
+            log.warn("오늘 작성된 일기가 존재하지 않음 (예상 외)");
+            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?");
+        }
+
+        List<Emotion> emotionList = diaryOpt.get().getEmotionList();
+        log.info("감정 리스트 추출 - size: {}", emotionList.size());
+
+        if (emotionList == null || emotionList.isEmpty()) {
+            log.warn("감정 리스트가 비어 있음 → 기본 멘트 반환");
+            return QuestionResponseDto.of("당신의 하루가 궁금해요.");
+        }
+
+        Emotion selectedEmotion = emotionList.get(random.nextInt(emotionList.size()));
+        String tag = "EMOTION_" + selectedEmotion.name();
+        log.info("랜덤 감정 선택 완료 - emotion: {} → tag: {}", selectedEmotion.name(), tag);
+
+        return getRandomQuestionByTag(tag);
+    }
+
+    // =======================
+    // 내부 상태 판별 메서드
+    // =======================
+
+    private boolean isRewardReceivable() {
+        List<MemberItem> memberItems = itemService.findNotReceivedItem();
+
+        // MemberItem 중 isReceived가 false 인 것이 있는가? -> 있으면 보상 받을 수 있는 상황.
+        boolean hasUnreceivedItem = memberItems.stream()
+                .anyMatch(item -> !item.getIsReceived());
+
+        memberItems.forEach(item ->
+                log.info("MemberItem: itemId={}, isReceived={}", item.getItem().getId(), item.getIsReceived()));
+
+
+        log.info("보상 수령 가능 여부: hasUnreceivedItem == true → {}", hasUnreceivedItem);
+        return hasUnreceivedItem;
+    }
+
+
+    private boolean hasUnreadFireAlarm(Member member) {
+        boolean result = alarmRepository.existsByReceiverAndAlarmTypeAndIsReadFalse(member, AlarmType.FIRE);
+        log.info("읽지 않은 FIRE 알람 존재 여부: {}", result);
+        return result;
+    }
+
+    private boolean hasWrittenToday(Member member) {
+        boolean result = diaryRepository.existsByMemberIdAndRecordDate(member.getId(), LocalDate.now());
+        log.info("오늘 일기 작성 여부: {}", result);
+        return result;
+    }
+}
+
