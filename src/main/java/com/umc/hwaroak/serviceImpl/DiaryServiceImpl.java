@@ -41,7 +41,6 @@ public class DiaryServiceImpl implements DiaryService {
     private final EmotionSummaryService emotionSummaryService;
     private final ItemService itemService;
 
-    @Transactional
     public DiaryResponseDto.CreateDto createDiary(DiaryRequestDto.CreateDto requestDto) {
 
         Long memberId = memberLoader.getCurrentMemberId();
@@ -54,21 +53,33 @@ public class DiaryServiceImpl implements DiaryService {
             throw new GeneralException(ErrorCode.TOO_MANY_EMOTIONS);
         }
 
+        String lockName = "diary:" + member.getId() + ":" + requestDto.getRecordDate();
+
+        // 락 획득 후 Transactional 시행
+        Diary diary = diaryLockTemplate.executeWithLock(lockName, () ->
+            // 저장
+            createDiaryTransactional(member, requestDto)
+        );
+
+        String nextItemName = itemService.getNextItemName().getName();
+        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
+
+        return DiaryConverter.toCreateDto(diary, nextItemName);
+    }
+
+
+    @Transactional
+    public Diary createDiaryTransactional(Member member, DiaryRequestDto.CreateDto requestDto) {
+
+        if (diaryRepository.findByRecordDate(member.getId(), requestDto.getRecordDate()).isPresent()) {
+            log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
+            throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
+        }
+
         Diary diary = DiaryConverter.toDiary(member, requestDto);
         log.info("작성 일기 내용: " + requestDto.getContent());
 
-        String lockName = "diary:" + member.getId() + ":" + requestDto.getRecordDate();
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
-
-        diaryLockTemplate.executeWithLock(lockName, () -> {
-            if (diaryRepository.findByRecordDate(memberId, requestDto.getRecordDate()).isPresent()) {
-                log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
-                throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
-            }
-
-            // 저장 (Lock 내에서)
-            diaryRepository.save(diary);
-        });
 
         diaryRepository.save(diary);
 
@@ -83,12 +94,7 @@ public class DiaryServiceImpl implements DiaryService {
             log.info("새로운 아이템 수령 가능 대상으로 등록...");
             itemService.upgradeNextItem(member);
         }
-
-
-        String nextItemName = itemService.getNextItemName().getName();
-        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
-
-        return DiaryConverter.toCreateDto(diary, nextItemName);
+        return diary;
     }
 
     @Transactional(readOnly = true)

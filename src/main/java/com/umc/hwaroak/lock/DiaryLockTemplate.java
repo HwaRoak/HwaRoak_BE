@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.function.Supplier;
+
 /**
  * JDBC Template를 통해 lock 실시
  */
@@ -18,10 +20,10 @@ public class DiaryLockTemplate {
     private static final String GET_LOCK = "SELECT GET_LOCK(?, ?)";
     private static final String RELEASE_LOCK = "SELECT RELEASE_LOCK(?)";
 
-    public void executeWithLock(String lockName, Runnable action) {
+    public <T> T executeWithLock(String lockName, Supplier<T> action) {
         try {
             getLock(lockName);
-            action.run();
+            return action.get();
         } catch (Exception e) {
             throw new GeneralException(ErrorCode.TRANSACTION_FAILED);
         } finally {

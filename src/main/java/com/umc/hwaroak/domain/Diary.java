@@ -15,12 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Diary extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "diary_id", nullable = false)
-    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "content", nullable = false)
