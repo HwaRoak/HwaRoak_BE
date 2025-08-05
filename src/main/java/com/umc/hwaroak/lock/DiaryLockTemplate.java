@@ -5,14 +5,14 @@ import com.umc.hwaroak.response.ErrorCode;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.ResultSetExtractor;
-
+import org.springframework.stereotype.Component;
 
 /**
  * JDBC Template를 통해 lock 실시
  */
 @RequiredArgsConstructor
 @Slf4j
+@Component
 public class DiaryLockTemplate {
 
     private static final String GET_LOCK = "SELECT GET_LOCK(?, ?)";
@@ -36,7 +36,9 @@ public class DiaryLockTemplate {
                 .setParameter(1, lockName)
                 .setParameter(2, 10) // 무한대기 방지
                 .getSingleResult();
-        checkResult((Integer) result, lockName, "GET_LOCK");
+
+        if (result instanceof Integer)
+        checkResult((Long) result, lockName, "GET_LOCK");
     }
 
     private void releaseLock(String lockName) {
@@ -44,11 +46,11 @@ public class DiaryLockTemplate {
                 .setParameter(1, lockName)
                 .getSingleResult();
 
-        checkResult((Integer) result, lockName, "RELEASE_LOCK");
+        checkResult((Long) result, lockName, "RELEASE_LOCK");
     }
 
     // logging method
-    private void checkResult(Integer result, String lockName, String type) {
+    private void checkResult(Long result, String lockName, String type) {
         if (result == null) {
             log.error("쿼리 실행 결과가 없습니다. type = {}, lockName = {}", type, lockName);
             throw new GeneralException(ErrorCode.TRANSACTION_FAILED);
