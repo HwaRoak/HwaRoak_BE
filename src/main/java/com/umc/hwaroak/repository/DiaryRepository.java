@@ -24,4 +24,9 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
     //"최근 3일 내 작성된 다이어리 중 가장 최신 것 하나"만 가져오기
     Optional<Diary> findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(Member member, LocalDate date);
 
+    // 특정 날짜에 해당 멤버가 일기를 작성했는지 여부 확인
+    boolean existsByMemberIdAndRecordDate(Long memberId, LocalDate recordDate);
+
+    // 특정 멤버가 특정 날짜(LocalDate)에 작성한 Diary 조회
+    Optional<Diary> findByMemberIdAndRecordDate(Long memberId, LocalDate recordDate);
 }

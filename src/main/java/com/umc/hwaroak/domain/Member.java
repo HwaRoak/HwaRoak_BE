@@ -46,9 +46,6 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member")
     private List<Diary> diaryList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberAnswer> memberAnswerList = new ArrayList<>();
-
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private AlarmSetting alarmSetting;
 
