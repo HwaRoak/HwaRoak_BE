@@ -2,11 +2,13 @@ package com.umc.hwaroak.domain;
 
 import com.umc.hwaroak.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
 @Table(name = "question")
 public class Question extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +18,6 @@ public class Question extends BaseEntity {
     @Column(name = "content")
     private String content;
 
-    @OneToMany(mappedBy = "question")
-    private List<MemberAnswer> memberAnswerList = new ArrayList<>();
+    @Column(name = "tag")
+    private String tag;  // 예: "REWARD", "EMOTION_JOY"
 }
