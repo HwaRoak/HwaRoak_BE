@@ -70,6 +70,10 @@ dependencies {
     annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // AWS S3, Image Resizing
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.696'
+    implementation 'net.coobird:thumbnailator:0.4.20'
 }
 
 tasks.named('test') {

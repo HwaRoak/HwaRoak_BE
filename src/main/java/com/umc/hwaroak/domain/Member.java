@@ -11,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "member")
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Member extends BaseEntity {
@@ -45,9 +46,6 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member")
     private List<Diary> diaryList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberAnswer> memberAnswerList = new ArrayList<>();
-
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private AlarmSetting alarmSetting;
 
@@ -72,13 +70,9 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmotionSummary> emotionSummaryList = new ArrayList<>();
 
-    public void update(String nickname, String profileImage, String introduction){
+    public void update(String nickname, String introduction){
         if (nickname != null) {
             this.nickname = nickname;
-        }
-
-        if (profileImage != null) {
-            this.profileImage = profileImage;
         }
 
         if (introduction != null) {
@@ -89,7 +83,6 @@ public class Member extends BaseEntity {
     // 로그인 시 사용
     public Member( String userId, String nickname, String profileImage) {
         this.userId = userId;
-        //this.email = email;
         this.name = name;
         this.nickname = nickname;
         this.profileImage = profileImage;

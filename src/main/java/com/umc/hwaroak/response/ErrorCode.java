@@ -11,6 +11,10 @@ public enum ErrorCode implements BaseCode{
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "ME4001", "회원을 찾을 수 없습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "ME4002","프로필 파일 이미지가 첨부되지 않았습니다."),
+    FILE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "ME4003","프로필 파일 이미지삭제에 실패하였습니다."),
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "ME4004","이미지파일만 업로드 가능합니다."),
+
 
     // Diary
     DIARY_ALREADY_RECORDED(HttpStatus.BAD_REQUEST, "DE4001", "일기는 하루만 기록할 수 있습니다."),
@@ -62,9 +66,14 @@ public enum ErrorCode implements BaseCode{
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),
     SELECTED_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4002", "대표 아이템을 찾을 수 없습니다"),
     ALREADY_SELECTED_ITEM(HttpStatus.BAD_REQUEST, "ITEM4003", "해당 아이템은 이미 대표 아이템입니다"),
+    NOT_FOUND_AVAILABLE_ITEMS(HttpStatus.NOT_FOUND, "ITEM4004", "더이상 수령 가능한 아이템이 존재하지 않습니다."),
+    FAILED_RECEIVE_ITEM(HttpStatus.BAD_REQUEST, "ITEM4005", "아이템 수령에 실패하였습니다."),
 
     // Alarm
     SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "ALARM4041", "알림 설정을 찾을 수 없습니다."),
+
+    // Tag
+    INVALID_TAG(HttpStatus.NOT_FOUND, "TAG4041", "해당 태그와 일치하는 멘트가 없습니다"),
 
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),

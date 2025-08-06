@@ -16,11 +16,14 @@ import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,7 +113,7 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember() {
         Member receiver = memberLoader.getMemberByContextHolder();
-        List<Alarm> alarms = alarmRepository.findAllIncludingNotifications(receiver);
+        List<Alarm> alarms = alarmRepository.findAllIncludingGlobalAlarms(receiver);
 
         return alarms.stream()
                 .map(alarm -> AlarmResponseDto.InfoDto.builder()
@@ -205,6 +208,31 @@ public class AlarmServiceImpl implements AlarmService {
         }
 
         return Optional.ofNullable(alarms.get(0).getCreatedAt()); // 또는 getFiredAt()
+    }
+
+    @Scheduled(cron = "0 0 0 1 * *") // 매달 1일 00:00
+    @Transactional
+    public void createMonthlyDailyAlarm() {
+        // 전달 월 구하기 (ex. 7월 1일이면 6월)
+        LocalDate today = LocalDate.now();
+        Month lastMonth = today.minusMonths(1).getMonth();
+
+        // 랜덤 content 생성
+        String content1 = "리포트 반영 완료! 내 감정을 돌아볼까요?";
+        String content2 = String.format("리포트 도착! %d월의 화록은 어땠을까요?", lastMonth.getValue());
+        String content = Math.random() < 0.5 ? content1 : content2;
+
+        Alarm alarm = Alarm.builder()
+                .alarmType(AlarmType.DAILY)
+                .title("감정 리포트가 반영됐어요!")
+                .content(content)
+                .message("한 달 동안의 내 감정을 돌아볼 시간이에요.")
+                .receiver(null)
+                .sender(null)
+                .isRead(false)
+                .build();
+
+        alarmRepository.save(alarm);
     }
 
 

@@ -27,10 +27,10 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     @Query("""
         SELECT a FROM Alarm a
         WHERE a.receiver = :receiver
-           OR (a.receiver IS NULL AND a.alarmType = 'NOTIFICATION')
+           OR a.receiver IS NULL AND a.alarmType IN ('NOTIFICATION', 'DAILY')
         ORDER BY a.createdAt DESC
     """)
-    List<Alarm> findAllIncludingNotifications(@Param("receiver") Member receiver);
+    List<Alarm> findAllIncludingGlobalAlarms(@Param("receiver") Member receiver);
 
 
 
@@ -40,4 +40,7 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
             Member receiver,
             AlarmType alarmType
     );
+
+    // 읽지 않은 FIRE 알람이 존재하는지 여부 확인
+    boolean existsByReceiverAndAlarmTypeAndIsReadFalse(Member receiver, AlarmType alarmType);
 }
