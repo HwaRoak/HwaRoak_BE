@@ -80,12 +80,12 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (questions.isEmpty()) {
             log.warn("해당 태그에 해당하는 메시지가 존재하지 않음 - fallback 반환");
-            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?");
+            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?", tag);
         }
 
         Question q = questions.get(0);
         log.info("메시지 선택 완료 - content: {}", q.getContent());
-        return QuestionResponseDto.of(q.getContent());
+        return QuestionResponseDto.of(q.getContent(), tag);
     }
 
 
@@ -94,7 +94,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (diaryOpt.isEmpty()) {
             log.warn("오늘 작성된 일기가 존재하지 않음 (예상 외)");
-            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?");
+            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?", "NONE");
         }
 
         List<Emotion> emotionList = diaryOpt.get().getEmotionList();
@@ -102,7 +102,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (emotionList == null || emotionList.isEmpty()) {
             log.warn("감정 리스트가 비어 있음 → 기본 멘트 반환");
-            return QuestionResponseDto.of("당신의 하루가 궁금해요.");
+            return QuestionResponseDto.of("당신의 하루가 궁금해요.", "NONE");
         }
 
         Emotion selectedEmotion = emotionList.get(random.nextInt(emotionList.size()));
