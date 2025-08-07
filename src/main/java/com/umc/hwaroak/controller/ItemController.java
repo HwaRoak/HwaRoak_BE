@@ -24,7 +24,7 @@ public class ItemController {
             수령한 아이템들이 무어잇이 있는지를 반환합니다.<br>
             보상받기 처리를 한 아이템들만 반환됩니다.
             """)
-    @GetMapping("/items")
+    @GetMapping("")
     @ApiResponse(content = @Content(schema = @Schema(implementation = ItemResponseDto.ItemDto.class)))
     public List<ItemResponseDto.ItemDto> getMyItems(){
         return itemService.getMyItems();
