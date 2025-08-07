@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -80,12 +81,12 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (questions.isEmpty()) {
             log.warn("해당 태그에 해당하는 메시지가 존재하지 않음 - fallback 반환");
-            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?");
+            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?", tag);
         }
 
         Question q = questions.get(0);
         log.info("메시지 선택 완료 - content: {}", q.getContent());
-        return QuestionResponseDto.of(q.getContent());
+        return QuestionResponseDto.of(q.getContent(), tag);
     }
 
 
@@ -94,7 +95,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (diaryOpt.isEmpty()) {
             log.warn("오늘 작성된 일기가 존재하지 않음 (예상 외)");
-            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?");
+            return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?", "NONE");
         }
 
         List<Emotion> emotionList = diaryOpt.get().getEmotionList();
@@ -102,7 +103,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (emotionList == null || emotionList.isEmpty()) {
             log.warn("감정 리스트가 비어 있음 → 기본 멘트 반환");
-            return QuestionResponseDto.of("당신의 하루가 궁금해요.");
+            return QuestionResponseDto.of("당신의 하루가 궁금해요.", "NONE");
         }
 
         Emotion selectedEmotion = emotionList.get(random.nextInt(emotionList.size()));
@@ -143,6 +144,44 @@ public class QuestionServiceImpl implements QuestionService {
         log.info("오늘 일기 작성 여부: {}", result);
         return result;
     }
+
+    @Transactional
+    @Override
+    public QuestionResponseDto getItemClickMessage() {
+        Member member = memberLoader.getMemberByContextHolder();
+        log.info("아이템 클릭 메시지 조회 시작 - memberId: {}", member.getId());
+
+        // 1. 선택된 아이템
+        MemberItem selectedItem = member.getMemberItemList().stream()
+                .filter(MemberItem::getIsSelected)
+                .findFirst()
+                .orElseThrow(() -> new GeneralException(ErrorCode.SELECTED_ITEM_NOT_FOUND));
+        int level = selectedItem.getItem().getLevel();
+        log.info("선택된 아이템 레벨: {}", level);
+
+        // 2. 아이템 고유 멘트 1개
+        String itemTag = "ITEM_" + level;
+        List<Question> itemMentList = questionRepository.findRandomOneByTag(itemTag, PageRequest.of(0, 1));
+        if (itemMentList.isEmpty()) {
+            throw new GeneralException(ErrorCode.QUESTION_NOT_FOUND);
+        }
+        String itemMessage = itemMentList.get(0).getContent();
+
+        // 3. 디폴트 멘트 1개
+        List<Question> defaultMentList = questionRepository.findRandomOneByTag("ITEM_DEFAULT", PageRequest.of(0, 1));
+        if (defaultMentList.isEmpty()) {
+            throw new GeneralException(ErrorCode.QUESTION_NOT_FOUND);
+        }
+        String defaultMessage = defaultMentList.get(0).getContent();
+
+        // 4. 50% 확률로 하나 선택
+        String finalMessage = new Random().nextBoolean() ? itemMessage : defaultMessage;
+        log.info("최종 선택된 메시지: {}", finalMessage);
+
+        return QuestionResponseDto.of(finalMessage);
+    }
+
+
 
 
 }
