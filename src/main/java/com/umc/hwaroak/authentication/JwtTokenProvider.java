@@ -124,8 +124,11 @@ public class JwtTokenProvider {
     // Spring Security 인증 객체 생성
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
-
-        if (!"ROLE_USER".equals(claims.get("authority"))) {
+//
+//        if (!"ROLE_USER".equals(claims.get("authority"))) {
+//            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
+//        }
+        if (!claims.get("authority").toString().startsWith("ROLE_")) {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 

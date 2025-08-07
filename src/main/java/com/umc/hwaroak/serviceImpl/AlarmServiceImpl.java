@@ -171,14 +171,14 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
      /**
-     *  공지 수동 등록
+     *  공지 수동 등록 - 관리자용
      */
     @Transactional
     public void createNotice(AlarmRequestDto.CreateNoticeDto requestDto) {
         Alarm alarm = Alarm.builder()
                 .alarmType(AlarmType.NOTIFICATION)
-                .receiver(null)
-                .sender(null) // 필요 시 admin 계정 넣을 수도 있음
+//                .receiver(null)
+//                .sender(null) // 필요 시 admin 계정 넣을 수도 있음
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .message(requestDto.getMessage())
