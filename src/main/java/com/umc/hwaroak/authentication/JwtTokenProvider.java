@@ -1,9 +1,13 @@
 // JWT 발급, 검증, 파싱
 package com.umc.hwaroak.authentication;
 
+import com.umc.hwaroak.domain.common.Role;
+import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
@@ -33,26 +38,36 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-token-validity}")
     private long refreshTokenValidity;
 
+    private final MemberRepository memberRepository;
+
     // .yml에 설정한 jwt.secret을 바탕으로 서명키 생성(위조 방지)
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     public String createAccessToken(Long memberId) {
-        return createToken(memberId, accessTokenValidity, "ACCESS");
+        Role role = memberRepository.findById(memberId)
+                .map(Member::getRole)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return createToken(memberId, role, accessTokenValidity, "ACCESS");
     }
 
     public String createRefreshToken(Long memberId) {
-        return createToken(memberId, refreshTokenValidity, "REFRESH");
+        Role role = memberRepository.findById(memberId)
+                .map(Member::getRole)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return createToken(memberId, role, refreshTokenValidity, "REFRESH");
     }
 
-    private String createToken(Long memberId, long validity, String tokenType) {
+    private String createToken(Long memberId, Role role, long validity, String tokenType) {
         Date now = new Date();
         Key key = getSigningKey();
 
         return Jwts.builder()
                 .setSubject(String.valueOf(memberId))
-                .claim("authority", "ROLE_USER")
+                .claim("authority", "ROLE_" + role.name())
                 .claim("tokenType", tokenType)  // 🔥 추가
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + validity))
