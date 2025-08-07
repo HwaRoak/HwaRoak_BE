@@ -75,6 +75,9 @@ public enum ErrorCode implements BaseCode{
     // Tag
     INVALID_TAG(HttpStatus.NOT_FOUND, "TAG4041", "해당 태그와 일치하는 멘트가 없습니다"),
 
+    // Question
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QES4041", "해당 멘트가 존재하지 않습니다"),
+
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
     ;

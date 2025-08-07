@@ -37,4 +37,22 @@ public class QuestionController {
     public QuestionResponseDto getMainMessage() {
         return questionService.getMainMessage();
     }
+
+
+    @Operation(
+            summary = "아이템 클릭 시 메시지 조회",
+            description = """
+        사용자가 메인 화면에서 선택한 아이템을 클릭했을 때 보여줄 멘트를 반환합니다.<br><br>
+        디폴트 멘트 여러개와 아이템 종류별 멘트중에 랜덤으로 뜹니다.
+        """
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "아이템 클릭 메시지 조회 성공",
+            content = @Content(schema = @Schema(implementation = QuestionResponseDto.class))
+    )
+    @GetMapping("/item-click")
+    public QuestionResponseDto getItemClickMessage() {
+        return questionService.getItemClickMessage();
+    }
 }

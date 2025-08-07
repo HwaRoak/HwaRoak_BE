@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -143,6 +144,44 @@ public class QuestionServiceImpl implements QuestionService {
         log.info("오늘 일기 작성 여부: {}", result);
         return result;
     }
+
+    @Transactional
+    @Override
+    public QuestionResponseDto getItemClickMessage() {
+        Member member = memberLoader.getMemberByContextHolder();
+        log.info("아이템 클릭 메시지 조회 시작 - memberId: {}", member.getId());
+
+        // 1. 선택된 아이템
+        MemberItem selectedItem = member.getMemberItemList().stream()
+                .filter(MemberItem::getIsSelected)
+                .findFirst()
+                .orElseThrow(() -> new GeneralException(ErrorCode.SELECTED_ITEM_NOT_FOUND));
+        int level = selectedItem.getItem().getLevel();
+        log.info("선택된 아이템 레벨: {}", level);
+
+        // 2. 아이템 고유 멘트 1개
+        String itemTag = "ITEM_" + level;
+        List<Question> itemMentList = questionRepository.findRandomOneByTag(itemTag, PageRequest.of(0, 1));
+        if (itemMentList.isEmpty()) {
+            throw new GeneralException(ErrorCode.QUESTION_NOT_FOUND);
+        }
+        String itemMessage = itemMentList.get(0).getContent();
+
+        // 3. 디폴트 멘트 1개
+        List<Question> defaultMentList = questionRepository.findRandomOneByTag("ITEM_DEFAULT", PageRequest.of(0, 1));
+        if (defaultMentList.isEmpty()) {
+            throw new GeneralException(ErrorCode.QUESTION_NOT_FOUND);
+        }
+        String defaultMessage = defaultMentList.get(0).getContent();
+
+        // 4. 50% 확률로 하나 선택
+        String finalMessage = new Random().nextBoolean() ? itemMessage : defaultMessage;
+        log.info("최종 선택된 메시지: {}", finalMessage);
+
+        return QuestionResponseDto.of(finalMessage);
+    }
+
+
 
 
 }
