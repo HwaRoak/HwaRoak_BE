@@ -92,6 +92,7 @@ public class AlarmController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "공지 등록", description = "관리자가 공지를 수동 등록합니다.")
     @ApiResponse(responseCode = "201", description = "공지 등록 성공")
+    @ApiResponse(responseCode = "4032", description = "접근 권한 없음 (ADMIN_ACCESS_ONLY)")
     @PostMapping("/notices")
     public void createNotice(@RequestBody AlarmRequestDto.CreateNoticeDto requestDto) {
         alarmService.createNotice(requestDto);
