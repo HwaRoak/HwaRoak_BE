@@ -178,7 +178,7 @@ public class QuestionServiceImpl implements QuestionService {
         String finalMessage = new Random().nextBoolean() ? itemMessage : defaultMessage;
         log.info("최종 선택된 메시지: {}", finalMessage);
 
-        return QuestionResponseDto.of(finalMessage);
+        return QuestionResponseDto.of(finalMessage, itemTag);
     }
 
 
