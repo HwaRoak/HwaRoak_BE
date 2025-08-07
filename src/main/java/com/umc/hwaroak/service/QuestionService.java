@@ -4,4 +4,5 @@ import com.umc.hwaroak.dto.response.QuestionResponseDto;
 
 public interface QuestionService {
     QuestionResponseDto getMainMessage();
+    QuestionResponseDto getItemClickMessage();
 }

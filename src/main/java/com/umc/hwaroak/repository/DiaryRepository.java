@@ -3,17 +3,18 @@ package com.umc.hwaroak.repository;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryRepositoryCustom {
 
+    //@Lock(LockModeType.PESSIMISTIC_WRITE) // 잠금
     @Query("SELECT d FROM Diary d WHERE d.recordDate = :recordDate and d.member.id = :memberId")
     Optional<Diary> findByRecordDate(@Param("memberId") Long memberId, @Param("recordDate") LocalDate recordDate);
 
@@ -28,5 +29,4 @@ public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryReposi
 
     // 특정 멤버가 특정 날짜(LocalDate)에 작성한 Diary 조회
     Optional<Diary> findByMemberIdAndRecordDate(Long memberId, LocalDate recordDate);
-
 }

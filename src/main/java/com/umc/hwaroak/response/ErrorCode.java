@@ -61,6 +61,9 @@ public enum ErrorCode implements BaseCode{
     NOT_FRIEND(HttpStatus.FORBIDDEN,"FRIEND4043", "해당 사용자와 친구 관계가 아닙니다."),
     CANNOT_SEARCH_SELF(HttpStatus.FORBIDDEN,"FRIEND4044", "자기 자신은 찾을 수 없습니다."),
 
+    // transaction
+    TRANSACTION_LOCKED(HttpStatus.CONFLICT, "DBERROR4001", "해당 요청이 작업 중입니다."),
+    TRANSACTION_FAILED(HttpStatus.CONFLICT, "DBERROR4002", "쿼리 실행이 유효하지 않습니다."),
 
     // Item
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),
@@ -74,6 +77,9 @@ public enum ErrorCode implements BaseCode{
 
     // Tag
     INVALID_TAG(HttpStatus.NOT_FOUND, "TAG4041", "해당 태그와 일치하는 멘트가 없습니다"),
+
+    // Question
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QES4041", "해당 멘트가 존재하지 않습니다"),
 
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
