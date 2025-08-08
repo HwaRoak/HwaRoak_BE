@@ -25,13 +25,13 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
      * receiverId로 조회 or (receiverId=NULL && 공지)
      */
     @Query("""
-        SELECT a FROM Alarm a
-        WHERE a.receiver = :receiver
-           OR a.receiver IS NULL AND a.alarmType IN ('NOTIFICATION', 'DAILY')
-        ORDER BY a.createdAt DESC
-    """)
+    SELECT a FROM Alarm a
+    LEFT JOIN FETCH a.sender
+    WHERE a.receiver = :receiver
+       OR (a.receiver IS NULL AND a.alarmType IN ('NOTIFICATION', 'DAILY'))
+    ORDER BY a.createdAt DESC
+""")
     List<Alarm> findAllIncludingGlobalAlarms(@Param("receiver") Member receiver);
-
 
 
     // sender + receiver + alarmType 기준 최신 알람 (여러 개 가능)
