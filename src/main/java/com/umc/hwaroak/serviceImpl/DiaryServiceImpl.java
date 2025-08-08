@@ -1,12 +1,14 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.event.ItemUpdateEvent;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.converter.DiaryConverter;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
+import com.umc.hwaroak.event.ItemRollbackEvent;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.lock.DiaryLockTemplate;
 import com.umc.hwaroak.repository.DiaryRepository;
@@ -16,6 +18,7 @@ import com.umc.hwaroak.service.DiaryService;
 import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.service.ItemService;
 import com.umc.hwaroak.util.OpenAiUtil;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,8 +56,14 @@ public class DiaryServiceImpl implements DiaryService {
             throw new GeneralException(ErrorCode.TOO_MANY_EMOTIONS);
         }
 
-        String lockName = "diary:" + member.getId() + ":" + requestDto.getRecordDate();
+        // LOCK 이전에 DB 조회 시작
+        if (diaryRepository.findByRecordDate(member.getId(), requestDto.getRecordDate()).isPresent()) {
+            log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
+            throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
+        }
 
+        // LOCK
+        String lockName = "diary:" + member.getId() + ":" + requestDto.getRecordDate();
         // 락 획득 후 Transactional 시행
         Diary diary = diaryLockTemplate.executeWithLock(lockName, () ->
             // 저장
@@ -71,20 +80,12 @@ public class DiaryServiceImpl implements DiaryService {
     @Transactional
     public Diary createDiaryTransactional(Member member, DiaryRequestDto.CreateDto requestDto) {
 
-        if (diaryRepository.findByRecordDate(member.getId(), requestDto.getRecordDate()).isPresent()) {
-            log.info("{} 날짜의 일기 발견...", requestDto.getRecordDate());
-            throw new GeneralException(ErrorCode.DIARY_ALREADY_RECORDED);
-        }
-
         Diary diary = DiaryConverter.toDiary(member, requestDto);
         log.info("작성 일기 내용: " + requestDto.getContent());
-
         diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
 
         diaryRepository.save(diary);
-
-        // reward 디데이 갱신
-        member.setReward(
+        member.setReward( // reward 디데이 갱신
                 (member.getReward() -1) == 0 ? 7 : (member.getReward()-1)
         );
         memberRepository.save(member);
@@ -137,7 +138,7 @@ public class DiaryServiceImpl implements DiaryService {
         diary.update(requestDto.getContent(), emotionList);
         diary.setFeedback(openAiUtil.reviewDiary(requestDto.getContent()));
         diaryRepository.save(diary);
-        //emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
+        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
 
         String nextItemName = itemService.getNextItemName().getName();
         return DiaryConverter.toCreateDto(diary, nextItemName);
@@ -166,7 +167,7 @@ public class DiaryServiceImpl implements DiaryService {
 
         } else if (reward == 7) {
             // 이전의 아이템 상태로 돌아가기
-            itemService.backToStatus(member);
+            eventPublisher.publishEvent(new ItemRollbackEvent(this, member.getId()));
             member.setReward(1);
         } else {
             member.setReward(reward + 1);
