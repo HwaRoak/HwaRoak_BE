@@ -1,6 +1,6 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.converter.ItemConverter;
 import com.umc.hwaroak.domain.Item;
 import com.umc.hwaroak.domain.Member;
@@ -71,31 +71,6 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    // 수령 가능 아이템 추가하기
-    @Override
-    @Transactional(readOnly = true)
-    public void upgradeNextItem(Member member) {
-
-        // 회원의 현재 받을 수 있는 아이템들 조회
-        List<MemberItem> memberItemList = member.getMemberItemList();
-
-        // 그 중 가장 레벨이 높은 것
-        int lastItemLevel = memberItemList.stream()
-                .map(memberItem -> memberItem.getItem().getLevel())
-                .max(Integer::compareTo)
-                .orElse(1);
-
-        int nextLevel = lastItemLevel + 1;
-        Optional<Item> nextItem = itemRepository.findByLevel(nextLevel);
-
-        if (nextItem.isPresent()) {
-            MemberItem memberItem = new MemberItem(member, nextItem.get());
-            memberItemRepository.save(memberItem);
-        } else {
-            log.info("더이상 수령 가능한 Item 존재하지 않음");
-        }
-    }
-
     // 수령 가능한 아이템 보기 ( = 현재 리워드 기반으로 계산하기)
     @Override
     @Transactional(readOnly = true)
@@ -131,14 +106,6 @@ public class ItemServiceImpl implements ItemService {
         } else {
             return ItemConverter.toNextDto(nextItem.get(), member);
         }
-    }
-
-    // 삭제 시 이전으로 돌아가기
-    @Override
-    @Transactional
-    public void backToStatus(Member member) {
-        log.info("마지막 보상 삭제하기...");
-        memberItemRepository.backToStatus(member);
     }
 
     @Override
@@ -196,6 +163,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemResponseDto.ItemDto> getMyItems() {
 
         Long memberId = memberLoader.getCurrentMemberId();
@@ -216,5 +184,4 @@ public class ItemServiceImpl implements ItemService {
 
         return memberItemRepository.findUnreceivedItems(member);
     }
-
 }
