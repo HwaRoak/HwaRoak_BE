@@ -41,6 +41,8 @@ public class DiaryServiceImpl implements DiaryService {
 
     private final MemberRepository memberRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     private final EmotionSummaryService emotionSummaryService;
     private final ItemService itemService;
 
@@ -69,6 +71,11 @@ public class DiaryServiceImpl implements DiaryService {
             // 저장
             createDiaryTransactional(member, requestDto)
         );
+
+        if (member.getReward() ==7) {
+            log.info("새로운 아이템 수령 가능 대상으로 등록...");
+            eventPublisher.publishEvent(new ItemUpdateEvent(this, member.getId()));
+        }
 
         String nextItemName = itemService.getNextItemName().getName();
         emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
