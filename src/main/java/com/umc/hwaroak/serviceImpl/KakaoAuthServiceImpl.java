@@ -16,7 +16,7 @@ import com.umc.hwaroak.repository.ItemRepository;
 import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
-import com.umc.hwaroak.authentication.JwtTokenProvider;
+import com.umc.hwaroak.infrastructure.authentication.JwtTokenProvider;
 import com.umc.hwaroak.service.KakaoAuthService;
 import com.umc.hwaroak.util.UidGenerator;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +28,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j

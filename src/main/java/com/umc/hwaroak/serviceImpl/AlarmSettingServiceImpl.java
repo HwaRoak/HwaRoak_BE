@@ -1,6 +1,6 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.AlarmSetting;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.request.AlarmSettingRequestDto;

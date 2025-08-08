@@ -1,5 +1,5 @@
 // JWT를 검사하고 유효한 경우 인증 정보를 SecurityContext에 등록
-package com.umc.hwaroak.authentication;
+package com.umc.hwaroak.infrastructure.authentication;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

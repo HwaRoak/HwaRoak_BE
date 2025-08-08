@@ -1,4 +1,4 @@
-package com.umc.hwaroak.authentication;
+package com.umc.hwaroak.infrastructure.authentication;
 
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.exception.GeneralException;

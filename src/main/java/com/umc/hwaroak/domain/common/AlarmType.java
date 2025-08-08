@@ -10,7 +10,6 @@ public enum AlarmType {
     NOTIFICATION("notification"),
     CONNECTED("connected"),
     DAILY("daily"),
-    HEARTBEAT("heartbeat");
     ;
 
     private final String value;

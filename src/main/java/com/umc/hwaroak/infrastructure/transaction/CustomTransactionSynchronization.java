@@ -1,4 +1,4 @@
-package com.umc.hwaroak.event;
+package com.umc.hwaroak.infrastructure.transaction;
 
 import org.springframework.transaction.support.TransactionSynchronization;
 

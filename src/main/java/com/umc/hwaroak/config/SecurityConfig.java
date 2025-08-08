@@ -1,7 +1,7 @@
 package com.umc.hwaroak.config;
 
-import com.umc.hwaroak.authentication.JwtAuthenticationEntryPoint;
-import com.umc.hwaroak.authentication.JwtAuthenticationFilter;
+import com.umc.hwaroak.infrastructure.authentication.JwtAuthenticationEntryPoint;
+import com.umc.hwaroak.infrastructure.authentication.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
