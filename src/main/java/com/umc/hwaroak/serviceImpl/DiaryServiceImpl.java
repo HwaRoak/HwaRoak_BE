@@ -97,11 +97,6 @@ public class DiaryServiceImpl implements DiaryService {
         );
         memberRepository.save(member);
 
-
-        if (member.getReward() ==7) {
-            log.info("새로운 아이템 수령 가능 대상으로 등록...");
-            itemService.upgradeNextItem(member);
-        }
         return diary;
     }
 
