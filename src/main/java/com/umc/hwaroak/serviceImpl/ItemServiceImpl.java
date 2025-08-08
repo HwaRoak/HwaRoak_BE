@@ -42,6 +42,16 @@ public class ItemServiceImpl implements ItemService {
             throw new GeneralException(ErrorCode.NOT_FOUND_AVAILABLE_ITEMS);
         }
 
+        log.info("기본 아이템 받기...");
+        MemberItem basicItem = receivableItems.get(0);
+        if (basicItem.getItem().getLevel()==1){
+            basicItem.setIsSelected(true);
+            basicItem.setIsReceived(true);
+            memberItemRepository.save(basicItem);
+
+            return ItemConverter.toItemDto(basicItem);
+        }
+
         log.info("기존 대표 아이템 대표에서 해제 처리...");
         MemberItem selectedItem = memberItemRepository.findByMemberIdAndIsSelectedTrue(member.getId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.ITEM_NOT_FOUND));
