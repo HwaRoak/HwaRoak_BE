@@ -1,6 +1,7 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.event.FriendRequestEvent;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
@@ -8,7 +9,6 @@ import com.umc.hwaroak.domain.common.FriendStatus;
 import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
-import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.FriendRepository;
 import com.umc.hwaroak.repository.MemberRepository;
@@ -17,6 +17,7 @@ import com.umc.hwaroak.service.AlarmService;
 import com.umc.hwaroak.service.FriendService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +38,12 @@ public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final DiaryRepository diaryRepository;
+
     private final AlarmService alarmService;
+
     private final OpenAiUtil openAiUtil;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 친구 요청을 보냅니다.
@@ -97,7 +102,7 @@ public class FriendServiceImpl implements FriendService {
         // [5] 새 요청 저장 및 알림 전송
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
-        alarmService.sendFriendRequestAlarm(sender, receiver);
+        eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
     }
 
 
@@ -251,7 +256,7 @@ public class FriendServiceImpl implements FriendService {
             }
         }
 
-        alarmService.sendFireAlarm(sender, receiver);
+        eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
 
         return FireAlarmResponseDto.builder()
                 .notifiedAt(now().toString())
@@ -296,7 +301,4 @@ public class FriendServiceImpl implements FriendService {
 
         return direct || reverse;
     }
-
-
-
 }
