@@ -22,6 +22,7 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -129,10 +130,16 @@ public class JwtTokenProvider {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
+        // 한 사용자가 여러 Role을 가질 수 있을 때 (Authorities) -> 추후 확장 가능
+//        Collection<? extends GrantedAuthority> authorities =
+//                Arrays.stream(claims.get("authority").toString().split(","))
+//                        .map(SimpleGrantedAuthority::new)
+//                        .collect(Collectors.toList());
+
+        // 한 사용자가 하나의 Role만 가짐
+        String authority = claims.get("authority", String.class); // "ROLE_ADMIN"
         Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get("authority").toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+                List.of(new SimpleGrantedAuthority(authority));
 
         return new UsernamePasswordAuthenticationToken(getMemberId(token), null, authorities);
     }
