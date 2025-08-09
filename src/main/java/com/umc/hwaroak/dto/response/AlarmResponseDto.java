@@ -55,6 +55,9 @@ public class AlarmResponseDto {
         @Schema(description = "알람 ID", example = "1")
         private Long id;
 
+        @Schema(description = "알람 관련 사용자 ID (FRIEND_REQUEST, FIRE만 해당)", example = "kakao_1234abcd")
+        private String userId;
+
         @Schema(description = "알람 제목", example = "친구 요청")
         private String title;
 

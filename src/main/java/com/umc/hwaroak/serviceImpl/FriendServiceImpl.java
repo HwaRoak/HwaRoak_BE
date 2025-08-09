@@ -58,52 +58,57 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void requestFriend(String receiverUserId) {
-        // [1] 현재 로그인된 유저를 가져옵니다.
+        // [1] 현재 로그인된 유저
         Member sender = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청받을 유저를 userId 기준으로 조회
+        // [2] 수신자 조회
         Member receiver = memberRepository.findByUserId(receiverUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [3] 자기 자신에게 친구 요청하는 경우 예외 처리
+        // [3] 자기 자신에게 요청 금지
         if (sender.getId().equals(receiver.getId())) {
             throw new GeneralException(ErrorCode.CANNOT_ADD_SELF);
         }
 
-        // [4] 기존 친구 요청/관계가 존재하는지 조회 (양방향 모두 확인)
-        Optional<Friend> direct = friendRepository.findBySenderAndReceiver(sender, receiver);
-        Optional<Friend> reverse = friendRepository.findBySenderAndReceiver(receiver, sender);
+        // [4] 기존 관계 조회 (양방향)
+        Optional<Friend> directOpt = friendRepository.findBySenderAndReceiver(sender, receiver);
+        Optional<Friend> reverseOpt = friendRepository.findBySenderAndReceiver(receiver, sender);
 
-        if (direct.isPresent()) {
-            Friend friend = direct.get();
-
-            if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
-                friend.updateStatus(FriendStatus.REQUESTED);
-                return;
+        // [4-1] 내가 보낸 기록이 있는 경우
+        if (directOpt.isPresent()) {
+            Friend f = directOpt.get();
+            switch (f.getStatus()) {
+                case BLOCKED, REJECTED -> {
+                    f.updateStatus(FriendStatus.REQUESTED); // 재요청 허용
+                    return;
+                }
+                case REQUESTED -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_REQUESTED);
+                case ACCEPTED  -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_FRIENDS);
             }
-
-            throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        if (reverse.isPresent()) {
-            Friend friend = reverse.get();
-
-            if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
-                // 방향 반전 및 상태 변경
-                friend.setSender(sender); 
-                friend.setReceiver(receiver);
-                friend.updateStatus(FriendStatus.REQUESTED);
-                return;
+        // [4-2] 상대가 과거에 나에게 보낸 기록이 있는 경우
+        if (reverseOpt.isPresent()) {
+            Friend f = reverseOpt.get();
+            switch (f.getStatus()) {
+                case BLOCKED, REJECTED -> {
+                    // 방향 반전 + 재요청
+                    f.setSender(sender);
+                    f.setReceiver(receiver);
+                    f.updateStatus(FriendStatus.REQUESTED);
+                    return;
+                }
+                case REQUESTED -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_REQUESTED);
+                case ACCEPTED  -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_FRIENDS);
             }
-
-            throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [5] 새 요청 저장 및 알림 전송
+        // [5] 신규 요청 생성 + 알림
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
         eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
     }
+
 
 
 
