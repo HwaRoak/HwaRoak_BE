@@ -110,22 +110,32 @@ public class AlarmServiceImpl implements AlarmService {
      * 알람함 최신순 전체 조회
      * receiverId로 조회 or (receiverId=NULL && 공지)
      */
+    @Transactional(readOnly = true)
     @Override
     public List<AlarmResponseDto.InfoDto> getAllAlarmsForMember() {
         Member receiver = memberLoader.getMemberByContextHolder();
         List<Alarm> alarms = alarmRepository.findAllIncludingGlobalAlarms(receiver);
 
+        // sender가 존재하면 sender의 UserId 가져옵니다. 아니면 널~
         return alarms.stream()
-                .map(alarm -> AlarmResponseDto.InfoDto.builder()
-                        .id(alarm.getId())
-                        .title(alarm.getTitle())
-                        .content(alarm.getContent())
-                        .alarmType(alarm.getAlarmType())
-                        .isRead(alarm.isRead())
-                        .createdAt(alarm.getCreatedAt())
-                        .build())
+                .map(alarm -> {
+                    String userId = (alarm.getAlarmType() == AlarmType.FIRE || alarm.getAlarmType() == AlarmType.FRIEND_REQUEST)
+                            ? (alarm.getSender() != null ? alarm.getSender().getUserId() : null)
+                            : "";
+
+                    return AlarmResponseDto.InfoDto.builder()
+                            .id(alarm.getId())
+                            .title(alarm.getTitle())
+                            .content(alarm.getContent())
+                            .alarmType(alarm.getAlarmType())
+                            .isRead(alarm.isRead())
+                            .createdAt(alarm.getCreatedAt())
+                            .userId(userId)
+                            .build();
+                })
                 .toList();
     }
+
 
     /**
      *  불씨 보냈을시 알람 생성하기
