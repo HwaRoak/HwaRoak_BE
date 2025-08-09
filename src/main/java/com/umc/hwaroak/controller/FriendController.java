@@ -103,7 +103,7 @@ public class FriendController {
               "userId": "#@!3132",
               "nickname": "화록이2",
               "message": "화록이2님은 깔끼해요",
-              "emotions": "JOY,SADNESS",
+              "emotions": "화나는,짜증남",
               "selectedItemId": 5
             }
             """

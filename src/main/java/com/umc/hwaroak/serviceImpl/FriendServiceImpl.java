@@ -288,7 +288,7 @@ public class FriendServiceImpl implements FriendService {
                     List<Emotion> list = d.getEmotionList();
                     if (list == null || list.isEmpty()) return "";
                     return list.stream()
-                            .map(Enum::name)
+                            .map(Emotion::getDisplayName)
                             .collect(Collectors.joining(","));
                 })
                 .orElse("");
