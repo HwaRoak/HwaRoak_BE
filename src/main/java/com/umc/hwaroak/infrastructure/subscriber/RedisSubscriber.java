@@ -1,4 +1,4 @@
-package com.umc.hwaroak.event;
+package com.umc.hwaroak.infrastructure.subscriber;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;

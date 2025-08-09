@@ -19,10 +19,6 @@ public interface AlarmService {
      */
     AlarmResponseDto.InfoDto getNoticeDetail(Long id);
 
-    /**
-     *  친구 요청 알람 보내기
-     */
-    void sendFriendRequestAlarm(Member sender, Member receiver);
 
     /**
      * 로그인한 유저의 알림함 전체를 최신순으로 조회
@@ -30,14 +26,12 @@ public interface AlarmService {
     List<AlarmResponseDto.InfoDto> getAllAlarmsForMember();
 
     /**
-
-     *  불씨 보냈을시 알람 생성하기
+     * 가장 마지막의 불씨 알람 시각 조회
      */
-    void sendFireAlarm(Member sender, Member receiver);
     Optional<LocalDateTime> getLastFireTime(Member sender, Member receiver);
 
-
-     /*  알람 읽음 처리 하기
+     /**
+      * 알람 읽음 처리 하기
      */
     void markAsRead(Long alarmId);
 

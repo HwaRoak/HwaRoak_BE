@@ -1,7 +1,7 @@
 package com.umc.hwaroak.config;
 
 import com.umc.hwaroak.domain.common.AlarmType;
-import com.umc.hwaroak.event.RedisSubscriber;
+import com.umc.hwaroak.infrastructure.subscriber.RedisSubscriber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

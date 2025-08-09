@@ -1,5 +1,5 @@
 // JWT 발급, 검증, 파싱
-package com.umc.hwaroak.authentication;
+package com.umc.hwaroak.infrastructure.authentication;
 
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.response.ErrorCode;
