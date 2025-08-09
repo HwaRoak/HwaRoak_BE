@@ -63,12 +63,6 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
 
         String nickname = account.getProfile().getNickname();
 
-        // profile_image_url을 HTTP 요청으로 다운로드
-        String profileImage = account.getProfile().getProfile_image_url();
-        String s3ProfileImageUrl = null;
-
-        // 카카오 이미지 -> 다운로드 -> S3업로드 -> url 반환(자동 S3업로드)
-
         // 기존 회원 또는 신규 생성
         Member member = memberRepository.findByUserId(uid)
                 .orElseGet(() -> {
