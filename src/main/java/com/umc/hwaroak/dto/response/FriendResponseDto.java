@@ -16,15 +16,17 @@ public class FriendResponseDto {
     @Builder
     @AllArgsConstructor
     public static class FriendInfo {
-
-        @Schema(description = "친구의 UserId", example = "#@#12")
+        @Schema(description = "친구의 userId", example = "friend_123")
         private String userId;
 
-        @Schema(description = "친구 닉네임", example = "햇살가득이")
+        @Schema(description = "친구 닉네임", example = "화록이2")
         private String nickname;
 
-        @Schema(description = "친구 한줄소개", example = "오늘도 잘 부탁해요~")
+        @Schema(description = "친구 소개글", example = "안녕하세요! 화록 좋아요")
         private String introduction;
+
+        @Schema(description = "프로필 이미지 URL (없으면 null 또는 기본이미지 사용)", example = "https://.../profile.jpg")
+        private String profileImage;
     }
 
     @Getter

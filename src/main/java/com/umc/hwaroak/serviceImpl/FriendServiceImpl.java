@@ -172,10 +172,12 @@ public class FriendServiceImpl implements FriendService {
                             .userId(friendMember.getUserId())
                             .nickname(friendMember.getNickname())
                             .introduction(friendMember.getIntroduction())
+                            .profileImage(friendMember.getProfileImage())
                             .build();
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional(readOnly = true)
