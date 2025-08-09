@@ -181,7 +181,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
+    public List<FriendResponseDto.FriendInfo> getReceivedFriendRequests() {
         Member me = memberLoader.getMemberByContextHolder();
 
         List<Friend> requests = friendRepository.findAllByReceiverAndStatusOrderByCreatedAtDesc(
@@ -191,10 +191,11 @@ public class FriendServiceImpl implements FriendService {
         return requests.stream()
                 .map(friend -> {
                     Member sender = friend.getSender();
-                    return FriendResponseDto.ReceivedRequestInfo.builder()
+                    return FriendResponseDto.FriendInfo.builder()
                             .userId(sender.getUserId())
                             .nickname(sender.getNickname())
                             .introduction(sender.getIntroduction())
+                            .profileImage(sender.getProfileImage())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -222,7 +223,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     @Transactional(readOnly = true)
-    public FriendResponseDto.SearchResultDto searchFriendByUserId(String userId) {
+    public FriendResponseDto.FriendInfo searchFriendByUserId(String userId) {
         Member currentMember = memberLoader.getMemberByContextHolder();
 
         Member target = memberRepository.findByUserId(userId)
@@ -232,10 +233,11 @@ public class FriendServiceImpl implements FriendService {
             throw new GeneralException(ErrorCode.CANNOT_SEARCH_SELF);
         }
 
-        return FriendResponseDto.SearchResultDto.builder()
+        return FriendResponseDto.FriendInfo.builder()
                 .userId(target.getUserId())
                 .nickname(target.getNickname())
                 .introduction(target.getIntroduction())
+                .profileImage(target.getProfileImage())
                 .build();
     }
 

@@ -32,35 +32,6 @@ public class FriendResponseDto {
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class ReceivedRequestInfo {
-
-        @Schema(description = "받은 친구 요청의 UserId", example = "#@#12")
-        private String userId;
-
-        @Schema(description = "요청 보낸 사용자 닉네임", example = "감자소년")
-        private String nickname;
-
-        @Schema(description = "요청 보낸 사용자의 자기소개", example = "함께 친구해요 :)")
-        private String introduction;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    public static class SearchResultDto {
-
-        @Schema(description = "찾은 유저의 UserId", example = "#!2231!")
-        private String userId;     // 유저 ID (공개용)
-        @Schema(description = "찾은 유저의 NickName", example = "나는야 화록이")
-        private String nickname;
-        @Schema(description = "찾은 유저의 자기소개", example = "안녕하세요~")
-        private String introduction;
-
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
     public static class FriendPageInfo {
         @Schema(description = "친구의 userId", example = "#@!3132")
         private String userId;

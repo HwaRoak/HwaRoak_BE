@@ -57,7 +57,7 @@ public class FriendController {
     @Operation(summary = "받은 친구 요청 목록 조회", description = "아직 수락/거절되지 않은, 내가 받은 친구 요청 목록을 최신순으로 조회합니다.")
     @ApiResponse(responseCode = "200", description = "받은 친구 요청 목록 조회 성공")
     @GetMapping("/received")
-    public List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests() {
+    public List<FriendResponseDto.FriendInfo> getReceivedFriendRequests() {
         return friendService.getReceivedFriendRequests();
     }
 
@@ -71,9 +71,9 @@ public class FriendController {
 
     @GetMapping("/search/{userId}")
     @Operation(summary = "userId로 회원 검색", description = "입력한 userId를 가진 회원을 검색합니다.")
-    @ApiResponse(responseCode = "200", description = "검색 성공", content = @Content(schema = @Schema(implementation = FriendResponseDto.SearchResultDto.class)))
+    @ApiResponse(responseCode = "200", description = "검색 성공", content = @Content(schema = @Schema(implementation = FriendResponseDto.FriendInfo.class)))
     @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음 (MEMBER_NOT_FOUND)")
-    public FriendResponseDto.SearchResultDto searchFriend(@PathVariable String userId) {
+    public FriendResponseDto.FriendInfo searchFriend(@PathVariable String userId) {
         return friendService.searchFriendByUserId(userId);
     }
 
