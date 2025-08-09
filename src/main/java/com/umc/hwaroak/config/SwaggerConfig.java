@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
+    // 공통 OpenAPI - 관리자와 사용자 모두 볼 수 있음
     @Bean
     public OpenAPI openAPI() {
         Info info = new Info()

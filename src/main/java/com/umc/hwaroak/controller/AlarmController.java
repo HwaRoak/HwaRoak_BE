@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -88,8 +89,10 @@ public class AlarmController {
         alarmService.markAsRead(alarmId);
     }
 
-    @Operation(summary = "공지 등록", description = "관리자가 공지를 수동 등록합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "공지 등록", description = "관리자만 공지를 등록할 수 있습니다.")
     @ApiResponse(responseCode = "201", description = "공지 등록 성공")
+    @ApiResponse(responseCode = "4032", description = "접근 권한 없음 (ADMIN_ACCESS_ONLY)")
     @PostMapping("/notices")
     public void createNotice(@RequestBody AlarmRequestDto.CreateNoticeDto requestDto) {
         alarmService.createNotice(requestDto);

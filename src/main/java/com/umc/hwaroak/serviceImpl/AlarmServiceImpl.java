@@ -6,6 +6,7 @@ import com.umc.hwaroak.converter.AlarmConverter;
 import com.umc.hwaroak.domain.Alarm;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
+import com.umc.hwaroak.domain.common.Role;
 import com.umc.hwaroak.dto.request.AlarmRequestDto;
 import com.umc.hwaroak.dto.response.AlarmResponseDto;
 import com.umc.hwaroak.event.CustomTransactionSynchronization;
@@ -171,14 +172,17 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
      /**
-     *  공지 수동 등록
+     *  공지 수동 등록 - 관리자용
      */
     @Transactional
     public void createNotice(AlarmRequestDto.CreateNoticeDto requestDto) {
+
+        Member member = memberLoader.getMemberByContextHolder(); // 현재 로그인한 사용자
+        if (member.getRole() != Role.ADMIN) {
+            throw new GeneralException(ErrorCode.ADMIN_ACCESS_ONLY);
+        }
         Alarm alarm = Alarm.builder()
                 .alarmType(AlarmType.NOTIFICATION)
-                .receiver(null)
-                .sender(null) // 필요 시 admin 계정 넣을 수도 있음
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .message(requestDto.getMessage())

@@ -2,6 +2,7 @@ package com.umc.hwaroak.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.umc.hwaroak.domain.common.BaseEntity;
+import com.umc.hwaroak.domain.common.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,6 +43,10 @@ public class Member extends BaseEntity {
 
     @Column(name = "introduction")
     private String introduction;
+
+    // 역할 필드 추가
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @OneToMany(mappedBy = "member")
     private List<Diary> diaryList = new ArrayList<>();
@@ -86,6 +91,7 @@ public class Member extends BaseEntity {
         this.name = name;
         this.nickname = nickname;
         this.profileImage = profileImage;
+        this.role = Role.USER;
         this.reward = 7;
         this.feeling = "default";
     }
