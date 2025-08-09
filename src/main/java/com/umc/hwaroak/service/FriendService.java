@@ -15,15 +15,17 @@ public interface FriendService {
 
     List<FriendResponseDto.FriendInfo> getFriendList();
 
-    List<FriendResponseDto.ReceivedRequestInfo> getReceivedFriendRequests();
+    List<FriendResponseDto.FriendInfo> getReceivedFriendRequests();
 
     void deleteFriend(String friendMemberUserId);
 
-    FriendResponseDto.SearchResultDto searchFriendByUserId(String userId);
+    FriendResponseDto.FriendInfo searchFriendByUserId(String userId);
 
     FireAlarmResponseDto fireFriend(String friendUserId);
 
     FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId);
+
+    FriendResponseDto.FriendItemsInfo getFriendItems(String friendUserId);
 
     boolean isFriend(Member member1, Member member2);
 }
