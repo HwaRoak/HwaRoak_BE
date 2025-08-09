@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 public class FriendResponseDto {
 
     /**
@@ -64,6 +66,17 @@ public class FriendResponseDto {
         private String nickname;
         @Schema(description = "친구의 그날 감정 분석", example = "화록이2님은 깔끼해요 or 불씨를 지펴보세요!")
         private String message;  // GPT 응답 or 디폴트 메시지
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class FriendItemsInfo {
+        @Schema(description = "친구의 아이템 PK 리스트", example = "[1, 2, 3, 5]")
+        private List<Long> items;
+
+        @Schema(description = "친구가 선택한 아이템의 PK", example = "3")
+        private Long selectedItem;
     }
 
 }

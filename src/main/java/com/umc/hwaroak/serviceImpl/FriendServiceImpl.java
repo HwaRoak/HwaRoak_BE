@@ -1,5 +1,6 @@
 package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.event.FriendRequestEvent;
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
@@ -17,6 +18,7 @@ import com.umc.hwaroak.service.AlarmService;
 import com.umc.hwaroak.service.FriendService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static java.time.LocalTime.now;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
@@ -272,28 +275,75 @@ public class FriendServiceImpl implements FriendService {
 
     @Transactional(readOnly = true)
     public FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId) {
+        log.info("[getFriendPage] 친구 페이지 조회 시작 - friendUserId: {}", friendUserId);
+
         Member friend = memberRepository.findByUserId(friendUserId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.warn("[getFriendPage] 해당 userId의 친구를 찾을 수 없음: {}", friendUserId);
+                    return new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
+                });
+        log.info("[getFriendPage] 친구 조회 완료 - memberId: {}, nickname: {}", friend.getId(), friend.getNickname());
 
-        // LocalDateTime → LocalDate
         LocalDate threeDaysAgo = LocalDateTime.now().minusDays(3).toLocalDate();
+        log.info("[getFriendPage] 최근 3일 기준 날짜: {}", threeDaysAgo);
 
-        // 날짜 기준으로 최신 다이어리 하나 조회
         Optional<Diary> diaryOpt = diaryRepository
                 .findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(friend, threeDaysAgo);
 
         String message = diaryOpt
-                .map(diary -> openAiUtil.extractDiaryFeelingSummary(diary.getContent()))
+                .map(diary -> {
+                    log.info("[getFriendPage] 최신 일기 ID: {}, 작성일: {}", diary.getId(), diary.getRecordDate());
+                    return openAiUtil.extractDiaryFeelingSummary(diary.getContent());
+                })
                 .orElse("불씨를 지펴보세요!");
 
-        return FriendResponseDto.FriendPageInfo.builder()
+        log.info("[getFriendPage] 반환 메시지: {}", message);
+
+        FriendResponseDto.FriendPageInfo result = FriendResponseDto.FriendPageInfo.builder()
                 .userId(friend.getUserId())
                 .nickname(friend.getNickname())
                 .message(message)
                 .build();
+
+        log.info("[getFriendPage] 최종 응답: {}", result);
+        return result;
     }
 
+    @Transactional(readOnly = true)
+    public FriendResponseDto.FriendItemsInfo getFriendItems(String friendUserId) {
+        log.info("[getFriendItems] 친구 아이템 리스트 조회 시작 - friendUserId: {}", friendUserId);
 
+        Member friend = memberRepository.findByUserId(friendUserId)
+                .orElseThrow(() -> {
+                    log.warn("[getFriendItems] 해당 userId의 친구를 찾을 수 없음: {}", friendUserId);
+                    return new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
+                });
+        log.info("[getFriendItems] 친구 조회 완료 - memberId: {}, nickname: {}", friend.getId(), friend.getNickname());
+
+        // isReceived == true 인 아이템만 필터링
+        List<Long> items = friend.getMemberItemList().stream()
+                .filter(MemberItem::getIsReceived)
+                .map(mi -> mi.getItem().getId())
+                .collect(Collectors.toList());
+        log.info("[getFriendItems] 보유 Item PK 리스트 (isReceived=true): {}", items);
+
+        // 선택된 아이템도 isReceived == true 인 것만
+        Long selectedItem = friend.getMemberItemList().stream()
+                .filter(MemberItem::getIsReceived)
+                .filter(MemberItem::getIsSelected)
+                .findFirst()
+                .map(mi -> mi.getItem().getId())
+                .orElse(null);
+        log.info("[getFriendItems] 선택된 Item PK (isReceived=true): {}", selectedItem);
+
+        FriendResponseDto.FriendItemsInfo result = FriendResponseDto.FriendItemsInfo.builder()
+                .items(items)
+                .selectedItem(selectedItem)
+                .build();
+
+        log.info("[getFriendItems] 최종 응답: {}", result);
+        return result;
+    }
 
     @Override
     @Transactional(readOnly = true)

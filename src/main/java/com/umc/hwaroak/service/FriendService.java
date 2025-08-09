@@ -25,5 +25,7 @@ public interface FriendService {
 
     FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId);
 
+    FriendResponseDto.FriendItemsInfo getFriendItems(String friendUserId);
+
     boolean isFriend(Member member1, Member member2);
 }

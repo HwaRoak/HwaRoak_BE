@@ -93,4 +93,12 @@ public class FriendController {
     public FriendResponseDto.FriendPageInfo getFriendPage(@PathVariable String userId) {
         return friendService.getFriendPage(userId);
     }
+
+    @Operation(summary = "친구 아이템 리스트 조회", description = "친구의 모든 아이템 PK 리스트와 선택된 아이템 PK를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "친구 아이템 조회 성공")
+    @ApiResponse(responseCode = "404", description = "해당 사용자를 찾을 수 없습니다")
+    @GetMapping("/{userId}/items")
+    public FriendResponseDto.FriendItemsInfo getFriendItems(@PathVariable String userId) {
+        return friendService.getFriendItems(userId);
+    }
 }
