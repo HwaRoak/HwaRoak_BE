@@ -5,6 +5,8 @@ import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.FriendStatus;
 import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
@@ -275,23 +277,43 @@ public class FriendServiceImpl implements FriendService {
         Member friend = memberRepository.findByUserId(friendUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // LocalDateTime → LocalDate
+        // 최근 3일 내 최신 일기 조회
         LocalDate threeDaysAgo = LocalDateTime.now().minusDays(3).toLocalDate();
-
-        // 날짜 기준으로 최신 다이어리 하나 조회
         Optional<Diary> diaryOpt = diaryRepository
                 .findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(friend, threeDaysAgo);
 
+        // GPT 분석 멘트
         String message = diaryOpt
                 .map(diary -> openAiUtil.extractDiaryFeelingSummary(diary.getContent()))
                 .orElse("불씨를 지펴보세요!");
+
+        // 감정 ENUM → message 만든 일기에서 가져오기 (없으면 "")
+        String emotions = diaryOpt
+                .map(d -> {
+                    List<Emotion> list = d.getEmotionList();
+                    if (list == null || list.isEmpty()) return "";
+                    return list.stream()
+                            .map(Emotion::getDisplayName)
+                            .collect(Collectors.joining(","));
+                })
+                .orElse("");
+
+        // 선택된 MemberItem ID
+        Long selectedItemId = friend.getMemberItemList().stream()
+                .filter(MemberItem::getIsSelected)
+                .findFirst()
+                .map(mi -> mi.getItem().getId()) // Item의 PK -> 친구의 아이템이므로 굳이 memberItem의 PK를 반환 안해도 된다고 생각.
+                .orElse(null);
 
         return FriendResponseDto.FriendPageInfo.builder()
                 .userId(friend.getUserId())
                 .nickname(friend.getNickname())
                 .message(message)
+                .emotions(emotions)
+                .selectedItemId(selectedItemId)
                 .build();
     }
+
 
 
 
