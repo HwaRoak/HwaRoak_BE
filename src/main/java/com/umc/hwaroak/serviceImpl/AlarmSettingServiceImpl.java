@@ -1,6 +1,6 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.AlarmSetting;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.request.AlarmSettingRequestDto;
@@ -72,14 +72,8 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
             setting.setFireEnabled(requestDto.getFireAlarmEnabled());
 
         if (requestDto.getAllOffEnabled() != null){
-
+            // 나머지 두 알림 관련 설정 데이터를 DB 상에서 유지하고, '모든 알람 끄기' 관련 변환은 프론트에서 처리
             setting.setAllOffEnabled(requestDto.getAllOffEnabled());
-
-            // 모든 알림을 끌 경우, 알림 off를 리마인더와 불씨 알림에도 적용
-            if (requestDto.getAllOffEnabled() == false){
-                setting.setReminderEnabled(false);
-                setting.setFireEnabled(false);
-            }
         }
 
         return AlarmSettingResponseDto.InfoDto.builder()

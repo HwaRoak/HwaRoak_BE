@@ -26,7 +26,7 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(memberItem.member.eq(member));
-        builder.and(memberItem.isReceived.isTrue());
+        builder.and(memberItem.isReceived.isFalse());
 
         return jpaQueryFactory
                 .selectFrom(memberItem)

@@ -24,7 +24,7 @@ public class AlarmController {
 
     private final AlarmService alarmService;
 
-    @Operation(summary = "알림함 전체 조회", description = "로그인한 사용자의 모든 알람을 최신순으로 조회합니다.")
+    @Operation(summary = "알림함 전체 조회", description = "로그인한 사용자의 모든 알람을 최신순으로 조회합니다. 친구, 불씨 알람의 userId말고는 빈 문자열 입니다.")
     @ApiResponse(responseCode = "200", description = "알림 목록 조회 성공",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = AlarmResponseDto.InfoDto.class)),
                     examples = @ExampleObject(value = """

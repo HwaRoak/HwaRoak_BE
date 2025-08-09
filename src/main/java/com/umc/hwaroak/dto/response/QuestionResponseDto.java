@@ -7,4 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor(staticName = "of")
 public class QuestionResponseDto {
     private String content;
+    private String tag;
 }

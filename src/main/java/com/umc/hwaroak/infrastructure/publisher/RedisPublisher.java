@@ -1,12 +1,15 @@
-package com.umc.hwaroak.event;
+package com.umc.hwaroak.infrastructure.publisher;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
-@Service
+/**
+ * 공통 Publisher interface(알림, 공지 등)
+ */
+@Component
 @Slf4j
 public class RedisPublisher {
 

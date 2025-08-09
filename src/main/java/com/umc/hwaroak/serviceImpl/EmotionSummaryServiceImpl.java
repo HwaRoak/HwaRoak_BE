@@ -1,12 +1,11 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.EmotionSummary;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.EmotionCategory;
-import com.umc.hwaroak.dto.response.EmotionSummaryResponseDto;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.EnumMap;
 import java.util.List;
@@ -164,6 +162,4 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         log.info("감정 요약 저장 완료 - memberId: {}, month: {}", memberId, summaryMonth);
 
     }
-
-
 }

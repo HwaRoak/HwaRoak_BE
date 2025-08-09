@@ -1,5 +1,5 @@
 // JWT 발급, 검증, 파싱
-package com.umc.hwaroak.authentication;
+package com.umc.hwaroak.infrastructure.authentication;
 
 import com.umc.hwaroak.domain.common.Role;
 import com.umc.hwaroak.domain.Member;

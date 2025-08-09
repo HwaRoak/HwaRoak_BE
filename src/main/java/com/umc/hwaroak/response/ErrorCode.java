@@ -56,12 +56,16 @@ public enum ErrorCode implements BaseCode{
     FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4041", "해당 친구 요청을 찾을 수 없습니다."),
     FRIEND_REQUEST_NOT_PENDING(HttpStatus.BAD_REQUEST, "FRIEND4002", "이미 처리된 친구 요청입니다."),
     CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "FRIEND4003", "자기 자신에게는 친구 요청을 보낼 수 없습니다."),
-    FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4004", "이미 친구이거나 요청을 보낸 상태입니다."),
-    FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4005", "해당 친구 상태에서는 삭제할 수 없습니다."),
+    FRIEND_ALREADY_REQUESTED(HttpStatus.BAD_REQUEST,"FRIEND4004", "이미 친구요청을 보냈습니다."),
+    FRIEND_ALREADY_FRIENDS(HttpStatus.BAD_REQUEST,"FRIEND4005", "이미 친구입니다."),
+    FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4006", "해당 친구 상태에서는 삭제할 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4042", "해당 친구 관계를 찾을 수 없습니다."),
     NOT_FRIEND(HttpStatus.FORBIDDEN,"FRIEND4043", "해당 사용자와 친구 관계가 아닙니다."),
     CANNOT_SEARCH_SELF(HttpStatus.FORBIDDEN,"FRIEND4044", "자기 자신은 찾을 수 없습니다."),
 
+    // transaction
+    TRANSACTION_LOCKED(HttpStatus.CONFLICT, "DBERROR4001", "해당 요청이 작업 중입니다."),
+    TRANSACTION_FAILED(HttpStatus.CONFLICT, "DBERROR4002", "쿼리 실행이 유효하지 않습니다."),
 
     // Item
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM4001", "해당 아이템을 찾을 수 없습니다"),
@@ -75,6 +79,9 @@ public enum ErrorCode implements BaseCode{
 
     // Tag
     INVALID_TAG(HttpStatus.NOT_FOUND, "TAG4041", "해당 태그와 일치하는 멘트가 없습니다"),
+
+    // Question
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QES4041", "해당 멘트가 존재하지 않습니다"),
 
     // SERVER
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE5001", "서버 내의 오류입니다."),
