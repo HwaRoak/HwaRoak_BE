@@ -1,6 +1,7 @@
 package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.event.FireSendEvent;
 import com.umc.hwaroak.event.FriendRequestEvent;
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
@@ -270,7 +271,7 @@ public class FriendServiceImpl implements FriendService {
             }
         }
 
-        eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
+        eventPublisher.publishEvent(new FireSendEvent(this, sender, receiver));
 
         return FireAlarmResponseDto.builder()
                 .notifiedAt(now().toString())
