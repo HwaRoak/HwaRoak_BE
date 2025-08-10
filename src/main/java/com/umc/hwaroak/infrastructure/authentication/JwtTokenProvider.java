@@ -1,5 +1,5 @@
 // JWT 발급, 검증, 파싱
-package com.umc.hwaroak.authentication;
+package com.umc.hwaroak.infrastructure.authentication;
 
 import com.umc.hwaroak.domain.common.Role;
 import com.umc.hwaroak.domain.Member;
@@ -49,7 +49,7 @@ public class JwtTokenProvider {
     public String createAccessToken(Long memberId) {
         Role role = memberRepository.findById(memberId)
                 .map(Member::getRole)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.ROLE_NOT_FOUND));
 
         return createToken(memberId, role, accessTokenValidity, "ACCESS");
     }
@@ -57,7 +57,7 @@ public class JwtTokenProvider {
     public String createRefreshToken(Long memberId) {
         Role role = memberRepository.findById(memberId)
                 .map(Member::getRole)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.ROLE_NOT_FOUND));
 
         return createToken(memberId, role, refreshTokenValidity, "REFRESH");
     }

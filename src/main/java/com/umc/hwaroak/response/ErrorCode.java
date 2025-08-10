@@ -32,6 +32,7 @@ public enum ErrorCode implements BaseCode{
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "접근 권한이 없습니다."),
     FAILED_KAKAO_PROFILE(HttpStatus.BAD_REQUEST, "KE4001", "카카오 서버로부터 프로필을 얻는 데에 실패하였습니다."),
     NOT_ENOUGH_INFO(HttpStatus.NOT_FOUND, "KE4002", "카카오로부터 얻은 정보가 충분하지 않습니다."),
+    ROLE_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH_003", "저장된 권한이 존재하지 않습니다."),
 
     // UID
     FAILED_UUID(HttpStatus.BAD_REQUEST, "UE4001", "UUID 생성에 실패하였습니다."),
@@ -56,8 +57,9 @@ public enum ErrorCode implements BaseCode{
     FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4041", "해당 친구 요청을 찾을 수 없습니다."),
     FRIEND_REQUEST_NOT_PENDING(HttpStatus.BAD_REQUEST, "FRIEND4002", "이미 처리된 친구 요청입니다."),
     CANNOT_ADD_SELF(HttpStatus.BAD_REQUEST, "FRIEND4003", "자기 자신에게는 친구 요청을 보낼 수 없습니다."),
-    FRIEND_ALREADY_EXISTS_OR_REQUESTED(HttpStatus.BAD_REQUEST, "FRIEND4004", "이미 친구이거나 요청을 보낸 상태입니다."),
-    FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4005", "해당 친구 상태에서는 삭제할 수 없습니다."),
+    FRIEND_ALREADY_REQUESTED(HttpStatus.BAD_REQUEST,"FRIEND4004", "이미 친구요청을 보냈습니다."),
+    FRIEND_ALREADY_FRIENDS(HttpStatus.BAD_REQUEST,"FRIEND4005", "이미 친구입니다."),
+    FRIEND_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "FRIEND4006", "해당 친구 상태에서는 삭제할 수 없습니다."),
     FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4042", "해당 친구 관계를 찾을 수 없습니다."),
     NOT_FRIEND(HttpStatus.FORBIDDEN,"FRIEND4043", "해당 사용자와 친구 관계가 아닙니다."),
     CANNOT_SEARCH_SELF(HttpStatus.FORBIDDEN,"FRIEND4044", "자기 자신은 찾을 수 없습니다."),

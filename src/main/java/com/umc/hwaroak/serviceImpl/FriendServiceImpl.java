@@ -1,14 +1,16 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.event.FriendRequestEvent;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.FriendStatus;
 import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
-import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.FriendRepository;
 import com.umc.hwaroak.repository.MemberRepository;
@@ -17,6 +19,7 @@ import com.umc.hwaroak.service.AlarmService;
 import com.umc.hwaroak.service.FriendService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +40,12 @@ public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final DiaryRepository diaryRepository;
+
     private final AlarmService alarmService;
+
     private final OpenAiUtil openAiUtil;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 친구 요청을 보냅니다.
@@ -53,52 +60,57 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void requestFriend(String receiverUserId) {
-        // [1] 현재 로그인된 유저를 가져옵니다.
+        // [1] 현재 로그인된 유저
         Member sender = memberLoader.getMemberByContextHolder();
 
-        // [2] 요청받을 유저를 userId 기준으로 조회
+        // [2] 수신자 조회
         Member receiver = memberRepository.findByUserId(receiverUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [3] 자기 자신에게 친구 요청하는 경우 예외 처리
+        // [3] 자기 자신에게 요청 금지
         if (sender.getId().equals(receiver.getId())) {
             throw new GeneralException(ErrorCode.CANNOT_ADD_SELF);
         }
 
-        // [4] 기존 친구 요청/관계가 존재하는지 조회 (양방향 모두 확인)
-        Optional<Friend> direct = friendRepository.findBySenderAndReceiver(sender, receiver);
-        Optional<Friend> reverse = friendRepository.findBySenderAndReceiver(receiver, sender);
+        // [4] 기존 관계 조회 (양방향)
+        Optional<Friend> directOpt = friendRepository.findBySenderAndReceiver(sender, receiver);
+        Optional<Friend> reverseOpt = friendRepository.findBySenderAndReceiver(receiver, sender);
 
-        if (direct.isPresent()) {
-            Friend friend = direct.get();
-
-            if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
-                friend.updateStatus(FriendStatus.REQUESTED);
-                return;
+        // [4-1] 내가 보낸 기록이 있는 경우
+        if (directOpt.isPresent()) {
+            Friend f = directOpt.get();
+            switch (f.getStatus()) {
+                case BLOCKED, REJECTED -> {
+                    f.updateStatus(FriendStatus.REQUESTED); // 재요청 허용
+                    return;
+                }
+                case REQUESTED -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_REQUESTED);
+                case ACCEPTED  -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_FRIENDS);
             }
-
-            throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        if (reverse.isPresent()) {
-            Friend friend = reverse.get();
-
-            if (friend.getStatus() == FriendStatus.BLOCKED || friend.getStatus() == FriendStatus.REJECTED) {
-                // 방향 반전 및 상태 변경
-                friend.setSender(sender); 
-                friend.setReceiver(receiver);
-                friend.updateStatus(FriendStatus.REQUESTED);
-                return;
+        // [4-2] 상대가 과거에 나에게 보낸 기록이 있는 경우
+        if (reverseOpt.isPresent()) {
+            Friend f = reverseOpt.get();
+            switch (f.getStatus()) {
+                case BLOCKED, REJECTED -> {
+                    // 방향 반전 + 재요청
+                    f.setSender(sender);
+                    f.setReceiver(receiver);
+                    f.updateStatus(FriendStatus.REQUESTED);
+                    return;
+                }
+                case REQUESTED -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_REQUESTED);
+                case ACCEPTED  -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_FRIENDS);
             }
-
-            throw new GeneralException(ErrorCode.FRIEND_ALREADY_EXISTS_OR_REQUESTED);
         }
 
-        // [5] 새 요청 저장 및 알림 전송
+        // [5] 신규 요청 생성 + 알림
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
-        alarmService.sendFriendRequestAlarm(sender, receiver);
+        eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
     }
+
 
 
 
@@ -251,7 +263,7 @@ public class FriendServiceImpl implements FriendService {
             }
         }
 
-        alarmService.sendFireAlarm(sender, receiver);
+        eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
 
         return FireAlarmResponseDto.builder()
                 .notifiedAt(now().toString())
@@ -265,23 +277,43 @@ public class FriendServiceImpl implements FriendService {
         Member friend = memberRepository.findByUserId(friendUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // LocalDateTime → LocalDate
+        // 최근 3일 내 최신 일기 조회
         LocalDate threeDaysAgo = LocalDateTime.now().minusDays(3).toLocalDate();
-
-        // 날짜 기준으로 최신 다이어리 하나 조회
         Optional<Diary> diaryOpt = diaryRepository
                 .findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(friend, threeDaysAgo);
 
+        // GPT 분석 멘트
         String message = diaryOpt
                 .map(diary -> openAiUtil.extractDiaryFeelingSummary(diary.getContent()))
                 .orElse("불씨를 지펴보세요!");
+
+        // 감정 ENUM → message 만든 일기에서 가져오기 (없으면 "")
+        String emotions = diaryOpt
+                .map(d -> {
+                    List<Emotion> list = d.getEmotionList();
+                    if (list == null || list.isEmpty()) return "";
+                    return list.stream()
+                            .map(Emotion::getDisplayName)
+                            .collect(Collectors.joining(","));
+                })
+                .orElse("");
+
+        // 선택된 MemberItem ID
+        Long selectedItemId = friend.getMemberItemList().stream()
+                .filter(MemberItem::getIsSelected)
+                .findFirst()
+                .map(mi -> mi.getItem().getId()) // Item의 PK -> 친구의 아이템이므로 굳이 memberItem의 PK를 반환 안해도 된다고 생각.
+                .orElse(null);
 
         return FriendResponseDto.FriendPageInfo.builder()
                 .userId(friend.getUserId())
                 .nickname(friend.getNickname())
                 .message(message)
+                .emotions(emotions)
+                .selectedItemId(selectedItemId)
                 .build();
     }
+
 
 
 
@@ -296,7 +328,4 @@ public class FriendServiceImpl implements FriendService {
 
         return direct || reverse;
     }
-
-
-
 }

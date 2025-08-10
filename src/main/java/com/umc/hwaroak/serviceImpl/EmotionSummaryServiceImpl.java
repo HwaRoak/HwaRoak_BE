@@ -1,12 +1,11 @@
 package com.umc.hwaroak.serviceImpl;
 
-import com.umc.hwaroak.authentication.MemberLoader;
+import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.EmotionSummary;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.EmotionCategory;
-import com.umc.hwaroak.dto.response.EmotionSummaryResponseDto;
 import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
@@ -17,14 +16,11 @@ import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -166,18 +162,4 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         log.info("감정 요약 저장 완료 - memberId: {}, month: {}", memberId, summaryMonth);
 
     }
-
-    /**
-     * 매월 1일 0시 정각에 3개월 전까지의 감정분석 데이터를 삭제합니다.
-     * ex. 2025-08-01 실행 → 2025-05까지의 데이터 삭제
-     */
-    @Scheduled(cron = "0 0 0 1 * *")  // 매월 1일 정각
-    public void deleteOldEmotionSummaries() {
-        String date = LocalDate.now().minusMonths(3).format(DateTimeFormatter.ofPattern("yyyy-MM"));    // ex. 2025-08
-
-        emotionSummaryRepository.deleteEmotionSummaryBefore(date);
-        log.info("{} 이전의 감정분석 데이터가 삭제되었습니다.", date);
-    }
-
-
 }
