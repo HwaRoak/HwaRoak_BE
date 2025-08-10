@@ -6,6 +6,8 @@ import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
+import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.FriendStatus;
 import com.umc.hwaroak.dto.response.FireAlarmResponseDto;
 import com.umc.hwaroak.dto.response.FriendResponseDto;
@@ -277,41 +279,64 @@ public class FriendServiceImpl implements FriendService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
-    public FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId) {
-        log.info("[getFriendPage] 친구 페이지 조회 시작 - friendUserId: {}", friendUserId);
+@Transactional(readOnly = true)
+public FriendResponseDto.FriendPageInfo getFriendPage(String friendUserId) {
+    log.info("[getFriendPage] 친구 페이지 조회 시작 - friendUserId: {}", friendUserId);
 
-        Member friend = memberRepository.findByUserId(friendUserId)
-                .orElseThrow(() -> {
-                    log.warn("[getFriendPage] 해당 userId의 친구를 찾을 수 없음: {}", friendUserId);
-                    return new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
-                });
-        log.info("[getFriendPage] 친구 조회 완료 - memberId: {}, nickname: {}", friend.getId(), friend.getNickname());
+    Member friend = memberRepository.findByUserId(friendUserId)
+            .orElseThrow(() -> {
+                log.warn("[getFriendPage] 해당 userId의 친구를 찾을 수 없음: {}", friendUserId);
+                return new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
+            });
+    log.info("[getFriendPage] 친구 조회 완료 - memberId: {}, nickname: {}", friend.getId(), friend.getNickname());
 
-        LocalDate threeDaysAgo = LocalDateTime.now().minusDays(3).toLocalDate();
-        log.info("[getFriendPage] 최근 3일 기준 날짜: {}", threeDaysAgo);
+    // 최근 3일 내 최신 일기 조회 (LocalDate 기준)
+    LocalDate threeDaysAgo = LocalDateTime.now().minusDays(3).toLocalDate();
+    log.info("[getFriendPage] 최근 3일 기준 날짜: {}", threeDaysAgo);
 
-        Optional<Diary> diaryOpt = diaryRepository
-                .findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(friend, threeDaysAgo);
+    Optional<Diary> diaryOpt = diaryRepository
+            .findTop1ByMemberAndRecordDateGreaterThanEqualOrderByRecordDateDesc(friend, threeDaysAgo);
 
-        String message = diaryOpt
-                .map(diary -> {
-                    log.info("[getFriendPage] 최신 일기 ID: {}, 작성일: {}", diary.getId(), diary.getRecordDate());
-                    return openAiUtil.extractDiaryFeelingSummary(diary.getContent());
-                })
-                .orElse("불씨를 지펴보세요!");
+    // GPT 분석 멘트
+    String message = diaryOpt
+            .map(diary -> {
+                log.info("[getFriendPage] 최신 일기 ID: {}, 작성일: {}", diary.getId(), diary.getRecordDate());
+                return openAiUtil.extractDiaryFeelingSummary(diary.getContent());
+            })
+            .orElse("불씨를 지펴보세요!");
 
-        log.info("[getFriendPage] 반환 메시지: {}", message);
+    // 감정 ENUM → message 만든 일기에서 가져오기 (없으면 "")
+    String emotions = diaryOpt
+            .map(d -> {
+                List<Emotion> list = d.getEmotionList();
+                if (list == null || list.isEmpty()) return "";
+                return list.stream()
+                        .map(Emotion::getDisplayName)
+                        .collect(Collectors.joining(","));
+            })
+            .orElse("");
 
-        FriendResponseDto.FriendPageInfo result = FriendResponseDto.FriendPageInfo.builder()
-                .userId(friend.getUserId())
-                .nickname(friend.getNickname())
-                .message(message)
-                .build();
+    // 선택된 MemberItem의 Item PK
+    Long selectedItemId = friend.getMemberItemList().stream()
+            .filter(MemberItem::getIsSelected)
+            .findFirst()
+            .map(mi -> mi.getItem().getId())
+            .orElse(null);
 
-        log.info("[getFriendPage] 최종 응답: {}", result);
-        return result;
-    }
+    log.info("[getFriendPage] 반환 메시지: {}", message);
+
+    FriendResponseDto.FriendPageInfo result = FriendResponseDto.FriendPageInfo.builder()
+            .userId(friend.getUserId())
+            .nickname(friend.getNickname())
+            .message(message)
+            .emotions(emotions)
+            .selectedItemId(selectedItemId)
+            .build();
+
+    log.info("[getFriendPage] 최종 응답: {}", result);
+    return result;
+}
+
 
     @Transactional(readOnly = true)
     public FriendResponseDto.FriendItemsInfo getFriendItems(String friendUserId) {
@@ -348,6 +373,7 @@ public class FriendServiceImpl implements FriendService {
         log.info("[getFriendItems] 최종 응답: {}", result);
         return result;
     }
+
 
     @Override
     @Transactional(readOnly = true)

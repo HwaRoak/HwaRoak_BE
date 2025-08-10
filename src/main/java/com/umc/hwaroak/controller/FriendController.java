@@ -5,6 +5,7 @@ import com.umc.hwaroak.dto.response.FriendResponseDto;
 import com.umc.hwaroak.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -86,9 +87,33 @@ public class FriendController {
         return friendService.fireFriend(userId);
     }
 
-    @Operation(summary = "친구 페이지 방문하기", description = "친구 페이지를 방문합니다.")
-    @ApiResponse(responseCode = "200", description = "친구 정보 조회 성공")
-    @ApiResponse(responseCode = "404", description = "해당 사용자를 찾을 수 없습니다")
+    @Operation(
+            summary = "친구 페이지 방문하기",
+            description = "친구 페이지를 방문하여 친구의 기본 정보, 최근 일기 기반 감정 분석, 감정 ENUM, 선택한 아이템 ID를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "친구 정보 조회 성공",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = FriendResponseDto.FriendPageInfo.class),
+                    examples = @ExampleObject(
+                            value = """
+            {
+              "userId": "#@!3132",
+              "nickname": "화록이2",
+              "message": "화록이2님은 깔끼해요",
+              "emotions": "화나는,짜증남",
+              "selectedItemId": 5
+            }
+            """
+                    )
+            )
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "해당 사용자를 찾을 수 없습니다"
+    )
     @GetMapping("/{userId}")
     public FriendResponseDto.FriendPageInfo getFriendPage(@PathVariable String userId) {
         return friendService.getFriendPage(userId);
