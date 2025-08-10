@@ -32,6 +32,7 @@ public enum ErrorCode implements BaseCode{
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "접근 권한이 없습니다."),
     FAILED_KAKAO_PROFILE(HttpStatus.BAD_REQUEST, "KE4001", "카카오 서버로부터 프로필을 얻는 데에 실패하였습니다."),
     NOT_ENOUGH_INFO(HttpStatus.NOT_FOUND, "KE4002", "카카오로부터 얻은 정보가 충분하지 않습니다."),
+    ROLE_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH_003", "저장된 권한이 존재하지 않습니다."),
 
     // UID
     FAILED_UUID(HttpStatus.BAD_REQUEST, "UE4001", "UUID 생성에 실패하였습니다."),
