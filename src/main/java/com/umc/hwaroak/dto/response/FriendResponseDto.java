@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 public class FriendResponseDto {
 
     /**
@@ -14,44 +16,17 @@ public class FriendResponseDto {
     @Builder
     @AllArgsConstructor
     public static class FriendInfo {
-
-        @Schema(description = "친구의 UserId", example = "#@#12")
+        @Schema(description = "친구의 userId", example = "friend_123")
         private String userId;
 
-        @Schema(description = "친구 닉네임", example = "햇살가득이")
+        @Schema(description = "친구 닉네임", example = "화록이2")
         private String nickname;
 
-        @Schema(description = "친구 한줄소개", example = "오늘도 잘 부탁해요~")
-        private String introduction;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    public static class ReceivedRequestInfo {
-
-        @Schema(description = "받은 친구 요청의 UserId", example = "#@#12")
-        private String userId;
-
-        @Schema(description = "요청 보낸 사용자 닉네임", example = "감자소년")
-        private String nickname;
-
-        @Schema(description = "요청 보낸 사용자의 자기소개", example = "함께 친구해요 :)")
-        private String introduction;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    public static class SearchResultDto {
-
-        @Schema(description = "찾은 유저의 UserId", example = "#!2231!")
-        private String userId;     // 유저 ID (공개용)
-        @Schema(description = "찾은 유저의 NickName", example = "나는야 화록이")
-        private String nickname;
-        @Schema(description = "찾은 유저의 자기소개", example = "안녕하세요~")
+        @Schema(description = "친구 소개글", example = "안녕하세요! 화록 좋아요")
         private String introduction;
 
+        @Schema(description = "프로필 이미지 URL (없으면 null 또는 기본이미지 사용)", example = "https://.../profile.jpg")
+        private String profileImage;
     }
 
     @Getter
@@ -72,6 +47,17 @@ public class FriendResponseDto {
 
         @Schema(description = "친구가 선택한 MemberItem의 PK", example = "5")
         private Long selectedItemId;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class FriendItemsInfo {
+        @Schema(description = "친구의 아이템 PK 리스트", example = "[1, 2, 3, 5]")
+        private List<Long> items;
+
+        @Schema(description = "친구가 선택한 아이템의 PK", example = "3")
+        private Long selectedItem;
     }
 
 }
