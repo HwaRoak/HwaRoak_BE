@@ -1,6 +1,7 @@
 package com.umc.hwaroak.serviceImpl;
 
 import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.event.FireSendEvent;
 import com.umc.hwaroak.event.FriendRequestEvent;
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
@@ -63,28 +64,24 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void requestFriend(String receiverUserId) {
-        // [1] 현재 로그인된 유저
         Member sender = memberLoader.getMemberByContextHolder();
-
-        // [2] 수신자 조회
         Member receiver = memberRepository.findByUserId(receiverUserId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // [3] 자기 자신에게 요청 금지
         if (sender.getId().equals(receiver.getId())) {
             throw new GeneralException(ErrorCode.CANNOT_ADD_SELF);
         }
 
-        // [4] 기존 관계 조회 (양방향)
         Optional<Friend> directOpt = friendRepository.findBySenderAndReceiver(sender, receiver);
         Optional<Friend> reverseOpt = friendRepository.findBySenderAndReceiver(receiver, sender);
 
-        // [4-1] 내가 보낸 기록이 있는 경우
+        // 내가 예전에 보낸 적 있음
         if (directOpt.isPresent()) {
             Friend f = directOpt.get();
             switch (f.getStatus()) {
-                case BLOCKED, REJECTED -> {
+                case BLOCKED, REJECTED  -> {
                     f.updateStatus(FriendStatus.REQUESTED); // 재요청 허용
+                    eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
                     return;
                 }
                 case REQUESTED -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_REQUESTED);
@@ -92,7 +89,7 @@ public class FriendServiceImpl implements FriendService {
             }
         }
 
-        // [4-2] 상대가 과거에 나에게 보낸 기록이 있는 경우
+        // 상대가 과거에 나에게 보낸 기록 있음
         if (reverseOpt.isPresent()) {
             Friend f = reverseOpt.get();
             switch (f.getStatus()) {
@@ -101,6 +98,7 @@ public class FriendServiceImpl implements FriendService {
                     f.setSender(sender);
                     f.setReceiver(receiver);
                     f.updateStatus(FriendStatus.REQUESTED);
+                    eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
                     return;
                 }
                 case REQUESTED -> throw new GeneralException(ErrorCode.FRIEND_ALREADY_REQUESTED);
@@ -108,11 +106,12 @@ public class FriendServiceImpl implements FriendService {
             }
         }
 
-        // [5] 신규 요청 생성 + 알림
+        // 신규 생성
         Friend friend = new Friend(sender, receiver, FriendStatus.REQUESTED);
         friendRepository.save(friend);
         eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
     }
+
 
 
 
@@ -270,7 +269,7 @@ public class FriendServiceImpl implements FriendService {
             }
         }
 
-        eventPublisher.publishEvent(new FriendRequestEvent(this, sender, receiver));
+        eventPublisher.publishEvent(new FireSendEvent(this, sender, receiver));
 
         return FireAlarmResponseDto.builder()
                 .notifiedAt(now().toString())
