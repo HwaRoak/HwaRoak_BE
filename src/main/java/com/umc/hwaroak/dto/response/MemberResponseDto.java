@@ -54,7 +54,7 @@ public class MemberResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "프로필 이미지 업로드용 Presigned Url 응답 DTO")
-    public static class PresignedUrlDto {
+    public static class PresignedUrlResponseDto {
         @Schema(description = "S3에 직접 PUT할 Presigned Url", example = "https://your-bucket.s3.amazonaws.com/profiles/1/uuid.jpg?X-Amz...")
         private String uploadUrl;
 
@@ -77,7 +77,7 @@ public class MemberResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "프로필 이미지 업로드 확정 응답 DTO")
-    public static class ProfileImageConfirmDto {
+    public static class ProfileImageConfirmResponseDto {
 
         @Schema(description = "최종 표시용 이미지 URL", example = "https://cdn.example.com/profiles/1/550e840...jpg")
         private String profileImageUrl;

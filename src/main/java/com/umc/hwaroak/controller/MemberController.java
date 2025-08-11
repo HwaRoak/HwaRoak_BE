@@ -56,10 +56,10 @@ public class MemberController {
     @ApiResponse(
             responseCode = "200",
             description = "업로드 URL 발급 성공",
-            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmDto.class))
+            content = @Content(schema = @Schema(implementation = MemberResponseDto.PresignedUrlResponseDto.class))
     )
-    public MemberResponseDto.PresignedUrlDto createdPresignedUrl(
-            @RequestBody MemberResponseDto.PresignedUrlDto request
+    public MemberResponseDto.PresignedUrlResponseDto createdPresignedUrl(
+            @RequestBody MemberResponseDto.PresignedUrlResponseDto request
     ) {
         return memberService.createPresignedUrl(request);
     }
@@ -73,10 +73,10 @@ public class MemberController {
     @ApiResponse(
             responseCode = "200",
             description = "프로필 이미지 설정 완료",
-            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmDto.class))
+            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmResponseDto.class))
     )
-    public MemberResponseDto.ProfileImageConfirmDto confirmProfileImage(
-            @RequestBody MemberResponseDto.ProfileImageConfirmDto request
+    public MemberResponseDto.ProfileImageConfirmResponseDto confirmProfileImage(
+            @RequestBody MemberResponseDto.ProfileImageConfirmResponseDto request
     ) {
         return memberService.confirmProfileImage(request);
     }
@@ -89,9 +89,9 @@ public class MemberController {
     @ApiResponse(
             responseCode = "200",
             description = "삭제 완료",
-            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmDto.class))
+            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmResponseDto.class))
     )
-    public MemberResponseDto.ProfileImageConfirmDto deleteProfileImage() {
+    public MemberResponseDto.ProfileImageConfirmResponseDto deleteProfileImage() {
         // ProfileImageUrl = null 반환
         return memberService.deleteProfileImage();
     }
