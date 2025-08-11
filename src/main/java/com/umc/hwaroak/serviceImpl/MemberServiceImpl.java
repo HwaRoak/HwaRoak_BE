@@ -10,7 +10,6 @@ import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
-import com.umc.hwaroak.util.ImageFormatter;
 import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.service.ItemService;
 import com.umc.hwaroak.service.MemberService;
@@ -19,11 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import com.umc.hwaroak.service.S3Service;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.YearMonth;
@@ -58,7 +54,7 @@ public class MemberServiceImpl implements MemberService {
     @Value("${app.s3.presign-ttl-seconds:300}")
     private int presignTtlSeconds;
 
-    @Value("${app.s3.allowed-content-types}")
+    @Value("#{'${app.s3.allowed-content-types:image/jpeg,image/png,image/webp}'.split(',')}")
     private List<String> allowedContentTypes;
 
     @Override
