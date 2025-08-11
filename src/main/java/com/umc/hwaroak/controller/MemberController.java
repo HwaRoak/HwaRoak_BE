@@ -47,28 +47,52 @@ public class MemberController {
     }
 
 
-    @PostMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // 프로필 이미지(Presigned Url 발급)
+    @PostMapping(value = "/profile-image/upload-url", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            summary = "프로필 이미지 업로드",
-            description = "사용자의 프로필 이미지를 업로드하고 URL을 반환합니다."
+            summary = "프로필 이미지 업로드용 Presigned Url 발급",
+            description = "프론트가 S3에 직접 업로드할 PUT presigned URL을 발급합니다. 이미지 타입만 허용합니다."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "업로드된 이미지 URL 반환",
-            content = @Content(schema = @Schema(implementation = String.class))
+            description = "업로드 URL 발급 성공",
+            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmDto.class))
     )
-    public MemberResponseDto.ProfileImageDto uploadProfileImage(
-            @Parameter(description = "업로드할 이미지 파일", required = true)
-            @RequestPart("image") MultipartFile image
+    public MemberResponseDto.PresignedUrlDto createdPresignedUrl(
+            @RequestBody MemberResponseDto.PresignedUrlDto request
     ) {
-        return memberService.uploadProfileImage(image);
+        return memberService.createPresignedUrl(request);
     }
 
+    // 프로필 이미지 확정
+    @PostMapping(value = "/profile-image/confirm", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "프로필 이미지 업로드 확정",
+            description = "S3 업로드 성공 후 objectKey를 전달하면 기존 이미지를 삭제하고 DB에 반영합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "프로필 이미지 설정 완료",
+            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmDto.class))
+    )
+    public MemberResponseDto.ProfileImageConfirmDto confirmProfileImage(
+            @RequestBody MemberResponseDto.ProfileImageConfirmDto request
+    ) {
+        return memberService.confirmProfileImage(request);
+    }
 
-    @PatchMapping("/profile-image")
-    @Operation(summary = "프로필 이미지 삭제", description = "사용자의 프로필 이미지를 삭제하고 기본 이미지로 변경합니다.")
-    @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageDto.class)))
-    public MemberResponseDto.ProfileImageDto deleteProfileImage() {
+    // 프로필 이미지 삭제
+    @DeleteMapping("/profile-image")
+    @Operation(
+            summary = "프로필 이미지 삭제",
+            description = "사용자의 프로필 이미지를 삭제하고 기본 이미지로 변경합니다.")
+    @ApiResponse(
+            responseCode = "200",
+            description = "삭제 완료",
+            content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmDto.class))
+    )
+    public MemberResponseDto.ProfileImageConfirmDto deleteProfileImage() {
+        // ProfileImageUrl = null 반환
         return memberService.deleteProfileImage();
     }
 
@@ -83,6 +107,7 @@ public class MemberController {
         return memberService.getMyPagePreview();
     }
 
+    // 감정 분석
     @GetMapping("emotions/{summaryMonth}")
     @Operation(summary = "감정분석 상세 조회", description = "특정 달의 감정분석을 조회합니다.")
     @ApiResponse(content = @Content(schema = @Schema(implementation = MemberResponseDto.DetailDto.class)))

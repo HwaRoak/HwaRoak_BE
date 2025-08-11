@@ -48,13 +48,38 @@ public class MemberResponseDto {
         private double percent;
     }
 
+    // 프로필 사진 업로드 dto( url발급, 확정 )
     @Builder
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "프로필 이미지 업로드 응답 DTO")
-    public static class ProfileImageDto {
-        @Schema(description = "업로드된 프로필 이미지 URL", example = "https://your-bucket.s3.amazonaws.com/user123/profile/filename.jpg")
+    @Schema(description = "프로필 이미지 업로드용 Presigned Url 응답 DTO")
+    public static class PresignedUrlDto {
+        @Schema(description = "S3에 직접 PUT할 Presigned Url", example = "https://your-bucket.s3.amazonaws.com/profiles/1/uuid.jpg?X-Amz...")
+        private String uploadUrl;
+
+        @Schema(description = "업로드 대상 S3 오브젝트 키", example = "profiles/1/550e8400...jpg")
+        private String objectKey;
+
+        @Schema(description = "URL 만료까지 남은 초", example = "300")
+        private Integer expiresInSec;
+
+        @Schema(description = "업로드 시 반드시 포함해야 할 헤더들", example = """
+        {
+          "Content-Type": "image/jpeg"
+        }
+        """)
+        private Map<String, String> requiredHeaders;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "프로필 이미지 업로드 확정 응답 DTO")
+    public static class ProfileImageConfirmDto {
+
+        @Schema(description = "최종 표시용 이미지 URL", example = "https://cdn.example.com/profiles/1/550e840...jpg")
         private String profileImageUrl;
     }
 
