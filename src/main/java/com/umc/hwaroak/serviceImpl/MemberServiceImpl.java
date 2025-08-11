@@ -151,21 +151,29 @@ public class MemberServiceImpl implements MemberService {
         String oldUrl = member.getProfileImage();
         String oldKey = extractKeyFromUrl(oldUrl);
 
-        try {
-            s3Service.deleteObjectByKey(oldKey);
-            // 삭제 검증(선택)
-            try {
-                s3Service.headObjectOrThrow(oldKey);
-                log.error("삭제 이후에도 객체가 존재합니다. key={}", oldKey); // 여기 오면 권한/키 문제
-            } catch (GeneralException e) {
-                // OBJECT_NOT_FOUND 면 정상
-                log.info("이전 이미지 삭제 확인 OK. key={}", oldKey);
-            }
-        } catch (Exception e) {
-            log.error("S3 삭제 실패 key={}", oldKey, e);
-            throw e; // 최소 개발 단계에선 실패를 숨기지 말고 터뜨려 원인 확인
+        // URL이 아니라 이미 key를 저장해둔 경우 대비
+        if (oldKey == null && oldUrl != null && !oldUrl.isBlank() && !oldUrl.startsWith("http")) {
+            oldKey = oldUrl;
         }
 
+        if (oldKey != null && !oldKey.isBlank()) {
+            try {
+                s3Service.deleteObjectByKey(oldKey);
+
+                // (선택) 삭제 검증
+                try {
+                    s3Service.headObjectOrThrow(oldKey);
+                    log.error("삭제 이후에도 객체가 존재합니다. key={}", oldKey);
+                } catch (GeneralException e) {
+                    log.info("이전 이미지 삭제 확인 OK. key={}", oldKey);
+                }
+            } catch (Exception e) {
+                log.error("S3 삭제 실패 key={}", oldKey, e);
+                throw e;
+            }
+        } else {
+            log.info("삭제할 이전 이미지 키가 없거나 파싱 실패. oldUrl={}", oldUrl);
+        }
 
         // 새 URL 구성 (S3 퍼블릭 URL)
         String imageUrl = buildS3PublicUrl(objectKey);

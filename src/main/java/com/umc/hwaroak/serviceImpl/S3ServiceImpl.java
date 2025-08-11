@@ -78,15 +78,11 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public void deleteObjectByKey(String objectKey) {
-        try {
+            if (objectKey == null || objectKey.isBlank()) {
+                log.warn("deleteObjectByKey called with empty key, skip delete");
+                return; // 혹은 throw new IllegalArgumentException("key is blank");
+            }
             amazonS3.deleteObject(bucket, objectKey);
-        } catch (AmazonS3Exception e) {
-            log.error("S3 삭제 실패. key={}, status={}, error={}", objectKey, e.getStatusCode(), e.getErrorMessage(), e);
-            throw new GeneralException(ErrorCode.FILE_DELETE_FAILED);
-        } catch (SdkClientException e) {
-            log.error("S3 삭제 클라이언트 예외. key={}", objectKey, e);
-            throw new GeneralException(ErrorCode.FILE_DELETE_FAILED);
-        }
     }
 
     /** S3 퍼블릭 URL 생성 (버킷 정책에서 profiles/* GET 허용 시 바로 접근 가능) */
