@@ -91,6 +91,7 @@ public class MemberServiceImpl implements MemberService {
         return MemberConverter.toDto(member);
     }
 
+    // Presigned Url 발급
     @Override
     @Transactional
     public MemberResponseDto.PresignedUrlResponseDto createPresignedUrl(MemberRequestDto.PresignedUrlRequestDto request){
@@ -100,6 +101,7 @@ public class MemberServiceImpl implements MemberService {
                 .map(String::toLowerCase)
                 .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_FILE_TYPE));
 
+        // 이미지 파일인지 확인
         if (!isAllowedImageContentType(contentType)) {
             throw new GeneralException(ErrorCode.INVALID_FILE_TYPE);
         }
@@ -111,8 +113,10 @@ public class MemberServiceImpl implements MemberService {
             default -> throw new GeneralException(ErrorCode.INVALID_FILE_TYPE);
         };
 
+        // 키 생성 (profiles/{memeber_id}/{uuid}.{ext} 형태
         String objectKey = keyPrefix + "/" + member.getId() + "/" + UUID.randomUUID() + "." + ext;
 
+        // URL 발급
         URL uploadUrl = s3Service.createPutPresignedUrl(objectKey, contentType, Duration.ofSeconds(presignTtlSeconds));
 
         Map<String, String> requiredHeaders = Map.of("Content-Type", contentType);
@@ -125,6 +129,7 @@ public class MemberServiceImpl implements MemberService {
                 .build();
     }
 
+    // S3 업로드 확정
     @Override
     @Transactional
     public MemberResponseDto.ProfileImageConfirmResponseDto confirmProfileImage(MemberRequestDto.ProfileImageConfirmRequestDto request){
@@ -145,13 +150,22 @@ public class MemberServiceImpl implements MemberService {
         // 기존 이미지 삭제 (URL에서 key 파싱)
         String oldUrl = member.getProfileImage();
         String oldKey = extractKeyFromUrl(oldUrl);
-        if (oldKey != null && !oldKey.equals(objectKey)) {
+
+        try {
+            s3Service.deleteObjectByKey(oldKey);
+            // 삭제 검증(선택)
             try {
-                s3Service.deleteObjectByKey(oldKey);
-            } catch (Exception e) {
-                log.warn("이전 프로필 이미지 삭제 실패. key={}", oldKey, e);
+                s3Service.headObjectOrThrow(oldKey);
+                log.error("삭제 이후에도 객체가 존재합니다. key={}", oldKey); // 여기 오면 권한/키 문제
+            } catch (GeneralException e) {
+                // OBJECT_NOT_FOUND 면 정상
+                log.info("이전 이미지 삭제 확인 OK. key={}", oldKey);
             }
+        } catch (Exception e) {
+            log.error("S3 삭제 실패 key={}", oldKey, e);
+            throw e; // 최소 개발 단계에선 실패를 숨기지 말고 터뜨려 원인 확인
         }
+
 
         // 새 URL 구성 (S3 퍼블릭 URL)
         String imageUrl = buildS3PublicUrl(objectKey);
