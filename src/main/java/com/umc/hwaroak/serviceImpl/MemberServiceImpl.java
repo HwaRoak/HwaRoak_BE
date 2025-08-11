@@ -8,7 +8,6 @@ import com.umc.hwaroak.dto.response.MemberResponseDto;
 import com.umc.hwaroak.dto.request.MemberRequestDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.DiaryRepository;
-import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.util.ImageFormatter;
@@ -17,6 +16,7 @@ import com.umc.hwaroak.service.ItemService;
 import com.umc.hwaroak.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,9 +24,13 @@ import com.umc.hwaroak.service.S3Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.time.Duration;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +45,21 @@ public class MemberServiceImpl implements MemberService {
     private final EmotionSummaryService emotionSummaryService;
     private final ItemService itemService;
     private final DiaryRepository diaryRepository;
+
+    @Value("${app.s3.region}")
+    private String s3Region;
+
+    @Value("${app.s3.bucket}")
+    private String s3Bucket;
+
+    @Value("${app.s3.key-prefix:profiles}")
+    private String keyPrefix;
+
+    @Value("${app.s3.presign-ttl-seconds:300}")
+    private int presignTtlSeconds;
+
+    @Value("${app.s3.allowed-content-types}")
+    private List<String> allowedContentTypes;
 
     @Override
     public MemberResponseDto.InfoDto getInfo() {
@@ -78,54 +97,101 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public MemberResponseDto.ProfileImageDto uploadProfileImage(MultipartFile file) {
+    public MemberResponseDto.PresignedUrlResponseDto createPresignedUrl(MemberRequestDto.PresignedUrlRequestDto request){
         Member member = memberLoader.getMemberByContextHolder();
-        String directory = "profiles/" + member.getId();
 
-        // 이미지 파일 여부 검사
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
+        String contentType = Optional.ofNullable(request.getContentType())
+                .map(String::toLowerCase)
+                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_FILE_TYPE));
+
+        if (!isAllowedImageContentType(contentType)) {
             throw new GeneralException(ErrorCode.INVALID_FILE_TYPE);
         }
 
-        // 기존 이미지 삭제
-        if (member.getProfileImage() != null) {
-            s3Service.deleteFile(member.getProfileImage());
-        }
+        String ext = switch (contentType) {
+            case "image/jpeg" -> "jpg";
+            case "image/png"  -> "png";
+            case "image/webp" -> "webp";
+            default -> throw new GeneralException(ErrorCode.INVALID_FILE_TYPE);
+        };
 
-        try {
-            // 포맷팅 (리사이즈 + JPEG 변환)
-            ByteArrayInputStream formattedImage = ImageFormatter.convertToWebP(
-                    file.getInputStream(), 300, 300
-            );
+        String objectKey = keyPrefix + "/" + member.getId() + "/" + UUID.randomUUID() + "." + ext;
 
-            String uploadedUrl = s3Service.uploadProfileImage(formattedImage, directory);
-            member.setProfileImage(uploadedUrl);
-            memberRepository.save(member);
+        URL uploadUrl = s3Service.createPutPresignedUrl(objectKey, contentType, Duration.ofSeconds(presignTtlSeconds));
 
-            return MemberResponseDto.ProfileImageDto.builder()
-                    .profileImageUrl(uploadedUrl)
-                    .build();
-        } catch (IOException e) {
-            log.error("프로필 이미지 업로드 중 예외 발생", e);
-            throw new GeneralException(ErrorCode.FILE_UPLOAD_FAILED);
-        }
+        Map<String, String> requiredHeaders = Map.of("Content-Type", contentType);
+
+        return MemberResponseDto.PresignedUrlResponseDto.builder()
+                .uploadUrl(uploadUrl.toString())
+                .objectKey(objectKey)
+                .expiresInSec(presignTtlSeconds)
+                .requiredHeaders(requiredHeaders)
+                .build();
     }
-
-
 
     @Override
     @Transactional
-    public MemberResponseDto.ProfileImageDto deleteProfileImage() {
+    public MemberResponseDto.ProfileImageConfirmResponseDto confirmProfileImage(MemberRequestDto.ProfileImageConfirmRequestDto request){
         Member member = memberLoader.getMemberByContextHolder();
 
-        if (member.getProfileImage() != null ) {
-            s3Service.deleteFile(member.getProfileImage());
+        String objectKey = Optional.ofNullable(request.getObjectKey())
+                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_REQUEST));
+
+        // 내 소유 prefix인지 확인
+        String expectedPrefix = keyPrefix + "/" + member.getId() + "/";
+        if (!objectKey.startsWith(expectedPrefix)) {
+            throw new GeneralException(ErrorCode.FILE_UPLOAD_FAILED);
         }
+
+        // 실제 업로드 존재 확인
+        s3Service.headObjectOrThrow(objectKey);
+
+        // 기존 이미지 삭제 (URL에서 key 파싱)
+        String oldUrl = member.getProfileImage();
+        String oldKey = extractKeyFromUrl(oldUrl);
+        if (oldKey != null && !oldKey.equals(objectKey)) {
+            try {
+                s3Service.deleteObjectByKey(oldKey);
+            } catch (Exception e) {
+                log.warn("이전 프로필 이미지 삭제 실패. key={}", oldKey, e);
+            }
+        }
+
+        // 새 URL 구성 (S3 퍼블릭 URL)
+        String imageUrl = buildS3PublicUrl(objectKey);
+
+        // DB 반영
+        member.setProfileImage(imageUrl);
+        memberRepository.save(member);
+
+        return MemberResponseDto.ProfileImageConfirmResponseDto.builder()
+                .profileImageUrl(imageUrl)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public MemberResponseDto.ProfileImageConfirmResponseDto deleteProfileImage() {
+        Member member = memberLoader.getMemberByContextHolder();
+
+        String url = member.getProfileImage();
+
+        String key = extractKeyFromUrl(url);
+        if (key != null) {
+            try {
+                s3Service.deleteObjectByKey(key);
+            } catch (Exception e) {
+                log.error("프로필 이미지 삭제 실패. key={}", key, e);
+                throw new GeneralException(ErrorCode.FILE_DELETE_FAILED);
+            }
+        } else {
+            log.warn("프로필 URL 형식이 예상과 다름. url={}", url);
+        }
+
         member.setProfileImage(null);
         memberRepository.save(member);
 
-        return MemberResponseDto.ProfileImageDto.builder()
+        return MemberResponseDto.ProfileImageConfirmResponseDto.builder()
                 .profileImageUrl(null)
                 .build();
     }
@@ -166,5 +232,22 @@ public class MemberServiceImpl implements MemberService {
                 .reward(reward)
                 .nextItemName(nextItemName)
                 .build();
+    }
+
+    //// 프로필 사진 관련 부가 함수
+    private boolean isAllowedImageContentType(String ct) {
+        if (ct == null || allowedContentTypes == null || allowedContentTypes.isEmpty()) return false;
+        return allowedContentTypes.stream().anyMatch(allowed -> allowed.equalsIgnoreCase(ct));
+    }
+
+    private String buildS3PublicUrl(String objectKey) {
+        return "https://" + s3Bucket + ".s3." + s3Region + ".amazonaws.com/" + objectKey;
+    }
+
+    private String extractKeyFromUrl(String url) {
+        if (url == null || url.isBlank()) return null;
+        String host = "https://" + s3Bucket + ".s3." + s3Region + ".amazonaws.com/";
+        if (!url.startsWith(host)) return null; // 형식 달라지면 안전하게 중단
+        return url.substring(host.length());
     }
 }

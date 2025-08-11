@@ -59,7 +59,7 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = MemberResponseDto.PresignedUrlResponseDto.class))
     )
     public MemberResponseDto.PresignedUrlResponseDto createdPresignedUrl(
-            @RequestBody MemberResponseDto.PresignedUrlResponseDto request
+            @RequestBody MemberRequestDto.PresignedUrlRequestDto request
     ) {
         return memberService.createPresignedUrl(request);
     }
@@ -76,7 +76,7 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = MemberResponseDto.ProfileImageConfirmResponseDto.class))
     )
     public MemberResponseDto.ProfileImageConfirmResponseDto confirmProfileImage(
-            @RequestBody MemberResponseDto.ProfileImageConfirmResponseDto request
+            @RequestBody MemberRequestDto.ProfileImageConfirmRequestDto request
     ) {
         return memberService.confirmProfileImage(request);
     }

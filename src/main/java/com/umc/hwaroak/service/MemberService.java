@@ -10,9 +10,9 @@ public interface MemberService {
 
     MemberResponseDto.InfoDto editInfo(MemberRequestDto.editDto requestDto);
 
-    MemberResponseDto.PresignedUrlResponseDto createPresignedUrl();
+    MemberResponseDto.PresignedUrlResponseDto createPresignedUrl(MemberRequestDto.PresignedUrlRequestDto request);
 
-    MemberResponseDto.ProfileImageConfirmResponseDto confirmProfileImage();
+    MemberResponseDto.ProfileImageConfirmResponseDto confirmProfileImage(MemberRequestDto.ProfileImageConfirmRequestDto request);
 
     MemberResponseDto.ProfileImageConfirmResponseDto deleteProfileImage();
 
