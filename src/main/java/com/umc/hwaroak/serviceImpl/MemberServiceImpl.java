@@ -256,8 +256,31 @@ public class MemberServiceImpl implements MemberService {
 
     private String extractKeyFromUrl(String url) {
         if (url == null || url.isBlank()) return null;
-        String host = "https://" + s3Bucket + ".s3." + s3Region + ".amazonaws.com/";
-        if (!url.startsWith(host)) return null; // 형식 달라지면 안전하게 중단
-        return url.substring(host.length());
+        try {
+            // 0) 쿼리 제거
+            int q = url.indexOf('?');
+            if (q > -1) url = url.substring(0, q);
+
+            // 1) https://{bucket}.s3.{region}.amazonaws.com/{key}
+            String host1 = "https://" + s3Bucket + ".s3." + s3Region + ".amazonaws.com/";
+            if (url.startsWith(host1)) return url.substring(host1.length());
+
+            // 2) https://{bucket}.s3.amazonaws.com/{key}
+            String host2 = "https://" + s3Bucket + ".s3.amazonaws.com/";
+            if (url.startsWith(host2)) return url.substring(host2.length());
+
+            // 3) https://s3.{region}.amazonaws.com/{bucket}/{key}
+            String host3 = "https://s3." + s3Region + ".amazonaws.com/";
+            if (url.startsWith(host3)) {
+                String rest = url.substring(host3.length()); // {bucket}/{key}
+                if (rest.startsWith(s3Bucket + "/")) {
+                    return rest.substring((s3Bucket + "/").length());
+                }
+            }
+        } catch (Exception e) {
+            log.warn("extractKeyFromUrl failed: url={}", url, e);
+        }
+        return null;
     }
+
 }
