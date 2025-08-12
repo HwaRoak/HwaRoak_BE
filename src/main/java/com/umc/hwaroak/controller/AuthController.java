@@ -5,7 +5,7 @@ import com.umc.hwaroak.dto.request.KakaoLoginRequestDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.response.ApiResponse;
 import com.umc.hwaroak.response.SuccessCode;
-import com.umc.hwaroak.serviceImpl.KakaoAuthServiceImpl;
+import com.umc.hwaroak.service.KakaoAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final KakaoAuthServiceImpl kakaoAuthService;
+    private final KakaoAuthService kakaoAuthService;
 
     @PostMapping("/kakao")
     public ResponseEntity<ApiResponse<KakaoLoginResponseDto>> kakaoLogin(@RequestBody KakaoLoginRequestDto request) {
