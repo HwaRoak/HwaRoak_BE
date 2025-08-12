@@ -1,4 +1,4 @@
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.umc.hwaroak.event.ItemUpdateEvent;
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
@@ -163,17 +163,18 @@ public class DiaryServiceImpl implements DiaryService {
                 .orElseThrow(() -> new GeneralException(ErrorCode.DIARY_NOT_FOUND));
 
         long diaryCnt = diaryRepository.countByMemberId(member.getId());
-        // member Reward 갱신
+        // member Reward 수정
         int reward = member.getReward();
-        if (reward == 7 && diaryCnt == 1) {
 
-        } else if (reward == 7) {
+        if (reward == 7) {
             // 이전의 아이템 상태로 돌아가기
             eventPublisher.publishEvent(new ItemRollbackEvent(this, member.getId()));
             member.setReward(1);
-        } else {
+        }
+        else {
             member.setReward(reward + 1);
         }
+
         memberRepository.save(member); // 변경사항 저장
         diaryRepository.delete(diary);
         emotionSummaryService.updateMonthlyEmotionSummary(diary.getRecordDate());  // 감정 통계 업데이트

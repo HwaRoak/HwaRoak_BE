@@ -1,4 +1,4 @@
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;

@@ -3,7 +3,7 @@
 //// 처음이면 회원가입 후 로그인 처리
 //// JWT 토큰과 유저 정보를 응답으로 반환
 
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.umc.hwaroak.domain.Item;
 import com.umc.hwaroak.domain.Member;
