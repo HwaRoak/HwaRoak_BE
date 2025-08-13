@@ -32,5 +32,15 @@ cloud:
 
 jwt:
   secret : ${JWT_SECRET}
-  access-token-validity : 2592000000           # 1시간
+  access-token-validity : 2592000000           # 30일
   refresh-token-validity : 2592000000       # 30일
+
+
+app:
+  s3:
+    region: ap-northeast-2
+    bucket: hwaroak-user-profile-bucket
+    key-prefix: profiles             # 프로필 이미지 경로 prefix
+    presign-ttl-seconds: 600         # Presigned URL 유효 시간 (초)
+    allowed-content-types: image/jpeg,image/png,image/webp
+

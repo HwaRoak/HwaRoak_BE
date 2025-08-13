@@ -1,6 +1,5 @@
 package com.umc.hwaroak.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.umc.hwaroak.domain.common.BaseEntity;
 import com.umc.hwaroak.domain.common.Role;
 import jakarta.persistence.*;
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Builder
 @Table(name = "member")
 @Getter
 @Setter
@@ -38,6 +38,8 @@ public class Member extends BaseEntity {
     private String feeling;
 
     // 프로필 이미지 추가
+    @Getter
+    @Setter
     @Column(name = "profile_image")
     private String profileImage;
 

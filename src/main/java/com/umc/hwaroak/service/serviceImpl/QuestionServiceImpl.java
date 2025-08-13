@@ -1,4 +1,4 @@
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -93,24 +94,44 @@ public class QuestionServiceImpl implements QuestionService {
         Optional<Diary> diaryOpt = diaryRepository.findByMemberIdAndRecordDate(member.getId(), LocalDate.now());
 
         if (diaryOpt.isEmpty()) {
-            log.warn("오늘 작성된 일기가 존재하지 않음 (예상 외)");
+            log.warn("오늘 작성된 일기가 존재하지 않음");
             return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?", "NONE");
         }
 
         List<Emotion> emotionList = diaryOpt.get().getEmotionList();
-        log.info("감정 리스트 추출 - size: {}", emotionList.size());
-
         if (emotionList == null || emotionList.isEmpty()) {
             log.warn("감정 리스트가 비어 있음 → 기본 멘트 반환");
             return QuestionResponseDto.of("당신의 하루가 궁금해요.", "NONE");
         }
 
-        Emotion selectedEmotion = emotionList.get(random.nextInt(emotionList.size()));
-        String tag = "EMOTION_" + selectedEmotion.name();
-        log.info("랜덤 감정 선택 완료 - emotion: {} → tag: {}", selectedEmotion.name(), tag);
+        // 긍정 / 부정 감정 세트 정의
+        Set<Emotion> POSITIVE_EMOTIONS = Set.of(
+                Emotion.CALM, Emotion.PROUD, Emotion.THANKFUL,
+                Emotion.HAPPY, Emotion.EXPECTED, Emotion.HEART_FLUTTER, Emotion.EXCITING
+        );
+        Set<Emotion> NEGATIVE_EMOTIONS = Set.of(
+                Emotion.BORED, Emotion.LONELY, Emotion.GLOOMY,
+                Emotion.SADNESS, Emotion.ANGRY, Emotion.ANNOYED, Emotion.STRESSFUL, Emotion.TIRED
+        );
 
+        boolean hasPositive = emotionList.stream().anyMatch(POSITIVE_EMOTIONS::contains);
+        boolean hasNegative = emotionList.stream().anyMatch(NEGATIVE_EMOTIONS::contains);
+
+        String tag;
+        if (hasPositive && hasNegative) {
+            // 혼합 감정 → EMOTION_DEFAULT
+            tag = "EMOTION_DEFAULT";
+            log.info("혼합 감정 감지 → tag: {}", tag);
+            return getRandomQuestionByTag(tag);
+        }
+
+        // 전부 긍정 또는 전부 부정 → 감정 하나 랜덤 선택 후 해당 태그에서 뽑기
+        Emotion selectedEmotion = emotionList.get(random.nextInt(emotionList.size()));
+        tag = "EMOTION_" + selectedEmotion.name();
+        log.info("단일 극성 감정 → selected: {} → tag: {}", selectedEmotion, tag);
         return getRandomQuestionByTag(tag);
     }
+
 
     // =======================
     // 내부 상태 판별 메서드
