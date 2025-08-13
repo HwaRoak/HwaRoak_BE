@@ -72,6 +72,7 @@ public class DiaryServiceImpl implements DiaryService {
             createDiaryTransactional(member, requestDto)
         );
 
+        // 아이템 획득 이벤트 발행
         if (member.getReward() ==7) {
             log.info("새로운 아이템 수령 가능 대상으로 등록...");
             eventPublisher.publishEvent(new ItemUpdateEvent(this, member.getId()));
