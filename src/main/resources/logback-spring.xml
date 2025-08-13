@@ -8,10 +8,9 @@
     <!-- Console Appender STDOUT -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm} %green(%-5level) %logger{36} - %msg %n</pattern>
             <charset>UTF-8</charset>
         </encoder>
-        <!-- 필요하면 INFO 이상으로 제한: ERROR도 포함됨 -->
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
         </filter>
@@ -21,7 +20,7 @@
     <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.err</target>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm} %red(%-5level) %logger{36} - %msg %n</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -29,53 +28,52 @@
         </filter>
     </appender>
 
+    <!-- local 프로필: 콘솔만 참조 -->
+    <springProfile name="local">
+        <root level="${LOGS_LEVEL}">
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="STDERR"/>
+        </root>
+    </springProfile>
 
-    <!-- File Appender -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- 파일 명과 경로 설정 -->
-        <file>${LOGS_PATH}/log_file.log</file>
-        <!-- Rolling 정책 -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOGS_PATH}/%d{yyyy-MM-dd}_%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <!-- FILE 당 최고 용량 -->
-            <maxFileSize>10MB</maxFileSize>
-        </rollingPolicy>
-        <!-- 출력 패턴 설정 -->
-        <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}:%-3relative][%thread] %-5level %logger{36} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>5GB</totalSizeCap>
-        </encoder>
-    </appender>
+    <!-- dev 프로필에서만 파일 Appender들을 정의 + 참조 -->
+    <springProfile name="dev">
+        <!-- File Appender -->
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOGS_PATH}/log_file.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOGS_PATH}/%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+                <maxHistory>30</maxHistory>
+                <maxFileSize>10MB</maxFileSize>
+                <totalSizeCap>5GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+                <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}:%-3relative][%thread] %-5level %logger{36} - %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
 
-    <!-- Error Appender -->
-    <appender name="Error" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- 파일 명과 경로 설정 -->
-        <file>${LOGS_PATH}/error_file.log</file>
-        <!-- Rolling 정책 -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOGS_PATH}/%d{yyyy-MM-dd}_error.log</fileNamePattern>
-            <charset>UTF-8</charset>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <!-- 출력 패턴 설정 -->
-        <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}:%-3relative][%thread] %-5level %logger{36} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <!-- thredshold filter 넣어서 error 이상의 로그만 필터링 -->
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>ERROR</level>
-        </filter>
-    </appender>
+        <!-- Error Appender -->
+        <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- 파일 명과 경로 설정 -->
+            <file>${LOGS_PATH}/error_file.log</file>
+            <!-- Rolling 정책 -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${LOGS_PATH}/%d{yyyy-MM-dd}_error.log</fileNamePattern>
+                <charset>UTF-8</charset>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+            <!-- 출력 패턴 설정 -->
+            <encoder>
+                <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}:%-3relative][%thread] %-5level %logger{36} - %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+            <!-- thredshold filter 넣어서 error 이상의 로그만 필터링 -->
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+        </appender>
 
-    <root level="${LOGS_LEVEL:-INFO}">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="STDERR"/>
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="Error"/>
-    </root>
+    </springProfile>
 
 </configuration>
