@@ -51,6 +51,9 @@ public class GlobalExceptionHandler {
     private void logError(Exception e, HttpServletRequest request) {
         log.error("Request URI : [{}] {}", request.getMethod(), request.getRequestURI());
         log.error("Exception : ", e);
+
+        log.error("Exception Type : {}", e.getClass().getName());
+        log.error("Exception Message : {}", e.getMessage());
     }
 
 }
