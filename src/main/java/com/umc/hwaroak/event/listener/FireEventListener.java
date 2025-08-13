@@ -8,11 +8,9 @@ import com.umc.hwaroak.infrastructure.publisher.RedisPublisher;
 import com.umc.hwaroak.infrastructure.transaction.CustomTransactionSynchronization;
 import com.umc.hwaroak.repository.AlarmRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Component
@@ -25,8 +23,8 @@ public class FireEventListener{
     /**
      *  불씨 보냈을시 알람 생성하기
      */
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
+    @EventListener
     public void sendFireAlarm(FireSendEvent event) {
         String nickname = event.getSender().getNickname();
 
