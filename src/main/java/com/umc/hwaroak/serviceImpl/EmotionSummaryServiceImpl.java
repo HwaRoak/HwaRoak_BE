@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -102,7 +103,24 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
                 .build();
     }
 
+    // 독립적인 트랜잭션에서 감정 분석 삭제 처리
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteSummary(Long memberId, String month) {
+        emotionSummaryRepository.findByMemberIdAndSummaryMonth(memberId, month)
+                .ifPresent(summary -> {
+                    emotionSummaryRepository.delete(summary);
+                    emotionSummaryRepository.flush();
+                });
+    }
+
+    // 감정 분석 삭제에 대한 폴백-전체 0으로 초기화
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void setZeroSummary(Long memberId, String month) {
+        emotionSummaryRepository.setZero(month, memberId);
+    }
+
     @Override
+    @Transactional
     public void updateMonthlyEmotionSummary(LocalDate targetDate) {
 
         Member member = memberLoader.getMemberByContextHolder();
@@ -111,9 +129,22 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         log.info("감정 요약 업데이트 시작 - memberId: {}, month: {}", memberId, summaryMonth);
 
         // 멤버ID와 업데이트 하려는 달의 정보로 해당 월의 모든 일기를 가져옴
-        List<Diary> diaries = diaryRepository.findAllDiariesByYearMonth(memberId, targetDate.getYear(), targetDate.getMonthValue());
+        List<Diary> diaries = diaryRepository.findAllDiariesByYearMonth(memberId, targetDate.getYear(), targetDate.getMonthValue());    // 데이터가 없더라도 빈 리스트 반환
         int diaryCount = diaries.size();    // 전체 일기 개수
         log.info("{}월 일기 개수: {}", targetDate.getMonthValue(), diaryCount);
+
+        // 일기가 없으면 EmotionSummary 삭제 처리
+        if (diaryCount == 0) {
+            try {
+                deleteSummary(memberId, summaryMonth);
+                log.info("감정 요약 삭제 완료 - memberId: {}, month: {}", memberId, summaryMonth);
+            } catch (DataIntegrityViolationException e) {
+                log.warn("감정 요약 삭제 실패 - memberId: {}, month: {}", memberId, summaryMonth, e);
+                setZeroSummary(memberId, summaryMonth);
+                log.info("감정 요약 0 초기화 완료 - memberId: {}, month: {}", memberId, summaryMonth);
+            }
+            return;
+        }
 
         Map<EmotionCategory, Integer> categoryCounts = new EnumMap<>(EmotionCategory.class);
 

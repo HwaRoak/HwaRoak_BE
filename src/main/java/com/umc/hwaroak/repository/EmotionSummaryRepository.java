@@ -21,4 +21,19 @@ public interface EmotionSummaryRepository extends JpaRepository<EmotionSummary,L
     @Transactional
     @Query("DELETE FROM EmotionSummary es WHERE es.summaryMonth <= :date")
     void deleteEmotionSummaryBefore(@Param("date") String date);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("""
+    update EmotionSummary s
+       set s.diaryCount = 0,
+           s.calmCount  = 0,
+           s.happyCount = 0,
+           s.sadCount   = 0,
+           s.angryCount = 0,
+           s.summaryMessage = ''
+     where s.summaryMonth = :month
+       and s.member.id   = :memberId
+""")
+    void setZero(@Param("month") String month, @Param("memberId") Long memberId);
+
 }
