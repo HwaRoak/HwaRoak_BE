@@ -38,6 +38,8 @@ public class Member extends BaseEntity {
     private String feeling;
 
     // 프로필 이미지 추가
+    @Getter
+    @Setter
     @Column(name = "profile_image")
     private String profileImage;
 

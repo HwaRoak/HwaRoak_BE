@@ -14,6 +14,9 @@ public enum ErrorCode implements BaseCode{
     FILE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "ME4002","프로필 파일 이미지가 첨부되지 않았습니다."),
     FILE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "ME4003","프로필 파일 이미지삭제에 실패하였습니다."),
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "ME4004","이미지파일만 업로드 가능합니다."),
+    PRESIGNED_URL_CREATE_FAILED(HttpStatus.BAD_REQUEST,"ME4005", "Presigned Url 생성에 실패하였습니다."),
+    OBJECT_NOT_FOUND(HttpStatus.BAD_REQUEST,"ME4006", "객체를 찾을 수 없습니다."),
+    S3_HEAD_FAILED(HttpStatus.BAD_REQUEST,"ME4007","S3 HEAD를 찾을 수 없습니다."),
 
 
     // Diary
