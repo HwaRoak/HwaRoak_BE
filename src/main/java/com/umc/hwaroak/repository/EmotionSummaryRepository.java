@@ -36,4 +36,8 @@ public interface EmotionSummaryRepository extends JpaRepository<EmotionSummary,L
 """)
     void setZero(@Param("month") String month, @Param("memberId") Long memberId);
 
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("update EmotionSummary es set es.summaryMessage = :message where es.id = :id")
+    void updateMessageById(@Param("id") Long id, @Param("message") String message);
+
 }

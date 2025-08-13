@@ -1,5 +1,6 @@
 package com.umc.hwaroak.serviceImpl;
 
+import com.umc.hwaroak.event.SummaryMessageGenerateEvent;
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.EmotionSummary;
@@ -15,6 +16,7 @@ import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,6 +27,7 @@ import java.time.YearMonth;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
     private final DiaryRepository diaryRepository;
 
     private final OpenAiUtil openAiUtil;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly=true)
@@ -119,6 +123,12 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         emotionSummaryRepository.setZero(month, memberId);
     }
 
+    // 독립 스레드에서 id로 분석 메시지만 수정
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateSummaryMessage(Long summaryId, String message) {
+        emotionSummaryRepository.updateMessageById(summaryId, message);
+    }
+
     @Override
     @Transactional
     public void updateMonthlyEmotionSummary(LocalDate targetDate) {
@@ -147,6 +157,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
             return;
         }
 
+        // 업데이트 시작
         Map<EmotionCategory, Integer> categoryCounts = new EnumMap<>(EmotionCategory.class);
 
         for (Diary diary : diaries) {
@@ -155,11 +166,6 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
             }
         }
         log.debug("감정 카운트 통계: {}", categoryCounts);
-
-        // ai 기반 감정분석 멘트 생성
-        int targetMonth = targetDate.getMonthValue();
-        String gptMessage = openAiUtil.analysisEmotions(targetMonth, categoryCounts, diaries);
-        log.info("gpt 감정분석 메시지: {}", gptMessage);
 
         EmotionSummary summary;
         try {
@@ -180,16 +186,27 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
                     .orElseThrow(() -> new GeneralException(ErrorCode.DUPLICATE_EMOTION_SUMMARY));
         }
 
+        // 분석 메시지 제외 업데이트
         summary.updateCounts(
                 diaryCount,
                 categoryCounts.getOrDefault(EmotionCategory.CALM, 0),
                 categoryCounts.getOrDefault(EmotionCategory.HAPPY, 0),
                 categoryCounts.getOrDefault(EmotionCategory.SAD, 0),
                 categoryCounts.getOrDefault(EmotionCategory.ANGRY, 0),
-                gptMessage
+                ""
         );
-
         emotionSummaryRepository.save(summary);
+        log.info("감정 요약 1차 업데이트 완료(메시지 제외) - memberId: {}, month: {}", memberId, summaryMonth);
+
+        // ai 기반 감정분석 멘트 생성은 비동기로 처리
+        int targetMonth = targetDate.getMonthValue();
+        final Long summaryId = summary.getId();
+        final Map<EmotionCategory, Integer> countsSnapshot = Map.copyOf(categoryCounts);
+        final List<String> diaryContents = diaries.stream().map(Diary::getContent).toList();
+
+        eventPublisher.publishEvent(
+                new SummaryMessageGenerateEvent(summaryId, targetMonth, countsSnapshot, diaryContents)
+        );
 
         log.info("감정 요약 저장 완료 - memberId: {}, month: {}", memberId, summaryMonth);
 

@@ -38,9 +38,24 @@ public class OpenAiUtil {
         return result;
     }
 
+    // analysisEmotions() 오버로딩
+    public String analysisEmotionsFromDiaries(int month,
+                                   Map<EmotionCategory, Integer> emotionCounts,
+                                   List<Diary> diaries) {
+
+        // 일기 내용만 추출
+        List<String> contents = (diaries == null) ? List.of() :
+                diaries.stream()
+                        .map(Diary::getContent)
+                        .filter(c -> c != null && !c.isBlank())
+                        .toList();
+
+        return analysisEmotions(month, emotionCounts, contents);
+    }
+
     // ai 기반 감정분석 멘트 생성
-    public String analysisEmotions(int month, Map<EmotionCategory, Integer> emotionCounts, List<Diary> diaries){
-        if (diaries == null || diaries.isEmpty()) {
+    public String analysisEmotions(int month, Map<EmotionCategory, Integer> emotionCounts, List<String> diaryContents){
+        if (diaryContents == null || diaryContents.isEmpty()) {
             log.warn("일기 데이터가 없습니다. 감정 분석 메시지를 생성하지 않습니다.");
             return "작성된 일기가 없어 감정 분석을 할 수 없습니다.";
         }
@@ -68,20 +83,14 @@ public class OpenAiUtil {
             """;
 
         // 감정 통계 문자열 변환
-        StringBuilder emotionSB = new StringBuilder();
-        for (Map.Entry<EmotionCategory, Integer> entry : emotionCounts.entrySet()) {
-            emotionSB.append(entry.getKey().name()).append("=").append(entry.getValue()).append("개, ");
-        }
-        String emotionCountsStr = emotionSB.substring(0, emotionSB.length() - 2);
+        String emotionCountsStr = emotionCounts.entrySet().stream()
+                .map(e -> e.getKey().name() + "=" + e.getValue() + "개")
+                .collect(java.util.stream.Collectors.joining(", "));
 
         // 일기 내용 추출
-        StringBuilder diaryContentSB = new StringBuilder();
-        for (Diary diary : diaries) {
-            if (diary.getContent() != null && !diary.getContent().isBlank()) {
-                diaryContentSB.append("- ").append(diary.getContent()).append("\n");
-            }
-        }
-        String diaryContentsStr = diaryContentSB.toString();
+        String diaryContentsStr = diaryContents.stream()
+                .map(s -> "- " + s)
+                .collect(java.util.stream.Collectors.joining("\n"));
 
         // 입력 메시지 구성
         String inputMessage = String.format("""
