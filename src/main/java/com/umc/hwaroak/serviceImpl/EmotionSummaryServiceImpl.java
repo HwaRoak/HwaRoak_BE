@@ -129,9 +129,10 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         log.info("감정 요약 업데이트 시작 - memberId: {}, month: {}", memberId, summaryMonth);
 
         // 멤버ID와 업데이트 하려는 달의 정보로 해당 월의 모든 일기를 가져옴
+        log.debug("diaryRepository 호출 시작, 일기 조회 시작 - memberId: {}, year: {}, month: {}", memberId, targetDate.getYear(), targetDate.getMonthValue());
         List<Diary> diaries = diaryRepository.findAllDiariesByYearMonth(memberId, targetDate.getYear(), targetDate.getMonthValue());    // 데이터가 없더라도 빈 리스트 반환
         int diaryCount = diaries.size();    // 전체 일기 개수
-        log.info("{}월 일기 개수: {}", targetDate.getMonthValue(), diaryCount);
+        log.info("diaryRepository 호출 종료, {}월 일기 개수: {}", targetDate.getMonthValue(), diaryCount);
 
         // 일기가 없으면 EmotionSummary 삭제 처리
         if (diaryCount == 0) {
