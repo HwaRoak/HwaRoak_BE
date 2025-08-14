@@ -1,14 +1,12 @@
-package com.umc.hwaroak.listener;
+package com.umc.hwaroak.event.listener;
 
 import com.umc.hwaroak.converter.AlarmConverter;
 import com.umc.hwaroak.domain.Alarm;
-import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.common.AlarmType;
 import com.umc.hwaroak.event.FriendRequestEvent;
 import com.umc.hwaroak.infrastructure.publisher.RedisPublisher;
 import com.umc.hwaroak.infrastructure.transaction.CustomTransactionSynchronization;
 import com.umc.hwaroak.repository.AlarmRepository;
-import com.umc.hwaroak.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -25,8 +23,8 @@ public class FriendEventListener {
     /**
      *  친구 요청시 알람 생성하기
      */
-    @EventListener
     @Transactional
+    @EventListener
     public void sendFriendRequestAlarm(FriendRequestEvent event) {
 
         Alarm alarm = Alarm.builder()

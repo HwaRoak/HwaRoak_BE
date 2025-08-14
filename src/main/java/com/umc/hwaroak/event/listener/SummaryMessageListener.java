@@ -1,4 +1,4 @@
-package com.umc.hwaroak.listener;
+package com.umc.hwaroak.event.listener;
 
 import com.umc.hwaroak.event.SummaryMessageGenerateEvent;
 import com.umc.hwaroak.repository.EmotionSummaryRepository;

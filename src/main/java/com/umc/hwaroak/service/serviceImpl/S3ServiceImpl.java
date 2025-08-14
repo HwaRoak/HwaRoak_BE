@@ -1,4 +1,4 @@
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;

@@ -1,4 +1,4 @@
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.event.FireSendEvent;
@@ -7,7 +7,6 @@ import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
 import com.umc.hwaroak.domain.Friend;
 import com.umc.hwaroak.domain.Member;
-import com.umc.hwaroak.domain.MemberItem;
 import com.umc.hwaroak.domain.common.Emotion;
 import com.umc.hwaroak.domain.common.FriendStatus;
 import com.umc.hwaroak.dto.response.FireAlarmResponseDto;

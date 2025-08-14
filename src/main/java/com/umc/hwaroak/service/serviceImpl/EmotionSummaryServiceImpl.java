@@ -1,4 +1,4 @@
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.umc.hwaroak.event.SummaryMessageGenerateEvent;
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;

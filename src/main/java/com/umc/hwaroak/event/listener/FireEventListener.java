@@ -1,4 +1,4 @@
-package com.umc.hwaroak.listener;
+package com.umc.hwaroak.event.listener;
 
 import com.umc.hwaroak.converter.AlarmConverter;
 import com.umc.hwaroak.domain.Alarm;
@@ -23,8 +23,8 @@ public class FireEventListener{
     /**
      *  불씨 보냈을시 알람 생성하기
      */
-    @EventListener
     @Transactional
+    @EventListener
     public void sendFireAlarm(FireSendEvent event) {
         String nickname = event.getSender().getNickname();
 

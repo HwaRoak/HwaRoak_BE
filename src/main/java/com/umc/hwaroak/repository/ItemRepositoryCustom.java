@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ItemRepositoryCustom {
 
+    // 보상받지 않은 1개의 아이템
+    MemberItem getNotReceivedItem(Member member);
     // 아직 수령하지 않은 아이템 계산하기
     List<MemberItem> getAllNotReceivedItems(Member member);
     // 수령 받기
