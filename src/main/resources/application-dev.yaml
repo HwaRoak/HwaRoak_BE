@@ -45,3 +45,10 @@ app:
     key-prefix: profiles             # 프로필 이미지 경로 prefix
     presign-ttl-seconds: 600         # Presigned URL 유효 시간 (초)
     allowed-content-types: image/jpeg,image/png,image/webp
+    
+logging:
+  level:
+    root: INFO
+  file:
+    path: ./logs
+  config: classpath:logback-spring.xml
