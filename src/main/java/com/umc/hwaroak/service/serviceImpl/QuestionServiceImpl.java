@@ -23,10 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -40,6 +37,25 @@ public class QuestionServiceImpl implements QuestionService {
     private final ItemService itemService;
 
     private final Random random = new Random();
+
+    private static final Map<Integer, String> LEVEL_NAME_KR = Map.ofEntries(
+            Map.entry(1,  "두루마리 휴지"),
+            Map.entry(2,  "빳빳한 종이컵"),
+            Map.entry(3,  "장작용 목재"),
+            Map.entry(4,  "다 타버린 연탄"),
+            Map.entry(5,  "구워먹는 타이어"),
+            Map.entry(6,  "애착 쓰레기 봉투"),
+            Map.entry(7,  "딱 반으로 쪼갠 젓가락"),
+            Map.entry(8,  "고기맛이 나는 감자"),
+            Map.entry(9,  "구워먹는 치즈"),
+            Map.entry(10, "노릇노릇 후라이"),
+            Map.entry(11, "쫀쫀한 쿠키"),
+            Map.entry(12, "산적 고기"),
+            Map.entry(13, "기름이 쫙 빠진 치킨"),
+            Map.entry(14, "따끈한 스프"),
+            Map.entry(15, "다음 보상을 기대해 주세요!") // 안내 문구지만 스펙상 15레벨명으로 매핑
+    );
+
 
     /**
      * 홈 화면에서 보여줄 Question 메시지 조회
@@ -73,7 +89,7 @@ public class QuestionServiceImpl implements QuestionService {
     private QuestionResponseDto getRandomQuestionByTag(String tag) {
         log.info("태그 기반 메시지 조회 시도 - tag: {}", tag);
         if (!questionRepository.existsByTag(tag)) {
-            throw new GeneralException(ErrorCode.INVALID_TAG); // ← 커스텀 예외 던지기
+            throw new GeneralException(ErrorCode.INVALID_TAG);
         }
 
         Pageable limitOne = PageRequest.of(0, 1);
@@ -86,8 +102,30 @@ public class QuestionServiceImpl implements QuestionService {
 
         Question q = questions.get(0);
         log.info("메시지 선택 완료 - content: {}", q.getContent());
+
+        if ("REWARD".equals(tag)) {
+            log.info("REWARD 태그 감지 → 보상 아이템 정보 조회");
+            Member member = memberLoader.getMemberByContextHolder();
+
+            // isReceived = false 중 itemId 가장 작은 것
+            MemberItem a = member.getMemberItemList().stream()
+                    .filter(mi -> Boolean.FALSE.equals(mi.getIsReceived()))
+                    .min(Comparator.comparing(mi -> mi.getItem().getId()))
+                    .orElse(null);
+
+            if (a != null) {
+                int level = a.getItem().getLevel();
+                String koreanName = getKoreanNameByLevel(level);
+                String itemInfo = "Lv " + level + ". " + koreanName;
+                String name = a.getItem().getName();
+
+                return QuestionResponseDto.ofReward(q.getContent(), tag, itemInfo, name);
+            }
+        }
+
         return QuestionResponseDto.of(q.getContent(), tag);
     }
+
 
 
     private QuestionResponseDto getEmotionBasedQuestion(Member member) {
@@ -202,7 +240,9 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
 
-
+    private String getKoreanNameByLevel(int level) {
+        return LEVEL_NAME_KR.getOrDefault(level, "미정 아이템");
+    }
 
 }
 

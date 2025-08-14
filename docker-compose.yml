@@ -5,6 +5,8 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    volumes:
+      - /home/ubuntu/logs:/app/logs
     depends_on:
       - redis
     networks:
@@ -17,6 +19,8 @@ services:
       - "8081:8080"
     env_file:
       - .env
+    volumes:
+      - /home/ubuntu/logs:/app/logs
     depends_on:
       - redis
     networks:
