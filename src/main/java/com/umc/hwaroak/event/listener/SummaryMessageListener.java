@@ -20,6 +20,7 @@ public class SummaryMessageListener {
     private final OpenAiUtil openAiUtil;
     private final EmotionSummaryRepository emotionSummaryRepository;
 
+    // 독립 스레드에서 id로 분석 메시지만 수정
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

@@ -108,7 +108,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
     }
 
     // 독립적인 트랜잭션에서 감정 분석 삭제 처리
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void deleteSummary(Long memberId, String month) {
         emotionSummaryRepository.findByMemberIdAndSummaryMonth(memberId, month)
                 .ifPresent(summary -> {
@@ -118,15 +118,9 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
     }
 
     // 감정 분석 삭제에 대한 폴백-전체 0으로 초기화
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void setZeroSummary(Long memberId, String month) {
         emotionSummaryRepository.setZero(month, memberId);
-    }
-
-    // 독립 스레드에서 id로 분석 메시지만 수정
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateSummaryMessage(Long summaryId, String message) {
-        emotionSummaryRepository.updateMessageById(summaryId, message);
     }
 
     @Override
