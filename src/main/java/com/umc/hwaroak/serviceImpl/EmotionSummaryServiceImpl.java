@@ -204,6 +204,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
         final Map<EmotionCategory, Integer> countsSnapshot = Map.copyOf(categoryCounts);
         final List<String> diaryContents = diaries.stream().map(Diary::getContent).toList();
 
+        log.info("Main thread: {}", Thread.currentThread().getName());
         eventPublisher.publishEvent(
                 new SummaryMessageGenerateEvent(summaryId, targetMonth, countsSnapshot, diaryContents)
         );

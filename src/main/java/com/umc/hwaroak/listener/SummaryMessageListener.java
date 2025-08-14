@@ -24,6 +24,15 @@ public class SummaryMessageListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void updateMessage(SummaryMessageGenerateEvent event) {
+        /* 테스트용 예외 발생
+        // 리스너 내에서 임시로 분석 메시지 변경
+        emotionSummaryRepository.updateMessageById(event.summaryId(), "TEMP");
+        // 고의로 예외 발생
+        throw new RuntimeException("boom");*/
+
+        log.info("Listener thread: {}", Thread.currentThread().getName());
+        //Thread.sleep(2000);
+
         try {
             String msg = openAiUtil.analysisEmotions(
                     event.targetMonth(), event.counts(), event.contents()
@@ -33,5 +42,6 @@ public class SummaryMessageListener {
         } catch (Exception e) {
             log.warn("gpt 리스너 실패 - summaryId={}", event.summaryId(), e);
         }
+
     }
 }
