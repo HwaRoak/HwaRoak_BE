@@ -39,7 +39,6 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
     private final EmotionSummaryRepository emotionSummaryRepository;
     private final DiaryRepository diaryRepository;
 
-    private final OpenAiUtil openAiUtil;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -107,7 +106,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
                 .build();
     }
 
-    // 독립적인 트랜잭션에서 감정 분석 삭제 처리
+    // 감정 분석 삭제 처리
     @Transactional
     public void deleteSummary(Long memberId, String month) {
         emotionSummaryRepository.findByMemberIdAndSummaryMonth(memberId, month)
@@ -124,7 +123,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateMonthlyEmotionSummary(LocalDate targetDate) {
 
         Member member = memberLoader.getMemberByContextHolder();
@@ -189,7 +188,7 @@ public class EmotionSummaryServiceImpl implements EmotionSummaryService {
                 categoryCounts.getOrDefault(EmotionCategory.ANGRY, 0),
                 ""
         );
-        emotionSummaryRepository.save(summary);
+        emotionSummaryRepository.saveAndFlush(summary);
         log.info("감정 요약 1차 업데이트 완료(메시지 제외) - memberId: {}, month: {}", memberId, summaryMonth);
 
         // ai 기반 감정분석 멘트 생성은 비동기로 처리
