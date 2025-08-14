@@ -2,6 +2,10 @@ spring:
   application:
     name: hwarok
 
+  output:
+    ansi:
+      enabled: always
+
   profiles:
     group:
       local: "local"

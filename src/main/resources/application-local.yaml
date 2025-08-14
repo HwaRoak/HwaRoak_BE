@@ -44,3 +44,6 @@ app:
     presign-ttl-seconds: 600         # Presigned URL 유효 시간 (초)
     allowed-content-types: image/jpeg,image/png,image/webp
 
+logging:
+  level:
+    root: INFO
