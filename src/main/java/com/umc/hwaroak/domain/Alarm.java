@@ -43,19 +43,11 @@ public class Alarm extends BaseEntity {
     @Column(name = "content")
     private String content;
 
-    // 알림 전송 여부 추가
-    @Column(name = "sent", nullable = false)
-    private boolean sent = false;
-
     // 알림 읽었음 추가
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
     public void markAsRead() {
         this.isRead = true;
-    }
-
-    public void markAsSent() {
-        this.sent = true;
     }
 }
