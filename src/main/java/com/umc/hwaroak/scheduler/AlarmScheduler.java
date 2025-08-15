@@ -11,8 +11,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.time.LocalDate;
-import java.time.Month;
+import java.time.*;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Component
@@ -51,5 +51,16 @@ public class AlarmScheduler {
                     }
                 }
         );
+    }
+
+
+    @Scheduled(cron = "0 * * * * *")
+    public void sendDailyReminders() {
+        var now = Instant.now();
+        List<Alarm> reminders = alarmRepository.findReminderByEnabledTrue();
+
+        for (Alarm r : reminders) {
+
+        }
     }
 }

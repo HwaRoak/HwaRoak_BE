@@ -43,4 +43,16 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
     // 읽지 않은 FIRE 알람이 존재하는지 여부 확인
     boolean existsByReceiverAndAlarmTypeAndIsReadFalse(Member receiver, AlarmType alarmType);
+
+    // 활성화된 알람 체크
+    @Query("""
+    select a 
+    from Alarm a
+    join fetch a.receiver r
+    join fetch r.alarmSetting s
+    where a.sent = false
+      and r.id = :memberId
+      and s.fireEnabled = true
+    """)
+    List<Alarm> findReminderByEnabledTrue();
 }
