@@ -145,4 +145,5 @@
 
 ## ERD
 
-![img.png](img.png)
+<img width="1041" height="1175" alt="image" src="https://github.com/user-attachments/assets/4bd4c3a5-a13a-4985-926d-d8f38cb519ae" />
+
