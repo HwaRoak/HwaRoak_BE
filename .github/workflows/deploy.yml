@@ -83,6 +83,8 @@ jobs:
     steps:
       - name: SSH into EC2 server and Deploy
         uses: appleboy/ssh-action@v1
+        env:
+          SERVER_DNS : ${{ secrets.SERVER_DNS }}
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
