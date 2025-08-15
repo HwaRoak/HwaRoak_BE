@@ -122,25 +122,22 @@ public class JwtTokenProvider {
         return false;
     }
 
-    // Spring Security 인증 객체 생성
+// JwtTokenProvider.java
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
 
-        if (!claims.get("authority").toString().startsWith("ROLE_")) {
-            throw new GeneralException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
+        // 1) 토큰은 신원만: subject = memberId
+        Long memberId = Long.valueOf(claims.getSubject());
 
-        // 한 사용자가 여러 Role을 가질 수 있을 때 (Authorities) -> 추후 확장 가능
-//        Collection<? extends GrantedAuthority> authorities =
-//                Arrays.stream(claims.get("authority").toString().split(","))
-//                        .map(SimpleGrantedAuthority::new)
-//                        .collect(Collectors.toList());
+        // 2) 권한은 DB에서 즉시 조회 (ADMIN으로 바꾸면 바로 반영됨)
+        Role role = memberRepository.findById(memberId)
+                .map(Member::getRole)
+                .orElse(Role.USER);
 
-        // 한 사용자가 하나의 Role만 가짐
-        String authority = claims.get("authority", String.class); // "ROLE_ADMIN"
         Collection<? extends GrantedAuthority> authorities =
-                List.of(new SimpleGrantedAuthority(authority));
+                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 
-        return new UsernamePasswordAuthenticationToken(getMemberId(token), null, authorities);
+        // principal은 memberId 문자열 그대로 사용
+        return new UsernamePasswordAuthenticationToken(String.valueOf(memberId), null, authorities);
     }
 }
