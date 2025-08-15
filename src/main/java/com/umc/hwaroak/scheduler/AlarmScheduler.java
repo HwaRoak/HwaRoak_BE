@@ -54,13 +54,13 @@ public class AlarmScheduler {
     }
 
 
-    @Scheduled(cron = "0 * * * * *")
-    public void sendDailyReminders() {
-        var now = Instant.now();
-        List<Alarm> reminders = alarmRepository.findReminderByEnabledTrue();
-
-        for (Alarm r : reminders) {
-
-        }
-    }
+//    @Scheduled(cron = "0 * * * * *")
+//    public void sendDailyReminders() {
+//        var now = Instant.now();
+//        List<Alarm> reminders = alarmRepository.findReminderByEnabledTrue();
+//
+//        for (Alarm r : reminders) {
+//
+//        }
+//    }
 }
