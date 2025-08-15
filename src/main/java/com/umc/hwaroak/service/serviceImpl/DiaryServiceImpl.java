@@ -10,19 +10,24 @@ import com.umc.hwaroak.dto.request.DiaryRequestDto;
 import com.umc.hwaroak.dto.response.DiaryResponseDto;
 import com.umc.hwaroak.event.ItemRollbackEvent;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.infrastructure.transaction.CustomTransactionSynchronization;
 import com.umc.hwaroak.lock.DiaryLockTemplate;
 import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.DiaryService;
+import com.umc.hwaroak.service.DiaryTransactionalService;
 import com.umc.hwaroak.service.EmotionSummaryService;
 import com.umc.hwaroak.service.ItemService;
 import com.umc.hwaroak.util.OpenAiUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -38,6 +43,7 @@ public class DiaryServiceImpl implements DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final DiaryLockTemplate diaryLockTemplate;
+    private final DiaryTransactionalService diaryTransactionalService;
 
     private final MemberRepository memberRepository;
 
@@ -46,6 +52,7 @@ public class DiaryServiceImpl implements DiaryService {
     private final EmotionSummaryService emotionSummaryService;
     private final ItemService itemService;
 
+    @Transactional
     public DiaryResponseDto.CreateDto createDiary(DiaryRequestDto.CreateDto requestDto) {
 
         Long memberId = memberLoader.getCurrentMemberId();
@@ -69,7 +76,7 @@ public class DiaryServiceImpl implements DiaryService {
         // 락 획득 후 Transactional 시행
         Diary diary = diaryLockTemplate.executeWithLock(lockName, () ->
             // 저장
-            createDiaryTransactional(member, requestDto)
+            diaryTransactionalService.createDiaryTransactional(member, requestDto) // 프록시 경유 호출
         );
 
         // 아이템 획득 이벤트 발행
@@ -79,26 +86,8 @@ public class DiaryServiceImpl implements DiaryService {
         }
 
         String nextItemName = itemService.getNextItemName().getName();
-        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
 
         return DiaryConverter.toCreateDto(diary, nextItemName);
-    }
-
-
-    @Transactional
-    public Diary createDiaryTransactional(Member member, DiaryRequestDto.CreateDto requestDto) {
-
-        Diary diary = DiaryConverter.toDiary(member, requestDto);
-        log.info("작성 일기 내용: " + requestDto.getContent());
-        diary.setFeedback(openAiUtil.reviewDiary(diary.getContent()));
-
-        diaryRepository.save(diary);
-        member.setReward( // reward 디데이 갱신
-                (member.getReward() -1) == 0 ? 7 : (member.getReward()-1)
-        );
-        memberRepository.save(member);
-
-        return diary;
     }
 
     @Transactional(readOnly = true)
@@ -141,7 +130,10 @@ public class DiaryServiceImpl implements DiaryService {
         diary.update(requestDto.getContent(), emotionList);
         diary.setFeedback(openAiUtil.reviewDiary(requestDto.getContent()));
         diaryRepository.save(diary);
-        emotionSummaryService.updateMonthlyEmotionSummary(requestDto.getRecordDate());  // 감정 통계 업데이트
+
+        // 커밋 후에만 월간 요약 업데이트하도록 예약
+        final LocalDate targetDate = diary.getRecordDate();
+        updateAfterCommit(targetDate);
 
         String nextItemName = itemService.getNextItemName().getName();
         return DiaryConverter.toCreateDto(diary, nextItemName);
@@ -178,6 +170,23 @@ public class DiaryServiceImpl implements DiaryService {
 
         memberRepository.save(member); // 변경사항 저장
         diaryRepository.delete(diary);
-        emotionSummaryService.updateMonthlyEmotionSummary(diary.getRecordDate());  // 감정 통계 업데이트
+
+        // 커밋 후에만 월간 요약 업데이트하도록 예약
+        final LocalDate targetDate = diary.getRecordDate();
+        updateAfterCommit(targetDate);
+    }
+
+    private void updateAfterCommit(LocalDate targetDate) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new CustomTransactionSynchronization() {
+                @Override public void afterCommit() {
+                    log.debug("afterCommit 호출; 월간 감정분석 업데이트 시작 - targetDate={}", targetDate);
+                    emotionSummaryService.updateMonthlyEmotionSummary(targetDate);
+                }
+            });
+        } else {
+            log.warn("트랜잭션 동기화 비활성 -> 즉시 실행 - targetDate={}", targetDate);
+            emotionSummaryService.updateMonthlyEmotionSummary(targetDate);
+        }
     }
 }
