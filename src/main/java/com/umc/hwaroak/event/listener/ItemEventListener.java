@@ -1,4 +1,4 @@
-package com.umc.hwaroak.listener;
+package com.umc.hwaroak.event.listener;
 
 import com.umc.hwaroak.domain.Item;
 import com.umc.hwaroak.domain.Member;
@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +28,8 @@ public class ItemEventListener {
     private final MemberItemRepository memberItemRepository;
 
     // 수령 가능 아이템 추가하기
-    @EventListener
     @Transactional
+    @EventListener
     public void upgradeNextItem(ItemUpdateEvent event) {
 
         Member member = memberRepository.findById(event.getMemberId())
@@ -49,6 +48,7 @@ public class ItemEventListener {
 
         if (nextItem.isPresent()) {
             MemberItem memberItem = new MemberItem(member, nextItem.get());
+            log.info("아이템 {} 수령 가능 대상으로 추가...", memberItem.getItem().getName());
             memberItemRepository.save(memberItem);
         } else {
             log.info("더이상 수령 가능한 Item 존재하지 않음");
@@ -56,8 +56,8 @@ public class ItemEventListener {
     }
 
     // 삭제 시 이전으로 돌아가기
-    @EventListener
     @Transactional
+    @EventListener
     public void backToStatus(ItemRollbackEvent event) {
 
         Member member = memberRepository.findById(event.getMemberId())

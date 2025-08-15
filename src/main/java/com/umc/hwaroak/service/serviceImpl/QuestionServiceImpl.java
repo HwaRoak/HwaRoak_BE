@@ -1,4 +1,4 @@
-package com.umc.hwaroak.serviceImpl;
+package com.umc.hwaroak.service.serviceImpl;
 
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.Diary;
@@ -23,9 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -39,6 +37,25 @@ public class QuestionServiceImpl implements QuestionService {
     private final ItemService itemService;
 
     private final Random random = new Random();
+
+    private static final Map<Integer, String> LEVEL_NAME_KR = Map.ofEntries(
+            Map.entry(1,  "두루마리 휴지"),
+            Map.entry(2,  "빳빳한 종이컵"),
+            Map.entry(3,  "장작용 목재"),
+            Map.entry(4,  "다 타버린 연탄"),
+            Map.entry(5,  "구워먹는 타이어"),
+            Map.entry(6,  "애착 쓰레기 봉투"),
+            Map.entry(7,  "딱 반으로 쪼갠 젓가락"),
+            Map.entry(8,  "고기맛이 나는 감자"),
+            Map.entry(9,  "구워먹는 치즈"),
+            Map.entry(10, "노릇노릇 후라이"),
+            Map.entry(11, "쫀쫀한 쿠키"),
+            Map.entry(12, "산적 고기"),
+            Map.entry(13, "기름이 쫙 빠진 치킨"),
+            Map.entry(14, "따끈한 스프"),
+            Map.entry(15, "다음 보상을 기대해 주세요!") // 안내 문구지만 스펙상 15레벨명으로 매핑
+    );
+
 
     /**
      * 홈 화면에서 보여줄 Question 메시지 조회
@@ -72,7 +89,7 @@ public class QuestionServiceImpl implements QuestionService {
     private QuestionResponseDto getRandomQuestionByTag(String tag) {
         log.info("태그 기반 메시지 조회 시도 - tag: {}", tag);
         if (!questionRepository.existsByTag(tag)) {
-            throw new GeneralException(ErrorCode.INVALID_TAG); // ← 커스텀 예외 던지기
+            throw new GeneralException(ErrorCode.INVALID_TAG);
         }
 
         Pageable limitOne = PageRequest.of(0, 1);
@@ -85,32 +102,74 @@ public class QuestionServiceImpl implements QuestionService {
 
         Question q = questions.get(0);
         log.info("메시지 선택 완료 - content: {}", q.getContent());
+
+        if ("REWARD".equals(tag)) {
+            log.info("REWARD 태그 감지 → 보상 아이템 정보 조회");
+            Member member = memberLoader.getMemberByContextHolder();
+
+            // isReceived = false 중 itemId 가장 작은 것
+            MemberItem a = member.getMemberItemList().stream()
+                    .filter(mi -> Boolean.FALSE.equals(mi.getIsReceived()))
+                    .min(Comparator.comparing(mi -> mi.getItem().getId()))
+                    .orElse(null);
+
+            if (a != null) {
+                int level = a.getItem().getLevel();
+                String koreanName = getKoreanNameByLevel(level);
+                String itemInfo = "Lv " + level + ". " + koreanName;
+                String name = a.getItem().getName();
+
+                return QuestionResponseDto.ofReward(q.getContent(), tag, itemInfo, name);
+            }
+        }
+
         return QuestionResponseDto.of(q.getContent(), tag);
     }
+
 
 
     private QuestionResponseDto getEmotionBasedQuestion(Member member) {
         Optional<Diary> diaryOpt = diaryRepository.findByMemberIdAndRecordDate(member.getId(), LocalDate.now());
 
         if (diaryOpt.isEmpty()) {
-            log.warn("오늘 작성된 일기가 존재하지 않음 (예상 외)");
+            log.warn("오늘 작성된 일기가 존재하지 않음");
             return QuestionResponseDto.of("오늘 하루를 돌아보는 건 어때요?", "NONE");
         }
 
         List<Emotion> emotionList = diaryOpt.get().getEmotionList();
-        log.info("감정 리스트 추출 - size: {}", emotionList.size());
-
         if (emotionList == null || emotionList.isEmpty()) {
             log.warn("감정 리스트가 비어 있음 → 기본 멘트 반환");
             return QuestionResponseDto.of("당신의 하루가 궁금해요.", "NONE");
         }
 
-        Emotion selectedEmotion = emotionList.get(random.nextInt(emotionList.size()));
-        String tag = "EMOTION_" + selectedEmotion.name();
-        log.info("랜덤 감정 선택 완료 - emotion: {} → tag: {}", selectedEmotion.name(), tag);
+        // 긍정 / 부정 감정 세트 정의
+        Set<Emotion> POSITIVE_EMOTIONS = Set.of(
+                Emotion.CALM, Emotion.PROUD, Emotion.THANKFUL,
+                Emotion.HAPPY, Emotion.EXPECTED, Emotion.HEART_FLUTTER, Emotion.EXCITING
+        );
+        Set<Emotion> NEGATIVE_EMOTIONS = Set.of(
+                Emotion.BORED, Emotion.LONELY, Emotion.GLOOMY,
+                Emotion.SADNESS, Emotion.ANGRY, Emotion.ANNOYED, Emotion.STRESSFUL, Emotion.TIRED
+        );
 
+        boolean hasPositive = emotionList.stream().anyMatch(POSITIVE_EMOTIONS::contains);
+        boolean hasNegative = emotionList.stream().anyMatch(NEGATIVE_EMOTIONS::contains);
+
+        String tag;
+        if (hasPositive && hasNegative) {
+            // 혼합 감정 → EMOTION_DEFAULT
+            tag = "EMOTION_DEFAULT";
+            log.info("혼합 감정 감지 → tag: {}", tag);
+            return getRandomQuestionByTag(tag);
+        }
+
+        // 전부 긍정 또는 전부 부정 → 감정 하나 랜덤 선택 후 해당 태그에서 뽑기
+        Emotion selectedEmotion = emotionList.get(random.nextInt(emotionList.size()));
+        tag = "EMOTION_" + selectedEmotion.name();
+        log.info("단일 극성 감정 → selected: {} → tag: {}", selectedEmotion, tag);
         return getRandomQuestionByTag(tag);
     }
+
 
     // =======================
     // 내부 상태 판별 메서드
@@ -181,7 +240,9 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
 
-
+    private String getKoreanNameByLevel(int level) {
+        return LEVEL_NAME_KR.getOrDefault(level, "미정 아이템");
+    }
 
 }
 
