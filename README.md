@@ -1,13 +1,50 @@
-# Hwaroak Server Repository
+# 🔥 화록 서버 README
 
-## Tech Stack
-- Spring Boot 3.5.3
-- MySQL 8.0.33
-- 배포 환경 : 미정
+<img width="2048" height="1365" alt="image" src="https://github.com/user-attachments/assets/a553656a-5074-4bd9-bb80-3a0022588cf5" />
+
+<br>
+<br>
+
+## 👨‍💻 프로젝트 소개
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/da1b8b75-defd-4207-ab14-77e317757b79" />
+
+<img width="1920" height="2738" alt="image" src="https://github.com/user-attachments/assets/2da1684e-52a4-48c5-91bb-4d45cc29b96d" />
+
+<br>
+<br>
+
+## 🙌 팀원 구성
+
+<div align="center">
+
+| **전유연** | **노창준** | **조영찬** | **이예나** |
+| :------: |  :------: | :------: | :------: |
+| [<img src="https://avatars.githubusercontent.com/u/109857975?v=4" height=150 width=150> <br/> @youyeon11](https://github.com/youyeon11) | [<img src="https://avatars.githubusercontent.com/u/112895293?v=4" height=150 width=150> <br/> @geniusjun](https://github.com/geniusjun) | [<img src="https://avatars.githubusercontent.com/u/80813773?v=4" height=150 width=150> <br/> @yc3697](https://github.com/yc3697) | [<img src="https://avatars.githubusercontent.com/u/128028246?v=4" height=150 width=150> <br/> @lyemee](https://github.com/lyemee) |
+
+
+</div>
+
+<br>
+
+## 🔧 기술 스택
+- **Spring Boot 3.5.3**  
+  - 애플리케이션 서버 (Java 17)
+- **MySQL 8.0.33**  
+  - RDBMS
+- **Redis**  
+  - 캐싱, Pub/Sub(실시간 데이터 전송), Refresh Token 관리
+- **AWS S3**  
+  - 레포지토리 업로드 저장소
+- **Nginx**  
+  - 서버 서빙, 리버스 프록시, 인증서 관리  
+  - **Certbot** : 인증서 발급 자동화
+- **배포 환경** : AWS EC2 (Ubuntu) + Nginx + Certbot
+
 
 ---
 
-## Branch Convention
+## 📖 브랜치 전략
 
 | Branch    | 설명                                                       |
 |-----------|----------------------------------------------------------|
@@ -23,7 +60,7 @@
 
 ---
 
-## Pull Request Convention
+## 📖 Pull Request 컨벤션
 
 `[<Prefix>] <Description>`의 양식을 준수하되, prefix는 commit message convention을 따릅니다.
 
@@ -34,7 +71,7 @@
 
 ---
 
-## Commit Convention
+## 📖 Commit Convention
 
 `<Prefix>: <Description> (#<Issue_Number>)` 의 양식을 준수합니다.
 - **feat**: 새로운 기능 구현`feat: 구글 로그인 API 기능 구현 (#11)`
@@ -46,15 +83,15 @@
 - **test**: 테스트 코드 작성, 수정 `test: 로그인 API 테스트 코드 작성 (#20)`
 ---
 
-## Package Convention (Domain Driven Design)
+## 📖 프로젝트 구조 (Domain Driven Design)
 
 전통적인 **계층형 아키텍처(Layered Architecture)** 구조를 기반으로 패키지를 구성합니다.
 ```dockerignore
 🔥hwaroak
  ┣ 📂.github
- ┃ ┣ 📂ISSUE_TEMPLATE   # 이슈 템플릿
- ┃ ┣ 📂workflows     # Github Actions Workflow 설정
- ┣ 📂nginx       # Proxy 설정
+ ┃ ┣ 📂ISSUE_TEMPLATE        # 이슈 템플릿
+ ┃ ┣ 📂workflows             # GitHub Actions 워크플로우 설정
+ ┣ 📂nginx                   # Proxy/Nginx 설정
  ┃ ┣ 📂html
  ┣ 📂src
  ┃ ┗ 📂main
@@ -62,30 +99,44 @@
  ┃   ┃ ┗ 📂com
  ┃   ┃   ┗ 📂umc
  ┃   ┃     ┗ 📂hwaroak
- ┃   ┃       ┣ 📂service   # 도메인별 핵심 비즈니스 로직 영역
- ┃   ┃       ┣ 📂controller  # 도메인별 핵심 비즈니스 로직 영역
- ┃   ┃       ┣ 📂config   # 프로젝트 설정 파일들(Security, Web 등)
- ┃   ┃       ┣ 📂converter  # Entity <-> DTO 간 변환
- ┃   ┃       ┣ 📂domain    # 전역적으로 사용하는 domain
- ┃   ┃       ┃ ┣ 📂entity    # 프로젝트 Entity(JPA로 DB와 매핑되는 크래스들)
- ┃   ┃       ┣ 📂dto   # 클라이언트와 데이터를 주고받을 객체
- ┃   ┃       ┃ ┣ 📂request   # 요청 객체
- ┃   ┃       ┃ ┗ 📂response   # 응답 객체
- ┃   ┃       ┣ 📂exception  # 전역 예외 처리
- ┃   ┃       ┣ 📂repository   # JPA Repository 인터페이스
- ┃   ┃       ┗ 📂util   # 공통 유틸리티 클래스 정의
- ┃   ┃       ┗ 📜HwaroakApplication.java # Spring Boot 메인 실행 클래스
+ ┃   ┃       ┣ 📂service            # 도메인별 핵심 비즈니스 로직
+ ┃   ┃       ┣ 📂controller         # API 엔드포인트(요청/응답 매핑)
+ ┃   ┃       ┣ 📂config             # 프로젝트 전역 설정(Security, Web 등)
+ ┃   ┃       ┣ 📂converter          # Entity ↔ DTO 변환 로직
+ ┃   ┃       ┣ 📂domain             # 전역적으로 사용하는 도메인
+ ┃   ┃       ┃ ┣ 📂entity           # JPA 엔티티(데이터베이스 매핑 클래스)
+ ┃   ┃       ┣ 📂dto                # 클라이언트와 주고받는 데이터 객체
+ ┃   ┃       ┃ ┣ 📂request          # 요청 DTO
+ ┃   ┃       ┃ ┗ 📂response         # 응답 DTO
+ ┃   ┃       ┣ 📂exception          # 전역 예외 정의 및 처리
+ ┃   ┃       ┣ 📂repository         # JPA Repository 인터페이스
+ ┃   ┃       ┣ 📂util               # 공통 유틸리티 클래스 모음
+ ┃   ┃       ┣ 📂scheduler          # 배치/스케줄러: 알람·감정분석 등 만료/정리 작업 주기 실행
+ ┃   ┃       ┣ 📂lock               # 분산/DB 락 유틸: 동시성 제어
+ ┃   ┃       ┣ 📂infrastructure     # 인프라 어댑터: Redis, JWT 등 인증/캐시/외부자원 접근 레이어
+ ┃   ┃       ┗ 📂event              # 이벤트 발행/리스너 패턴
+ ┃   ┃       ┗ 📜HwaroakApplication.java   # Spring Boot 메인 실행 클래스
  ┃   ┗ 📂resources
  ┃     ┣ 📂static
- ┃     ┣ 📜application-dev.yaml # 개발 프로필
- ┃     ┣ 📜application-local.yaml # 로컬 프로필
- ┃     ┗ 📜application.yaml # 공통 프로필
- ┣ 📜.env # 중요 환경변수 설정
+ ┃     ┣ 📜application-dev.yaml     # 개발 프로필
+ ┃     ┣ 📜application-local.yaml   # 로컬 프로필
+ ┃     ┗ 📜application.yaml         # 공통 프로필
+ ┣ 📜.env                            # 중요 환경변수
  ┣ 📜.gitignore
  ┣ 📜README.md
  ┗ 📜build.gradle
+
 ```
 
 > 기능 단위로가 아닌 역할에 따른 계층 분리를 통해 각 레이어의 책임을 명확히 합니다.
 >
 ---
+
+
+
+## ⭐ 서버 아키텍처 다이어그램
+
+
+<img width="1920" height="1115" alt="image" src="https://github.com/user-attachments/assets/957fb655-cc24-4fb3-8928-61541c2aa425" />
+
+
