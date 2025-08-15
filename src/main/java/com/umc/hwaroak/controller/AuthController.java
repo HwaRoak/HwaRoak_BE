@@ -1,6 +1,7 @@
 package com.umc.hwaroak.controller;
 
-import com.umc.hwaroak.dto.response.TokenDto;
+import com.umc.hwaroak.dto.request.TokenRequestDto;
+import com.umc.hwaroak.dto.response.TokenResponseDto;
 import com.umc.hwaroak.dto.request.KakaoLoginRequestDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.response.ApiResponse;
@@ -30,8 +31,8 @@ public class AuthController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<ApiResponse<TokenDto>> reissue(@RequestBody TokenDto tokenRequest) {
-        TokenDto newTokens = kakaoAuthService.reissueTokens(tokenRequest);
+    public ResponseEntity<ApiResponse<TokenResponseDto>> reissue(@RequestBody TokenRequestDto tokenRequest) {
+        TokenResponseDto newTokens = kakaoAuthService.reissueTokens(tokenRequest.getRefreshToken());
 
         return ResponseEntity
                 .status(SuccessCode.OK.getHttpStatus())
