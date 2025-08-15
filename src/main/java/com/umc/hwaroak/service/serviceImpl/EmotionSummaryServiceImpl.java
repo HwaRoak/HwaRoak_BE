@@ -13,7 +13,6 @@ import com.umc.hwaroak.repository.DiaryRepository;
 import com.umc.hwaroak.repository.EmotionSummaryRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.EmotionSummaryService;
-import com.umc.hwaroak.util.OpenAiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,7 +26,6 @@ import java.time.YearMonth;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
