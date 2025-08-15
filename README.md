@@ -1,4 +1,30 @@
-# Hwaroak Server Repository
+# 화록 서버 README
+
+<img width="2048" height="1365" alt="image" src="https://github.com/user-attachments/assets/a553656a-5074-4bd9-bb80-3a0022588cf5" />
+
+
+<br>
+
+## 프로젝트 소개
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/da1b8b75-defd-4207-ab14-77e317757b79" />
+
+<img width="1920" height="2738" alt="image" src="https://github.com/user-attachments/assets/2da1684e-52a4-48c5-91bb-4d45cc29b96d" />
+
+<br>
+
+## 팀원 구성
+
+<div align="center">
+
+| **전유연** | **노창준** | **조영찬** | **이예나** |
+| :------: |  :------: | :------: | :------: |
+| [<img src="https://avatars.githubusercontent.com/u/109857975?v=4" height=150 width=150> <br/> @youyeon11](https://github.com/youyeon11) | [<img src="https://avatars.githubusercontent.com/u/112895293?v=4" height=150 width=150> <br/> @geniusjun](https://github.com/geniusjun) | [<img src="https://avatars.githubusercontent.com/u/80813773?v=4" height=150 width=150> <br/> @yc3697](https://github.com/yc3697) | [<img src="https://avatars.githubusercontent.com/u/128028246?v=4" height=150 width=150> <br/> @lyemee](https://github.com/lyemee) |
+
+
+</div>
+
+<br>
 
 ## Tech Stack
 - Spring Boot 3.5.3
