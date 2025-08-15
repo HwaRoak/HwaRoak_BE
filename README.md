@@ -140,3 +140,9 @@
 <img width="1920" height="1115" alt="image" src="https://github.com/user-attachments/assets/957fb655-cc24-4fb3-8928-61541c2aa425" />
 
 
+
+<br>
+
+## ERD
+
+![img.png](img.png)
