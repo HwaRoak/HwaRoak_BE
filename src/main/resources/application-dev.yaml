@@ -52,3 +52,6 @@ logging:
   file:
     path: ./logs
   config: classpath:logback-spring.xml
+
+swagger:
+  server-url: ${DEV_BASE_URL}

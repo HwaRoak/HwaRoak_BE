@@ -8,8 +8,9 @@ package com.umc.hwaroak.service.serviceImpl;
 import com.umc.hwaroak.domain.Item;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.dto.request.TokenRequestDto;
 import com.umc.hwaroak.dto.response.KakaoUserInfoDto;
-import com.umc.hwaroak.dto.response.TokenDto;
+import com.umc.hwaroak.dto.response.TokenResponseDto;
 import com.umc.hwaroak.dto.response.KakaoLoginResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.ItemRepository;
@@ -118,8 +119,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
     }
 
     @Override
-    public TokenDto reissueTokens(TokenDto tokenRequest) {
-        String refreshToken = tokenRequest.getRefreshToken();
+    public TokenResponseDto reissueTokens(String refreshToken) {
 
         if (!jwtProvider.validateToken(refreshToken)) {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
@@ -133,7 +133,7 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
         }
 
         String newAccessToken = jwtProvider.createAccessToken(Long.parseLong(memberId));
-        return new TokenDto(newAccessToken, refreshToken);
+        return new TokenResponseDto(newAccessToken, refreshToken);
     }
 
     private KakaoUserInfoDto getUserInfoFromKakao(String kakaoAccessToken) {

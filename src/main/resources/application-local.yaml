@@ -47,3 +47,6 @@ app:
 logging:
   level:
     root: INFO
+
+swagger:
+  server-url: ${LOCAL_BASE_URL}
