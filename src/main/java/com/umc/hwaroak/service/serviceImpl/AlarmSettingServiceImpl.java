@@ -1,18 +1,23 @@
 package com.umc.hwaroak.service.serviceImpl;
 
+import com.umc.hwaroak.domain.Alarm;
+import com.umc.hwaroak.domain.common.AlarmType;
+import com.umc.hwaroak.scheduler.ReminderTaskScheduler;
 import com.umc.hwaroak.infrastructure.authentication.MemberLoader;
 import com.umc.hwaroak.domain.AlarmSetting;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.request.AlarmSettingRequestDto;
 import com.umc.hwaroak.dto.response.AlarmSettingResponseDto;
 import com.umc.hwaroak.exception.GeneralException;
+import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.AlarmSettingRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmSettingService;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 
@@ -23,7 +28,11 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
 
     private final MemberLoader memberLoader;
     private final AlarmSettingRepository alarmSettingRepository;
+    private final AlarmRepository alarmRepository;
 
+    private final ReminderTaskScheduler reminderTaskScheduler;
+
+    @Transactional
     public AlarmSettingResponseDto.InfoDto getAlarmSettingInfo() {
 
         Member member = memberLoader.getMemberByContextHolder();
@@ -41,6 +50,17 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
                             .build();
                     return alarmSettingRepository.save(defaultSetting);
                 });
+
+        Alarm alarm = Alarm.builder()
+                .alarmType(AlarmType.REMINDER)
+                .receiver(member)
+                .title("오늘의 이야기로 화록을 불태우세요!")
+                .content("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                .message("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                .build();
+        alarmRepository.save(alarm);
+
+        reminderTaskScheduler.addSchedule(alarm);
 
         return AlarmSettingResponseDto.InfoDto.builder()
                 .reminderEnabled(setting.isReminderEnabled())
@@ -76,11 +96,22 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
             setting.setAllOffEnabled(requestDto.getAllOffEnabled());
         }
 
+        alarmSettingRepository.save(setting); // 변경사항 저장
+
+        if (!setting.isFireEnabled()) { // 알람 설정 off
+            reminderTaskScheduler.cancel(memberId);
+        } else { // 알람 설정 on
+            Alarm alarm = alarmRepository.findByMemberIdAndAlarmType(memberId)
+                    .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
+            reminderTaskScheduler.cancel(memberId);
+            reminderTaskScheduler.addSchedule(alarm);
+        }
+
         return AlarmSettingResponseDto.InfoDto.builder()
-                .reminderEnabled(setting.isReminderEnabled())
-                .reminderTime(setting.getReminderTime())
-                .fireAlarmEnabled(setting.isFireEnabled())
-                .allOffEnabled(setting.isAllOffEnabled())
-                .build();
+                                    .reminderEnabled(setting.isReminderEnabled())
+                                    .reminderTime(setting.getReminderTime())
+                                    .fireAlarmEnabled(setting.isFireEnabled())
+                                    .allOffEnabled(setting.isAllOffEnabled())
+                                    .build();
     }
 }
