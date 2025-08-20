@@ -7,8 +7,6 @@ import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-
-
 import java.util.List;
 import java.util.Optional;
 
@@ -50,9 +48,10 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     from Alarm a
     join fetch a.receiver r
     join fetch r.alarmSetting s
-    where a.sent = false
-      and r.id = :memberId
-      and s.fireEnabled = true
+    where s.fireEnabled = true
     """)
     List<Alarm> findReminderByEnabledTrue();
+
+    @Query("select a from Alarm a where a.receiver.id = :memberId and a.alarmType = 'REMINDER'")
+    Optional<Alarm> findByMemberIdAndAlarmType(@Param("memberId") Long memberId);
 }
