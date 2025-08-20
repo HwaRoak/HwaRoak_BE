@@ -13,16 +13,14 @@ import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.infrastructure.transaction.CustomTransactionSynchronization;
 import com.umc.hwaroak.lock.DiaryLockTemplate;
 import com.umc.hwaroak.repository.DiaryRepository;
+import com.umc.hwaroak.repository.MemberItemRepository;
 import com.umc.hwaroak.repository.MemberRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.DiaryService;
 import com.umc.hwaroak.service.DiaryTransactionalService;
 import com.umc.hwaroak.service.EmotionSummaryService;
-import com.umc.hwaroak.service.ItemService;
 import com.umc.hwaroak.util.OpenAiUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +48,7 @@ public class DiaryServiceImpl implements DiaryService {
     private final ApplicationEventPublisher eventPublisher;
 
     private final EmotionSummaryService emotionSummaryService;
-    private final ItemService itemService;
+    private final MemberItemRepository memberItemRepository;
 
     @Transactional
     public DiaryResponseDto.CreateDto createDiary(DiaryRequestDto.CreateDto requestDto) {
@@ -85,7 +83,7 @@ public class DiaryServiceImpl implements DiaryService {
             eventPublisher.publishEvent(new ItemUpdateEvent(this, member.getId()));
         }
 
-        String nextItemName = itemService.getNextItemName().getName();
+        String nextItemName = memberItemRepository.nextItemName(member);
 
         return DiaryConverter.toCreateDto(diary, nextItemName);
     }
@@ -135,7 +133,7 @@ public class DiaryServiceImpl implements DiaryService {
         final LocalDate targetDate = diary.getRecordDate();
         updateAfterCommit(targetDate);
 
-        String nextItemName = itemService.getNextItemName().getName();
+        String nextItemName = memberItemRepository.nextItemName(member);
         return DiaryConverter.toCreateDto(diary, nextItemName);
     }
 
