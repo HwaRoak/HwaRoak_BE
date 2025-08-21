@@ -15,14 +15,17 @@ import com.umc.hwaroak.repository.QuestionRepository;
 import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.ItemService;
 import com.umc.hwaroak.service.QuestionService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -209,7 +212,7 @@ public class QuestionServiceImpl implements QuestionService {
         Member member = memberLoader.getMemberByContextHolder();
         log.info("아이템 클릭 메시지 조회 시작 - memberId: {}", member.getId());
 
-        // 1. 선택된 아이템
+        // 1) 대표 아이템
         MemberItem selectedItem = member.getMemberItemList().stream()
                 .filter(MemberItem::getIsSelected)
                 .findFirst()
@@ -217,7 +220,7 @@ public class QuestionServiceImpl implements QuestionService {
         int level = selectedItem.getItem().getLevel();
         log.info("선택된 아이템 레벨: {}", level);
 
-        // 2. 아이템 고유 멘트 1개
+        // 2) 아이템 고유 멘트
         String itemTag = "ITEM_" + level;
         List<Question> itemMentList = questionRepository.findRandomOneByTag(itemTag, PageRequest.of(0, 1));
         if (itemMentList.isEmpty()) {
@@ -225,19 +228,55 @@ public class QuestionServiceImpl implements QuestionService {
         }
         String itemMessage = itemMentList.get(0).getContent();
 
-        // 3. 디폴트 멘트 1개
-        List<Question> defaultMentList = questionRepository.findRandomOneByTag("ITEM_DEFAULT", PageRequest.of(0, 1));
+        // 3) 디폴트 멘트
+        String defaultTag = "ITEM_DEFAULT";
+        List<Question> defaultMentList = questionRepository.findRandomOneByTag(defaultTag, PageRequest.of(0, 1));
         if (defaultMentList.isEmpty()) {
             throw new GeneralException(ErrorCode.QUESTION_NOT_FOUND);
         }
-        String defaultMessage = defaultMentList.get(0).getContent();
+        String defaultMessageTemplate = defaultMentList.get(0).getContent();
 
-        // 4. 50% 확률로 하나 선택
-        String finalMessage = new Random().nextBoolean() ? itemMessage : defaultMessage;
-        log.info("최종 선택된 메시지: {}", finalMessage);
+        // 4) 50% 확률 선택 (기존 동작 유지)
+        boolean chooseItem = new Random().nextBoolean();
+        String chosenTag = chooseItem ? itemTag : defaultTag;
+        String finalMessage = chooseItem
+                ? itemMessage
+                : renderDefaultMessage(defaultMessageTemplate, selectedItem); // ★ 새 치환 적용(디폴트만)
 
-        return QuestionResponseDto.of(finalMessage, itemTag);
+        log.info("최종 선택된 메시지: {} (tag: {})", finalMessage, chosenTag);
+        return QuestionResponseDto.of(finalMessage, chosenTag);
     }
+
+    /**
+     * ITEM_DEFAULT 템플릿 치환:
+     *  - (아이템 이름)  -> 레벨 한국어명
+     *  - n일           -> 대표 아이템 보유 일수
+     *  - xxxx년 x월 x일 -> 대표 아이템 획득일(생성일)
+     */
+    private String renderDefaultMessage(String template, MemberItem selectedItem) {
+        int level = selectedItem.getItem().getLevel();
+        String itemKr = getKoreanNameByLevel(level);
+
+        String msg = template.replace("(아이템 이름)", itemKr);
+
+        // 보유 일수(n일): MemberItem.createdAt 기준
+        LocalDateTime createdAt = selectedItem.getCreatedAt();
+        if (createdAt != null && msg.contains("n일")) {
+            long days = ChronoUnit.DAYS.between(createdAt.toLocalDate(), LocalDate.now());
+            if (days < 0) days = 0; // 안전장치
+            msg = msg.replace("n일", days + "일");
+        }
+
+        // 획득일(yyyy년 M월 d일): MemberItem.createdAt 기준
+        if (createdAt != null && msg.contains("xxxx년 x월 x일")) {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
+            String formatted = createdAt.format(fmt);
+            msg = msg.replace("xxxx년 x월 x일", formatted);
+        }
+
+        return msg;
+    }
+
 
 
     private String getKoreanNameByLevel(int level) {
