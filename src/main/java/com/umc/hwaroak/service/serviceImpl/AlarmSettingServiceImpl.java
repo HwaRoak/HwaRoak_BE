@@ -101,7 +101,7 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
         Alarm alarm = alarmRepository.findByMemberIdAndAlarmType(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
 
-        if (!setting.isFireEnabled()) { // 알람 설정 off
+        if (!setting.isReminderEnabled()) { // 알람 설정 off
             reminderTaskScheduler.cancel(memberId);
             alarmRepository.delete(alarm);
         } else { // 알람 설정 on

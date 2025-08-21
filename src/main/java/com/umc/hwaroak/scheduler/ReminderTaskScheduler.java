@@ -65,7 +65,7 @@ public class ReminderTaskScheduler {
 
         // 유효하지 않은 Alarm
         if (member == null) {return;}
-        if (alarmSetting == null || !alarmSetting.isFireEnabled()) {
+        if (alarmSetting == null || !alarmSetting.isReminderEnabled()) {
             cancel(member.getId());
             return;
         }
