@@ -13,8 +13,13 @@ import com.umc.hwaroak.response.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -56,10 +61,10 @@ public class ItemEventListener {
     }
 
     // 삭제 시 이전으로 돌아가기
-    @Transactional
-    @EventListener
+    @Async("threadPoolTaskExecutor")
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backToStatus(ItemRollbackEvent event) {
-
         Member member = memberRepository.findById(event.getMemberId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
         log.info("마지막 보상 삭제하기...");
