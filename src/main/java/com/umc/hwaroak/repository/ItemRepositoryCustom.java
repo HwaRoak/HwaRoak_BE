@@ -15,4 +15,6 @@ public interface ItemRepositoryCustom {
     MemberItem changeToReceive(Member member);
     // 수령하지 못한 상태로 변경하기
     void backToStatus(Member member);
+    // 다음 목표 아이템 이름 조회
+    String nextItemName(Member member);
 }

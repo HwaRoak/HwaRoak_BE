@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.domain.MemberItem;
+import com.umc.hwaroak.domain.QItem;
 import com.umc.hwaroak.domain.QMemberItem;
 import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.response.ErrorCode;
@@ -22,7 +23,7 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
     private final QMemberItem memberItem = QMemberItem.memberItem;
 
     /**
-     * 보상 받지 않은 1개의 아이템
+     * 보상 받지 않은 1개의 아이템(가장 낮은 레벨)
      * @return
      */
     @Override
@@ -125,6 +126,36 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
                     .execute();
         } else {
             log.debug("롤백할 아이템이 없습니다.");
+        }
+    }
+
+    /**
+     * 다음 목표 아이템
+     * @param member
+     * @return
+     */
+    @Override
+    public String nextItemName(Member member) {
+        QItem item = QItem.item;
+
+        Integer level = jpaQueryFactory
+                .select(memberItem.item.level.max())
+                .from(memberItem)
+                .where(memberItem.member.eq(member))
+                .fetchOne(); // 받음 안 받음 여부 관계 없이 MemberItem 중 가장 높은 것
+
+        Integer nextLevel = (level == null) ? 1 : level + 1;
+
+        String name = jpaQueryFactory
+                .select(item.name)
+                .from(item)
+                .where(item.level.eq(nextLevel))
+                .fetchOne();
+
+        if (name == null) {
+            return "다음 업데이트를 기다려주세요.";
+        } else {
+            return name;
         }
     }
 }
