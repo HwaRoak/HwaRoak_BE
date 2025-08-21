@@ -48,18 +48,33 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
                             .fireEnabled(true)
                             .allOffEnabled(false)
                             .build();
+
+                    Alarm alarm = Alarm.builder()
+                            .alarmType(AlarmType.REMINDER)
+                            .receiver(member)
+                            .title("오늘의 이야기로 화록을 불태우세요!")
+                            .content("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                            .message("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                            .build();
+                    alarmRepository.save(alarm);
+                    reminderTaskScheduler.addSchedule(alarm);
+
                     return alarmSettingRepository.save(defaultSetting);
                 });
 
-        Alarm alarm = Alarm.builder()
-                .alarmType(AlarmType.REMINDER)
-                .receiver(member)
-                .title("오늘의 이야기로 화록을 불태우세요!")
-                .content("오늘 하루는 어땠나요? 저에게 들려주세요!")
-                .message("오늘 하루는 어땠나요? 저에게 들려주세요!")
-                .build();
-        alarmRepository.save(alarm);
-
+        Alarm alarm = alarmRepository.findByMemberIdAndAlarmType(memberId)
+                .orElseGet(() -> {
+                    log.info("알람이 존재하지 않아 새로 생성 중... {}", memberId);
+                    Alarm defaultAlarm = Alarm.builder()
+                            .alarmType(AlarmType.REMINDER)
+                            .receiver(member)
+                            .title("오늘의 이야기로 화록을 불태우세요!")
+                            .content("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                            .message("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                            .build();
+                    alarmRepository.save(defaultAlarm);
+                    return defaultAlarm;
+                });
         reminderTaskScheduler.addSchedule(alarm);
 
         return AlarmSettingResponseDto.InfoDto.builder()
