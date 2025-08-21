@@ -25,6 +25,7 @@ public class RedisPubSubConfig {
         container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.NOTIFICATION.getValue()));
         container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.REMINDER.getValue()));
         container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.FRIEND_REQUEST.getValue()));
+        container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.DAILY.getValue()));
         container.addMessageListener(redisSubscriber, new ChannelTopic(AlarmType.FIRE.getValue()));
 
         return container;
