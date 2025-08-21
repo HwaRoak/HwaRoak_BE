@@ -48,7 +48,7 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     from Alarm a
     join fetch a.receiver r
     join fetch r.alarmSetting s
-    where s.fireEnabled = true
+    where s.reminderEnabled = true
     """)
     List<Alarm> findReminderByEnabledTrue();
 
