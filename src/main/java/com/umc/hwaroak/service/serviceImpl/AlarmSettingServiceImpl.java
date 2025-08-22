@@ -89,12 +89,21 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
     @Transactional
     public AlarmSettingResponseDto.InfoDto editAlarmSettingInfo(AlarmSettingRequestDto.EditDto requestDto) {
 
+        Member member = memberLoader.getMemberByContextHolder();
         Long memberId = memberLoader.getCurrentMemberId();
 
         AlarmSetting setting = alarmSettingRepository.findByMemberId(memberId)
-                .orElseThrow(() -> {
-                    log.warn("알람 설정을 찾을 수 없습니다. memberId = {}", memberId);
-                    return new GeneralException(ErrorCode.SETTING_NOT_FOUND);
+                .orElseGet(() -> {
+                    log.warn("알람 설정을 찾을 수 없습니다... 기본 설정으로 설정합니다. memberId = {}", memberId);
+                    AlarmSetting defaultSetting = AlarmSetting.builder()
+                            .member(member)
+                            .reminderEnabled(true)
+                            .reminderTime(LocalTime.of(21, 30))
+                            .fireEnabled(true)
+                            .allOffEnabled(false)
+                            .build();
+
+                    return alarmSettingRepository.save(defaultSetting);
                 });
 
         if (requestDto.getReminderEnabled() != null)
