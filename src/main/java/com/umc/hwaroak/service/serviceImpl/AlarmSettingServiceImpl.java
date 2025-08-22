@@ -8,10 +8,8 @@ import com.umc.hwaroak.domain.AlarmSetting;
 import com.umc.hwaroak.domain.Member;
 import com.umc.hwaroak.dto.request.AlarmSettingRequestDto;
 import com.umc.hwaroak.dto.response.AlarmSettingResponseDto;
-import com.umc.hwaroak.exception.GeneralException;
 import com.umc.hwaroak.repository.AlarmRepository;
 import com.umc.hwaroak.repository.AlarmSettingRepository;
-import com.umc.hwaroak.response.ErrorCode;
 import com.umc.hwaroak.service.AlarmSettingService;
 
 import lombok.RequiredArgsConstructor;
@@ -57,12 +55,13 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
                             .message("오늘 하루는 어땠나요? 저에게 들려주세요!")
                             .build();
                     alarmRepository.save(alarm);
+                    reminderTaskScheduler.cancel(memberId);
                     reminderTaskScheduler.addSchedule(alarm);
 
                     return alarmSettingRepository.save(defaultSetting);
                 });
 
-        if (setting.isReminderEnabled()) {
+        if (setting.isReminderEnabled() && !setting.isAllOffEnabled()) {
             if (!alarmRepository.findByMemberIdAndAlarmType(memberId).isPresent()) {
                 log.info("알람이 존재하지 않아 새로 생성 중... {}", memberId);
                 Alarm defaultAlarm = Alarm.builder()
@@ -73,6 +72,8 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
                         .message("오늘 하루는 어땠나요? 저에게 들려주세요!")
                         .build();
                 alarmRepository.save(defaultAlarm);
+                // 취소 후 추가; 중복 방지
+                reminderTaskScheduler.cancel(memberId);
                 reminderTaskScheduler.addSchedule(defaultAlarm);
             }
         }
@@ -89,12 +90,21 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
     @Transactional
     public AlarmSettingResponseDto.InfoDto editAlarmSettingInfo(AlarmSettingRequestDto.EditDto requestDto) {
 
+        Member member = memberLoader.getMemberByContextHolder();
         Long memberId = memberLoader.getCurrentMemberId();
 
         AlarmSetting setting = alarmSettingRepository.findByMemberId(memberId)
-                .orElseThrow(() -> {
-                    log.warn("알람 설정을 찾을 수 없습니다. memberId = {}", memberId);
-                    return new GeneralException(ErrorCode.SETTING_NOT_FOUND);
+                .orElseGet(() -> {
+                    log.warn("알람 설정을 찾을 수 없습니다... 기본 설정으로 설정합니다. memberId = {}", memberId);
+                    AlarmSetting defaultSetting = AlarmSetting.builder()
+                            .member(member)
+                            .reminderEnabled(true)
+                            .reminderTime(LocalTime.of(21, 30))
+                            .fireEnabled(true)
+                            .allOffEnabled(false)
+                            .build();
+
+                    return alarmSettingRepository.save(defaultSetting);
                 });
 
         if (requestDto.getReminderEnabled() != null)
@@ -113,23 +123,30 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
 
         alarmSettingRepository.save(setting); // 변경사항 저장
 
-        Alarm alarm = alarmRepository.findByMemberIdAndAlarmType(memberId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.ALARM_NOT_FOUND));
-        log.debug("알람 정보 확인... {}", memberId);
-
-        if (!setting.isReminderEnabled()) { // 알람 설정 off
+        if (!setting.isReminderEnabled() || setting.isAllOffEnabled()) { // 알람 설정 off(리마인더 off, 전체 off 모두 반영)
             reminderTaskScheduler.cancel(memberId);
-            alarmRepository.delete(alarm);
         } else { // 알람 설정 on
+            Alarm alarm = alarmRepository.findByMemberIdAndAlarmType(memberId)
+                    .orElseGet(() -> {
+                        Alarm defaultAlarm = Alarm.builder()
+                                .alarmType(AlarmType.REMINDER)
+                                .receiver(member)
+                                .title("오늘의 이야기로 화록을 불태우세요!")
+                                .content("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                                .message("오늘 하루는 어땠나요? 저에게 들려주세요!")
+                                .build();
+                        return alarmRepository.save(defaultAlarm);});
+            log.debug("알람 정보 확인... {}", memberId);
+
             reminderTaskScheduler.cancel(memberId);
             reminderTaskScheduler.addSchedule(alarm);
         }
 
         return AlarmSettingResponseDto.InfoDto.builder()
-                                    .reminderEnabled(setting.isReminderEnabled())
-                                    .reminderTime(setting.getReminderTime())
-                                    .fireAlarmEnabled(setting.isFireEnabled())
-                                    .allOffEnabled(setting.isAllOffEnabled())
-                                    .build();
+                .reminderEnabled(setting.isReminderEnabled())
+                .reminderTime(setting.getReminderTime())
+                .fireAlarmEnabled(setting.isFireEnabled())
+                .allOffEnabled(setting.isAllOffEnabled())
+                .build();
     }
 }
