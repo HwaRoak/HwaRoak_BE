@@ -119,17 +119,16 @@ public class AlarmSettingServiceImpl implements AlarmSettingService {
 
         if (!setting.isReminderEnabled()) { // 알람 설정 off
             reminderTaskScheduler.cancel(memberId);
-            alarmRepository.delete(alarm);
         } else { // 알람 설정 on
             reminderTaskScheduler.cancel(memberId);
             reminderTaskScheduler.addSchedule(alarm);
         }
 
         return AlarmSettingResponseDto.InfoDto.builder()
-                                    .reminderEnabled(setting.isReminderEnabled())
-                                    .reminderTime(setting.getReminderTime())
-                                    .fireAlarmEnabled(setting.isFireEnabled())
-                                    .allOffEnabled(setting.isAllOffEnabled())
-                                    .build();
+                .reminderEnabled(setting.isReminderEnabled())
+                .reminderTime(setting.getReminderTime())
+                .fireAlarmEnabled(setting.isFireEnabled())
+                .allOffEnabled(setting.isAllOffEnabled())
+                .build();
     }
 }
